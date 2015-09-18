@@ -1,0 +1,9 @@
+Package: x3prplus
+Maintainer: Heike Hofmann <hofmann@iastate.edu>
+Author: Heike Hofmann, Eric Hare
+Version: 0.0.1
+License: GPL-3
+Date: 2015-09-15
+Description: Extends the functionality of the x3pr package to include some aspects of data management, and basic modelling capabilities. Hopefully to be merged with x3pr package at some point.
+Imports: 
+  x3pr
