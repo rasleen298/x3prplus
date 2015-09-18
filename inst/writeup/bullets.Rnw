@@ -1,0 +1,143 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx,psfrag,epsf}
+\usepackage{enumerate}
+\usepackage{natbib}
+\usepackage{url} % not crucial - just used below for the URL 
+
+\pdfminorversion=4
+% NOTE: To produce blinded version, replace "0" with "1" below.
+\newcommand{\blind}{0}
+
+% DON'T change margins - should be 1 inch all around.
+\addtolength{\oddsidemargin}{-.5in}%
+\addtolength{\evensidemargin}{-.5in}%
+\addtolength{\textwidth}{1in}%
+\addtolength{\textheight}{1.3in}%
+\addtolength{\topmargin}{-.8in}%
+
+
+\title{Stab at writing up some of the Bullet findings/progress}
+\author{Heike Hofmann and Eric Hare}
+\begin{document}
+\maketitle
+<<setup, echo=FALSE, results='hide', message=FALSE, warning=FALSE>>=
+library(x3pr)
+datadir <- "../Hamby252_3DX3P1of2/"
+
+library(rgl)
+library(knitr)
+knit_hooks$set(rgl = hook_rgl)
+@
+<<functions, echo=FALSE, results='hide'>>=
+fortify <- function(x3d) {
+  require(x3pr)
+  info <- x3d[[1]]
+  
+  df <- data.frame(expand.grid(x=1:info$num.pts.line, y=1:info$num.lines), 
+             value=as.vector(t(x3d[[2]])))
+  df$x <- (df$x-1) / info$x.inc
+  df$y <- (df$y-1) / info$y.inc
+  df
+}
+
+sample.x3d <- function(dframe, byxy=c(2,2)) {
+  # use fortified data set
+  # use only every byxy sample in x and y direction 
+  if(length(byxy)==1) byxy <- rep(byxy, length=2)
+  xn <- sort(as.numeric(unique(dframe$x)))
+  yn <- sort(as.numeric(unique(dframe$y)))
+
+  xseq <- xn[seq(1, length(xn), by=byxy[1])] 
+  yseq <- yn[seq(1, length(yn), by=byxy[2])] 
+  subset(dframe, (x %in% xseq) & (y %in% yseq))
+}
+
+getCircle <- function(x, y) {
+  nas <- which(is.na(y))
+  x <- x[-nas]
+  y <- y[-nas]
+  
+  mx <- mean(x)
+  my <- mean(y)
+  
+  x <- x - mx
+  y <- y - my
+  
+  c1 <- sum(x^3) + sum(x*y^2)
+  c2 <- sum(x^2*y) + sum(y^3)
+  
+  syy <- sum(y^2)
+  sxy <- sum(x*y)
+  sxx <- sum(x^2)
+  
+  D <- sxx*syy - sxy^2
+  
+  a <- (c1*syy - c2*sxy)/(2*D)
+  b <- (c2*sxx - c1*sxy)/(2*D)
+  r <- mean((x-a)^2 + (y-b)^2)
+  cbind(x0=a+mx, y0=b+my, radius=sqrt(r))
+}
+@
+\section{Data Format}
+The data is in x3d data format as specified for 3d topographic data. It consists of a header with scan specifications, and a two-dimensional matrix of depths recordings. 
+
+We build on the R package {\tt x3pr}  \cite{x3pr} developed by Nicholas Petraco from John Jay College of Criminal Justice at CUNY.
+
+The command {\tt fortify} (our function) allows us to get a data set of a grid of equi-spaced $x$ and $y$ values and scanned values:
+<<data, dependson='functions', message=FALSE>>=
+require(x3pr)
+br111 <- read.x3p(paste(datadir,"Br1 Bullet 1-1.x3p", sep="/"))
+dbr111 <- fortify(br111)
+head(na.omit(dbr111))
+@
+The NIST database at \url{http://www.nist.gov/forensics/ballisticsdb/} makes data for different studies available. We are looking at the James Hamby Consecutively Rifled Ruger Barrel Study \citep{hamby:2009}, in particular.
+Each bullet is scanned six times, from one groove to the next, and each scan is stored in a separate file. The figure below shows an image of one  of these scans. 
+
+<<rgl, cache=TRUE>>=
+library(scatterplot3d)
+subdbr111 <- sample.x3d(dbr111, byxy=c(5,5))
+with(data = subdbr111, 
+     scatterplot3d(x = x, y = y, z = value, highlight.3d=TRUE, 
+                   angle=20))
+@
+
+The strongest signal in the image is the curvature of the bullet. In order to be able to (statistically) focus on striations and other toolmarks, we have to model this signal first, and investigate its residuals further.
+
+The picture below shows several cross sections of the first scan at a realistic aspect ratio. Th black line is a fit assuming a perfect cylindric shape for a bullet.  
+
+<<fixedX, echo=FALSE, warning=FALSE, message=FALSE, fig.width=6, out.width='\\textwidth'>>=
+library(RColorBrewer)
+library(ggplot2)
+library(dplyr)
+
+pars <- data.frame(getCircle(dbr111$y, dbr111$value))
+dbr111$theta <- acos((dbr111$y-pars$x0)/pars$radius)/pi*180
+dbr111 <- dbr111 %>% mutate(
+  xpred = cos(theta/180*pi)*pars$radius + pars$x0,
+  ypred = sin(theta/180*pi)*pars$radius + pars$y0
+)
+
+qplot(data=subset(dbr111, x <= 100 & x >= 95), y, value, colour=factor(x)) +
+  geom_line(aes(x=xpred, y=ypred, group=x), 
+            colour="black", size=0.25) +
+  scale_colour_brewer("x", palette="Paired") + 
+  theme_bw() + 
+  theme(legend.position="bottom") + coord_equal()
+@
+
+The scatterplot below shows the residuals of the fit shown in the previous plot. The residuals are dominated -- as to be expected -- by the grooves, which show up as large positive residuals. For cross sections of $x$ values between 90 and 100, there are is a residual circular structure that does not show up for all cross sections. 
+
+<<residual, echo=FALSE, warning=FALSE>>=
+qplot(data=subset(dbr111, x <= 100 & x >=95), y, value-ypred, colour=factor(x)) +
+  scale_colour_brewer("x", palette="Paired") + 
+  theme_bw() + 
+  theme(legend.position="bottom")
+@
+
+
+
+\bibliographystyle{apalike}
+\bibliography{references}
+
+\end{document}
