@@ -1,11 +1,11 @@
 #' Convert a list of x3d file into a data frame
 #' 
 #' x3d format consists of a list with header info and a 2d matrix of scan depths. 
-#' Fortify turn the matrix into a variable within a data frame, using the parameters of the header as necessary.
+#' fortify.x3p turn the matrix into a variable within a data frame, using the parameters of the header as necessary.
 #' @param x3d a file in x3d format as return by function read.x3d
 #' @return data frame with variables x, y, and value
 #' @export
-fortify <- function(x3d) {
+fortify.x3p <- function(x3d) {
   require(x3pr)
   info <- x3d[[1]]
   
