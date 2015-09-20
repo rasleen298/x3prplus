@@ -82,12 +82,12 @@ predCircle <- function(x, y, resid.method="response") {
   ypred <- pars$y0+pars$radius*sin(theta/180*pi)
   
   dframe <- data.frame(ciry=ypred)
-  resid <- NULL
-  if ("response" %in% resid.method) resid = y-ypred
+  if ("response" %in% resid.method) {
+    dframe$resid = y-ypred
+  }  
   if ("ortho" %in% resid.method) {
-    resid = sqrt( (y-pars$y0)^2 + (x - pars$x0)^2) - pars$radius
+    dframe$oresid = sqrt( (y-pars$y0)^2 + (x - pars$x0)^2) - pars$radius
   }
-  if (!is.null(resid)) dframe$resid <- resid
-  
+
   dframe
 }
