@@ -1,11 +1,11 @@
 #' Convert a list of x3d file into a data frame
 #' 
 #' x3d format consists of a list with header info and a 2d matrix of scan depths. 
-#' fortify.x3p turn the matrix into a variable within a data frame, using the parameters of the header as necessary.
+#' fortify_x3p turn the matrix into a variable within a data frame, using the parameters of the header as necessary.
 #' @param x3d a file in x3d format as return by function read.x3d
 #' @return data frame with variables x, y, and value
 #' @export
-fortify.x3p <- function(x3d) {
+fortify_x3p <- function(x3d) {
   require(x3pr)
   info <- x3d[[1]]
   
@@ -66,4 +66,28 @@ getCircle <- function(x, y) {
   b <- (c2*sxx - c1*sxy)/(2*D)
   r <- mean((x-a)^2 + (y-b)^2)
   cbind(x0=a+mx, y0=b+my, radius=sqrt(r))
+}
+
+#' Estimate predictions and residuals for a circle fit of x and y
+#' 
+#' estimate a circle, find predictive values and resiudals. depending on specification, vertical (regular) residuals or orthogonal residuals are computed.
+#' @param x vector of numeric values
+#' @param y vector of numeric values
+#' @param resid.method character, one of "response" or "ortho"(gonal)
+#' @return data frame with predictions and residuals
+#' @export
+predCircle <- function(x, y, resid.method="response") {
+  pars <- data.frame(getCircle(x, y))
+  theta <- acos((x-pars$x0)/pars$radius)/pi*180
+  ypred <- pars$y0+pars$radius*sin(theta/180*pi)
+  
+  dframe <- data.frame(ciry=ypred)
+  resid <- NULL
+  if ("response" %in% resid.method) resid = y-ypred
+  if ("ortho" %in% resid.method) {
+    resid = sqrt( (y-pars$y0)^2 + (x - pars$x0)^2) - pars$radius
+  }
+  if (!is.null(resid)) dframe$resid <- resid
+  
+  dframe
 }
