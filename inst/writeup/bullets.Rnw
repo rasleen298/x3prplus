@@ -304,37 +304,30 @@ for (i in 1:6) {
 
 
 br101 <- br101 %>% group_by(part, x) %>% do (
-    data.frame(., predCircle(.$y, .$value))
+    data.frame(., predCircle(.$y, .$value, resid.method=c("ortho", "response")))
   )
 br102 <- br102 %>% group_by(part, x) %>% do (
-    data.frame(., predCircle(.$y, .$value))
+    data.frame(., predCircle(.$y, .$value, resid.method=c("ortho", "response")))
   )
 @
 
 <<match10, echo=FALSE, warning=FALSE>>=
 br102$partsaved <- br102$part
 br102$part <- (br102$partsaved + 3) %% 6 + 1
-qplot(y, value-ciry, data=subset(br101, x>=50 & x <=55), colour=factor(x)) + 
+qplot(y, resid, data=subset(br101, x>=50 & x <=55), colour=factor(x)) + 
   facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
   theme_bw() + theme(legend.position="bottom") + 
-  geom_point(aes(y, value-ciry), colour="black", size=1, alpha=0.2, 
+  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
              data = subset(br102, x>=50 & x <=55)) + 
   ggtitle("Attempt at an overall match of Bullets 1 and 2 (Barrel 10)")
 
 @
 
 <<match10ortho, echo=FALSE, warning=FALSE>>=
-br101 <- br101 %>% group_by(part, x) %>% do (
-    data.frame(., predCircle(.$y, .$value, resid.method="ortho"))
-  )
-br102 <- br102 %>% group_by(part, x) %>% do (
-    data.frame(., predCircle(.$y, .$value, resid.method="ortho"))
-  )
-
-qplot(y, resid, data=subset(br101, x>=50 & x <=55), colour=factor(x)) + 
+qplot(y, oresid, data=subset(br101, x>=50 & x <=55), colour=factor(x)) + 
   facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
   theme_bw() + theme(legend.position="bottom") + 
-  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
+  geom_point(aes(y, oresid), colour="black", size=1, alpha=0.2, 
              data = subset(br102, x>=50 & x <=55)) + 
   ggtitle("Barrel 10 - match, based on orthogonal residuals")
 
