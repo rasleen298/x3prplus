@@ -35,12 +35,12 @@ The data is in x3d data format as specified for 3d topographic data. It consists
 
 We build on the R package {\tt x3pr}  \cite{x3pr} developed by Nicholas Petraco from John Jay College of Criminal Justice at CUNY.
 
-The command {\tt fortify.x3p} (our function) allows us to get a data set of a grid of equi-spaced $x$ and $y$ values and scanned values:
+The command {\tt fortify_x3p} (our function) allows us to get a data set of a grid of equi-spaced $x$ and $y$ values and scanned values:
 <<data, message=FALSE>>=
 require(x3pr)
 require(x3prplus)
 br111 <- read.x3p(paste(datadir,"Br1 Bullet 1-1.x3p", sep="/"))
-dbr111 <- fortify.x3p(br111)
+dbr111 <- fortify_x3p(br111)
 head(na.omit(dbr111))
 @
 The NIST database at \url{http://www.nist.gov/forensics/ballisticsdb/} makes data for different studies available. We are looking at the James Hamby Consecutively Rifled Ruger Barrel Study \citep{hamby:2009}, in particular.
@@ -109,19 +109,14 @@ We therefore fit a circle for each cross section of the bullet, and compare the 
 db1 <- NULL
 for (i in 1:6) {
   bname <- sprintf("../Hamby252_3DX3P1of2/Br1 Bullet 1-%d.x3p", i)
-  dbi <- fortify.x3p(read.x3p(bname))
+  dbi <- fortify_x3p(read.x3p(bname))
   dbi$part <- i
   db1 <- rbind(db1, dbi)
 }
 
 db1 <- db1 %>% group_by(part, x) %>% do (
-    data.frame(., getCircle(.$y, .$value))
+    data.frame(., predCircle(.$y, .$value))
   )
-
-db1$theta <- with(db1, acos((y-x0)/radius)/pi*180)
-
-db1$xpred <- with(db1, x0+radius*cos(theta/180*pi))
-db1$ypred <- with(db1, y0+radius*sin(theta/180*pi))
 @
 
 
@@ -130,51 +125,50 @@ db1$ypred <- with(db1, y0+radius*sin(theta/180*pi))
 db2 <- NULL
 for (i in 1:6) {
   bname <- sprintf("../Hamby252_3DX3P1of2/Br1 Bullet 2-%d.x3p", i)
-  dbi <- fortify.x3p(read.x3p(bname))
+  dbi <- fortify_x3p(read.x3p(bname))
   dbi$part <- i
   db2 <- rbind(db2, dbi)
 }
 
 db2 <- db2 %>% group_by(part, x) %>% do (
-    data.frame(., getCircle(.$y, .$value))
+    data.frame(., predCircle(.$y, .$value))
   )
 
-db2$theta <- with(db2, acos((y-x0)/radius)/pi*180)
-
-db2$xpred <- with(db2, x0+radius*cos(theta/180*pi))
-db2$ypred <- with(db2, y0+radius*sin(theta/180*pi))
 @
 
 First attempt to match - something is wrong with bullet piece 3.
 
 <<echo=FALSE, warning=FALSE>>=
-qplot(y, value-ypred, data=subset(db2, x <= 55 & x >=50), colour=factor(x)) + 
+qplot(y, resid, data=subset(db2, x <= 55 & x >=50), colour=factor(x)) + 
   facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
   theme_bw() + theme(legend.position="bottom") + 
-  geom_point(aes(y, value-ypred), colour="black", size=1, alpha=0.2, 
-             data = filter(db1, part==1, x <= 55, x >=50)[,c("y", "ypred", "value")]) + ggtitle("Part 1 of Bullet 1 in black")
+  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
+             data = filter(db1, part==1, x <= 55, x >=50)[,c("y", "resid")]) + ggtitle("Part 1 of Bullet 1 in black")
 @
 
 Using a different part of Bullet 1 and overlaying it on all pieces of Bullet 2.
 
 <<echo=FALSE, warning=FALSE>>=
-qplot(y, value-ypred, data=subset(db2, x <= 55 & x >=50), colour=factor(x)) + 
+qplot(y, resid, data=subset(db2, x <= 55 & x >=50), colour=factor(x)) + 
   facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
   theme_bw() + theme(legend.position="bottom") + 
-  geom_point(aes(y, value-ypred), colour="black", size=1, alpha=0.2, 
-             data = filter(db1, part==3, x <= 55, x >=50)[,c("y", "ypred", "value")]) + ggtitle("Part 3 of Bullet 1 in black")
+  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
+             data = filter(db1, part==3, x <= 55, x >=50)[,c("y", "resid")]) +
+  ggtitle("Part 3 of Bullet 1 in black")
 @
 
 And now an all in one attempt to match Bullets 1 and 2 from Barrel 1. The assumptions that go into that match are, that bullets are scanned in the same manner: scans are done consecutively and are rotated between scans in the same direction.
 
 <<echo=FALSE, warning=FALSE>>=
-db1$part <- ((db1$part + 1) %% 6) +1
+db1$partsaved <- db1$part
+db1$part <- ((db1$partsaved + 1) %% 6) +1
 
-qplot(y, value-ypred, data=subset(db2, x <= 55 & x >=50), colour=factor(x)) + 
+qplot(y, resid, data=subset(db2, x <= 55 & x >=50), colour=factor(x)) + 
   facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
   theme_bw() + theme(legend.position="bottom") + 
-  geom_point(aes(y, value-ypred), colour="black", size=1, alpha=0.2, 
-             data = filter(db1, x <= 55, x >=50)) + ggtitle("Attempt at an overall match of Bullets 1 and 2 (Barrel 1)")
+  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
+             data = filter(db1, x <= 55, x >=50)) + 
+  ggtitle("Attempt at an overall match of Bullets 1 and 2 (Barrel 1)")
 @
 
 \section{Nonparametric Smooth}
@@ -189,13 +183,7 @@ predSmooth <- function(x, y) {
   data.frame(smy=predict(gm, newdata=data.frame(xna=x)))
 }
 
-predCircle <- function(x, y) {
-  pars <- data.frame(getCircle(x, y))
-  theta <- acos((x-pars$x0)/pars$radius)/pi*180
-  ypred <- pars$y0+pars$radius*sin(theta/180*pi)
-  
-  data.frame(ciry=ypred)
-}
+
 
 sdb1 <- db1 %>% filter(x <=55, x >=50) %>% group_by(part, x) %>% do (
     data.frame(., predSmooth(.$y, .$value))
@@ -220,7 +208,7 @@ qplot(y, value-smy, data=sdb2, colour=factor(x)) +
 br21 <- NULL
 for (i in 1:6) {
   bname <- sprintf("../Hamby252_3DX3P1of2/Br2 Bullet 1-%d.x3p", i)
-  dbi <- fortify.x3p(read.x3p(bname))
+  dbi <- fortify_x3p(read.x3p(bname))
   dbi$part <- i
   br21 <- rbind(br21, dbi)
 }
@@ -228,7 +216,7 @@ for (i in 1:6) {
 br22 <- NULL
 for (i in 1:6) {
   bname <- sprintf("../Hamby252_3DX3P1of2/Br2 Bullet 2-%d.x3p", i)
-  dbi <- fortify.x3p(read.x3p(bname))
+  dbi <- fortify_x3p(read.x3p(bname))
   dbi$part <- i
   br22 <- rbind(br22, dbi)
 }
@@ -262,7 +250,7 @@ The two bullets from barrel 10 are not as good a match as the two bullets from b
 br101 <- NULL
 for (i in 1:6) {
   bname <- sprintf("../Hamby252_3DX3P1of2/Br10 Bullet 1-%d.x3p", i)
-  dbi <- fortify.x3p(read.x3p(bname))
+  dbi <- fortify_x3p(read.x3p(bname))
   dbi$part <- i
   br101 <- rbind(br101, dbi)
 }
@@ -270,7 +258,7 @@ for (i in 1:6) {
 br102 <- NULL
 for (i in 1:6) {
   bname <- sprintf("../Hamby252_3DX3P1of2/Br10 Bullet 2-%d.x3p", i)
-  dbi <- fortify.x3p(read.x3p(bname))
+  dbi <- fortify_x3p(read.x3p(bname))
   dbi$part <- i
   br102 <- rbind(br102, dbi)
 }
