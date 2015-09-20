@@ -169,11 +169,12 @@ And now an all in one attempt to match Bullets 1 and 2 from Barrel 1. The assump
 
 <<echo=FALSE, warning=FALSE>>=
 db1$part <- ((db1$part + 1) %% 6) +1
+
 qplot(y, value-ypred, data=subset(db2, x <= 55 & x >=50), colour=factor(x)) + 
   facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
   theme_bw() + theme(legend.position="bottom") + 
   geom_point(aes(y, value-ypred), colour="black", size=1, alpha=0.2, 
-             data = filter(db1, x <= 55, x >=50)) + ggtitle("Attempt at an overall match of Bullets 1 and 2")
+             data = filter(db1, x <= 55, x >=50)) + ggtitle("Attempt at an overall match of Bullets 1 and 2 (Barrel 1)")
 @
 
 \section{Nonparametric Smooth}
@@ -186,6 +187,14 @@ predSmooth <- function(x, y) {
   y <- y[-idx]
   gm <- gam(y~s(xna))
   data.frame(smy=predict(gm, newdata=data.frame(xna=x)))
+}
+
+predCircle <- function(x, y) {
+  pars <- data.frame(getCircle(x, y))
+  theta <- acos((x-pars$x0)/pars$radius)/pi*180
+  ypred <- pars$y0+pars$radius*sin(theta/180*pi)
+  
+  data.frame(ciry=ypred)
 }
 
 sdb1 <- db1 %>% filter(x <=55, x >=50) %>% group_by(part, x) %>% do (
@@ -201,9 +210,108 @@ qplot(y, value-smy, data=sdb2, colour=factor(x)) +
   facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
   theme_bw() + theme(legend.position="bottom") + 
   geom_point(aes(y, value-smy), colour="black", size=1, alpha=0.2, 
-             data = sdb1) + ggtitle("Attempt at an overall match of Bullets 1 and 2 based on a nonparametric smooth")
+             data = sdb1) + ggtitle("Attempt at an overall match of Bullets 1 and 2\n based on a nonparametric smooth (Barrel 1)")
 @
 
+
+\section{Matching Bullets for Barrel 2}
+
+<<br2, echo=FALSE>>=
+br21 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br2 Bullet 1-%d.x3p", i)
+  dbi <- fortify.x3p(read.x3p(bname))
+  dbi$part <- i
+  br21 <- rbind(br21, dbi)
+}
+
+br22 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br2 Bullet 2-%d.x3p", i)
+  dbi <- fortify.x3p(read.x3p(bname))
+  dbi$part <- i
+  br22 <- rbind(br22, dbi)
+}
+
+
+br21 <- br21 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+br22 <- br22 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+@
+
+<<match2, echo=FALSE, warning=FALSE>>=
+br22$partsaved <- br22$part
+br22$part <- (br22$partsaved - 2) %% 6 + 1
+
+qplot(y, value-ciry, data=subset(br21, x>=50 & x <=55), colour=factor(x)) + 
+  facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
+  theme_bw() + theme(legend.position="bottom") + 
+  geom_point(aes(y, value-ciry), colour="black", size=1, alpha=0.2, 
+             data = subset(br22, x>=50 & x <=55)) + 
+  ggtitle("Attempt at an overall match of Bullets 1 and 2 (Barrel 2)")
+
+@
+
+\section{Matching Bullets for Barrel 10}
+The two bullets from barrel 10 are not as good a match as the two bullets from barrel 1, but piece 6 matches well with large scale detail, and parts of other pieces (middle of 4, some of 1). 
+
+<<br10, echo=FALSE>>=
+br101 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br10 Bullet 1-%d.x3p", i)
+  dbi <- fortify.x3p(read.x3p(bname))
+  dbi$part <- i
+  br101 <- rbind(br101, dbi)
+}
+
+br102 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br10 Bullet 2-%d.x3p", i)
+  dbi <- fortify.x3p(read.x3p(bname))
+  dbi$part <- i
+  br102 <- rbind(br102, dbi)
+}
+
+
+br101 <- br101 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+br102 <- br102 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+@
+
+<<match10, echo=FALSE, warning=FALSE>>=
+br102$partsaved <- br102$part
+br102$part <- (br102$partsaved + 3) %% 6 + 1
+qplot(y, value-ciry, data=subset(br101, x>=50 & x <=55), colour=factor(x)) + 
+  facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
+  theme_bw() + theme(legend.position="bottom") + 
+  geom_point(aes(y, value-ciry), colour="black", size=1, alpha=0.2, 
+             data = subset(br102, x>=50 & x <=55)) + 
+  ggtitle("Attempt at an overall match of Bullets 1 and 2 (Barrel 10)")
+
+@
+
+<<matchsmooth, echo=FALSE, warning=FALSE>>=
+sbr101 <- br101 %>% filter(x <=55, x >=50) %>% group_by(part, x) %>% do (
+    data.frame(., predSmooth(.$y, .$value))
+  )
+sbr102 <- br102 %>% filter(x <=55, x >=50) %>% group_by(part, x) %>% do (
+    data.frame(., predSmooth(.$y, .$value))
+  )
+
+qplot(y, value-smy, data=subset(sbr101, x>=50 & x <=55), colour=factor(x)) + 
+  facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
+  theme_bw() + theme(legend.position="bottom") + 
+  geom_point(aes(y, value-smy), colour="black", size=1, alpha=0.2, 
+             data = subset(sbr102, x>=50 & x <=55)) + 
+  ggtitle("Attempt at an overall match of Bullets 1 and 2 based on smooth (Barrel 10)")
+
+@
 \bibliographystyle{apalike}
 \bibliography{references}
 
