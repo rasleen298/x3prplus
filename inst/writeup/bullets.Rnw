@@ -282,6 +282,171 @@ qplot(y, resid, data=subset(br31, x>=50 & x <=55), colour=factor(x)) +
 
 @
 
+\section{Matching Bullets for Barrel 4}
+
+<<brj, echo=FALSE>>=
+j <- 4
+brj1 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 1-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj1 <- rbind(brj1, dbi)
+}
+
+brj2 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 2-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj2 <- rbind(brj2, dbi)
+}
+
+
+brj1 <- brj1 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+brj2 <- brj2 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+@
+
+<<matchj, echo=FALSE, warning=FALSE>>=
+brj2$partsaved <- brj2$part
+brj2$part <- (brj2$partsaved - 3) %% 6 + 1
+qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) + 
+  facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
+  theme_bw() + theme(legend.position="bottom") + 
+  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
+             data = subset(brj2, x>=50 & x <=55)) + 
+  ggtitle(sprintf("Attempt at an overall match of Bullets 1 and 2 (Barrel %d)",j))
+
+@
+
+\section{Matching Bullets for Barrel 5}
+
+<<br5, echo=FALSE>>=
+j <- 5
+brj1 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 1-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj1 <- rbind(brj1, dbi)
+}
+
+brj2 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 2-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj2 <- rbind(brj2, dbi)
+}
+
+
+brj1 <- brj1 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+brj2 <- brj2 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+@
+
+<<match5, echo=FALSE, warning=FALSE>>=
+brj2$partsaved <- brj2$part
+brj2$part <- (brj2$partsaved - 3) %% 6 + 1
+qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) + 
+  facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
+  theme_bw() + theme(legend.position="bottom") + 
+  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
+             data = subset(brj2, x>=50 & x <=55)) + 
+  ggtitle(sprintf("Attempt at an overall match of Bullets 1 and 2 (Barrel %d)",j))
+
+@
+
+\section{Matching Bullets for Barrel 6}
+
+<<br6, echo=FALSE>>=
+j <- 6
+brj1 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 1-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj1 <- rbind(brj1, dbi)
+}
+
+brj2 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 2-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj2 <- rbind(brj2, dbi)
+}
+
+
+brj1 <- brj1 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+brj2 <- brj2 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+@
+
+<<match6, echo=FALSE, warning=FALSE>>=
+brj2$partsaved <- brj2$part
+brj2$part <- (brj2$partsaved - 2) %% 6 + 1
+qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) + 
+  facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
+  theme_bw() + theme(legend.position="bottom") + 
+  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
+             data = subset(brj2, x>=50 & x <=55)) + 
+  ggtitle(sprintf("Attempt at an overall match of Bullets 1 and 2 (Barrel %d)",j))
+
+@
+
+\section{Matching Bullets for Barrel 7}
+
+<<br7, echo=FALSE>>=
+j <- 7
+brj1 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 1-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj1 <- rbind(brj1, dbi)
+}
+
+brj2 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 2-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj2 <- rbind(brj2, dbi)
+}
+
+
+brj1 <- brj1 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+brj2 <- brj2 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+@
+
+<<match7, echo=FALSE, warning=FALSE>>=
+brj2$partsaved <- brj2$part
+brj2$part <- (brj2$partsaved - 2) %% 6 + 1
+qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) + 
+  facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
+  theme_bw() + theme(legend.position="bottom") + 
+  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
+             data = subset(brj2, x>=50 & x <=55)) + 
+  ggtitle(sprintf("Attempt at an overall match of Bullets 1 and 2 (Barrel %d)",j))
+
+@
+
+
 \section{Matching Bullets for Barrel 10}
 The two bullets from barrel 10 are not as good a match as the two bullets from barrel 1, but piece 6 matches well with large scale detail, and parts of other pieces (middle of 4, some of 1). 
 
