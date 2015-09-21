@@ -33,7 +33,7 @@ knit_hooks$set(rgl = hook_rgl)
 \section{Data Format}
 The data is in x3d data format as specified for 3d topographic data. It consists of a header with scan specifications, and a two-dimensional matrix of depths recordings. 
 
-We build on the R package {\tt x3pr}  \cite{x3pr} developed by Nicholas Petraco from John Jay College of Criminal Justice at CUNY.
+We build on the R package {\tt x3pr}  \cite{x3pr} developed by Nicholas Petraco from John Jay College of Criminal Justice at CUNY. (More details in \url{http://open-gps.sourceforge.net/Meetings/20080229_ISO54362_XML.pdf})
 
 The command {\tt fortify\_x3p} (our function) allows us to get a data set of a grid of equi-spaced $x$ and $y$ values and scanned values:
 <<data, message=FALSE>>=
@@ -44,6 +44,7 @@ dbr111 <- fortify_x3p(br111)
 head(na.omit(dbr111))
 @
 The NIST database at \url{http://www.nist.gov/forensics/ballisticsdb/} makes data for different studies available. We are looking at the James Hamby Consecutively Rifled Ruger Barrel Study \citep{hamby:2009}, in particular.
+
 Each bullet is scanned six times, from one groove to the next, and each scan is stored in a separate file. The figure below shows an image of one  of these scans. 
 
 <<rgl, dependson='data', cache=TRUE>>=
@@ -53,6 +54,8 @@ with(data = subdbr111,
      scatterplot3d(x = x, y = y, z = value, highlight.3d=TRUE, 
                    angle=20))
 @
+
+
 
 The strongest signal in the image is the curvature of the bullet. In order to be able to (statistically) focus on striations and other toolmarks, we have to model this signal first, and investigate its residuals further.
 
@@ -230,7 +233,7 @@ br22 <- br22 %>% group_by(part, x) %>% do (
   )
 @
 
-<<match2, fig.width=8, fig.height=6, echo=FALSE, warning=FALSE>>=
+<<match2, fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
 br22$partsaved <- br22$part
 br22$part <- (br22$partsaved - 2) %% 6 + 1
 
@@ -270,7 +273,7 @@ br32 <- br32 %>% group_by(part, x) %>% do (
   )
 @
 
-<<match3,  fig.width=8, fig.height=6, echo=FALSE, warning=FALSE>>=
+<<match3,  fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
 br32$partsaved <- br32$part
 br32$part <- (br32$partsaved - 3) %% 6 + 1
 qplot(y, resid, data=subset(br31, x>=50 & x <=55), colour=factor(x)) + 
@@ -311,7 +314,7 @@ brj2 <- brj2 %>% group_by(part, x) %>% do (
   )
 @
 
-<<matchj,  fig.width=8, fig.height=6, echo=FALSE, warning=FALSE>>=
+<<matchj,  fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
 brj2$partsaved <- brj2$part
 brj2$part <- (brj2$partsaved - 3) %% 6 + 1
 qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) + 
@@ -352,7 +355,7 @@ brj2 <- brj2 %>% group_by(part, x) %>% do (
   )
 @
 
-<<match5,  fig.width=8, fig.height=6, echo=FALSE, warning=FALSE>>=
+<<match5,  fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
 brj2$partsaved <- brj2$part
 brj2$part <- (brj2$partsaved - 3) %% 6 + 1
 qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) + 
@@ -393,7 +396,7 @@ brj2 <- brj2 %>% group_by(part, x) %>% do (
   )
 @
 
-<<match6,  fig.width=8, fig.height=6, echo=FALSE, warning=FALSE>>=
+<<match6,  fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
 brj2$partsaved <- brj2$part
 brj2$part <- (brj2$partsaved - 2) %% 6 + 1
 qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) + 
@@ -434,7 +437,7 @@ brj2 <- brj2 %>% group_by(part, x) %>% do (
   )
 @
 
-<<match7,  fig.width=8, fig.height=6, echo=FALSE, warning=FALSE>>=
+<<match7,  fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
 brj2$partsaved <- brj2$part
 brj2$part <- (brj2$partsaved - 2) %% 6 + 1
 qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) + 
@@ -446,6 +449,87 @@ qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) +
 
 @
 
+\section{Matching Bullets for Barrel 8}
+
+<<br8, echo=FALSE>>=
+j <- 8
+brj1 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 1-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj1 <- rbind(brj1, dbi)
+}
+
+brj2 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 2-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj2 <- rbind(brj2, dbi)
+}
+
+
+brj1 <- brj1 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+brj2 <- brj2 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+@
+
+<<match8,  fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
+brj2$partsaved <- brj2$part
+#brj2$part <- (brj2$partsaved - 2) %% 6 + 1
+qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) + 
+  facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
+  theme_bw() + theme(legend.position="bottom") + 
+  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
+             data = subset(brj2, x>=50 & x <=55)) + 
+  ggtitle(sprintf("Attempt at an overall match of Bullets 1 and 2 (Barrel %d)",j))
+
+@
+
+\section{Matching Bullets for Barrel 9}
+
+<<br9, echo=FALSE>>=
+j <- 9
+brj1 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 1-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj1 <- rbind(brj1, dbi)
+}
+
+brj2 <- NULL
+for (i in 1:6) {
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 2-%d.x3p", j, i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  brj2 <- rbind(brj2, dbi)
+}
+
+
+brj1 <- brj1 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+brj2 <- brj2 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+@
+
+<<match9,  fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
+brj2$partsaved <- brj2$part
+brj2$part <- (brj2$partsaved - 2) %% 6 + 1
+qplot(y, resid, data=subset(brj1, x>=50 & x <=55), colour=factor(x)) + 
+  facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
+  theme_bw() + theme(legend.position="bottom") + 
+  geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
+             data = subset(brj2, x>=50 & x <=55)) + 
+  ggtitle(sprintf("Attempt at an overall match of Bullets 1 and 2 (Barrel %d)",j))
+
+@
 
 \section{Matching Bullets for Barrel 10}
 The two bullets from barrel 10 are not as good a match as the two bullets from barrel 1, but piece 6 matches well with large scale detail, and parts of other pieces (middle of 4, some of 1). 
@@ -476,7 +560,7 @@ br102 <- br102 %>% group_by(part, x) %>% do (
   )
 @
 
-<<match10,  fig.width=8, fig.height=6, echo=FALSE, warning=FALSE>>=
+<<match10,  fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
 br102$partsaved <- br102$part
 br102$part <- (br102$partsaved + 3) %% 6 + 1
 qplot(y, resid, data=subset(br101, x>=50 & x <=55), colour=factor(x)) + 
@@ -488,7 +572,7 @@ qplot(y, resid, data=subset(br101, x>=50 & x <=55), colour=factor(x)) +
 
 @
 
-<<match10ortho,  fig.width=8, fig.height=6, echo=FALSE, warning=FALSE>>=
+<<match10ortho,  fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
 qplot(y, oresid, data=subset(br101, x>=50 & x <=55), colour=factor(x)) + 
   facet_wrap(~part) + scale_colour_brewer(palette="Paired") +
   theme_bw() + theme(legend.position="bottom") + 
@@ -497,7 +581,7 @@ qplot(y, oresid, data=subset(br101, x>=50 & x <=55), colour=factor(x)) +
   ggtitle("Barrel 10 - match, based on orthogonal residuals")
 
 @
-<<matchsmooth,  fig.width=8, fig.height=6, echo=FALSE, warning=FALSE>>=
+<<matchsmooth,  fig.width=10, fig.height=8, echo=FALSE, warning=FALSE>>=
 sbr101 <- br101 %>% filter(x <=55, x >=50) %>% group_by(part, x) %>% do (
     data.frame(., predSmooth(.$y, .$value))
   )
@@ -559,6 +643,31 @@ cors <- cors %>% group_by(part1, part2) %>% do(
 qplot(part1, sms, colour=factor(part2), data=cors) + scale_x_discrete()
 qplot(part1, cirs, colour=factor(part2), data=cors) + scale_x_discrete()
 @
+
+\section{Conclusions}
+
+Things to be raised: 
+\begin{enumerate}
+\item {\bf axis definition in the x3d file.} In the Hamby study, $x$ and $y$ values are reported indirectly in two ways in the header information: 
+{\tt x.inc} and {\tt y.inc}, short for increment, are reported for all of the bullets as 1.5625.
+
+Accompanying the matrix of scan values, there are two integer numbers given, {\tt num.lines} and {\tt num.pts.lines}, that match the dimensions of the matrix.
+{\tt num.lines} is typically on the order of 500, while {\tt num.pts.line} varies a bit around 1550. 
+{\tt num.lines} is the number of vertical slices through the bullet (along its `height'), while {\tt num.pts.lines} follows the circular outside at each height.
+
+{\tt x.inc} and {\tt y.inc} are supposed to link these integer numbers back to the real life dimensions of the scan values (taken in micrometer $\mu m$). 
+The {\tt x3pr} package suggests an interpretation of {\tt x.inc} and {\tt y.inc} as 1 unit in the matrix corresponding to {\tt x.inc} $\mu m$ and {\tt y.inc} $\mu m$, respectively.
+However, the use of {\tt x.inc} and {\tt y.inc} in the Hamby study suggests, that the ratio was used differently. 
+In order to match the matrix values to realistic scan measurements, we need to use 
+
+XXXX
+this is what I don't know yet. 1.6525 gets us to a radius of 4.5mm, which seems right, but 1/1.6525 gets us to a coverage of 70 degrees. Unfortunately we can't have both, and for right now I'm stumped where the error is. 
+XXXX
+
+each scan covers about 70$^\degree$ of a bullet, while each bullet has a median diameter of about 9,100 $\mu m$.
+
+\end{enumerate}
+
 \bibliographystyle{apalike}
 \bibliography{references}
 
