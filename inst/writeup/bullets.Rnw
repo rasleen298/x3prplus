@@ -348,6 +348,52 @@ qplot(y, value-smy, data=subset(sbr101, x>=50 & x <=55), colour=factor(x)) +
   ggtitle("Attempt at an overall match of Bullets 1 and 2 based on smooth (Barrel 10)")
 
 @
+
+\section{How do we measure fits?}
+Correlation is not able to detect which parts match  the corresponding other parts, even if the bullets are overall a match. 
+A subset focussing on just the middle part of the scans only makes this matter worse.
+
+<<cors, echo=FALSE>>=
+# use sdb1 and sdb2
+library(reshape2)
+sdb1$cirres <- with(sdb1, value-ypred)
+sdb1$smres <- with(sdb1, value-smy)
+sdb2$cirres <- with(sdb2, value-ypred)
+sdb2$smres <- with(sdb2, value-smy)
+
+msdb1 <- melt(sdb1[,c("x", "y", "cirres", "smres", "part")], measure.vars=c("cirres", "smres"))
+msdb2 <- melt(sdb2[,c("x", "y", "cirres", "smres", "part")], measure.vars=c("cirres", "smres"))
+
+dsdb1 <- dcast(msdb1, part+y~variable+x)
+dsdb2 <- dcast(msdb2, part+y~variable+x)
+#dsdb1 <- subset(dsdb1, y >= 150 & y <= 850)
+#dsdb2 <- subset(dsdb2, y >= 150 & y <= 850)
+
+meanCorr <- function(i, j) {
+  part1 <- subset(dsdb1, part==i)
+  part2 <- subset(dsdb2, part==j)
+  idx <- which(part1$y %in% part2$y)
+  part1 <- part1[idx,]
+  idx <- which(part2$y %in% part1$y)
+  part2 <- part2[idx,]
+
+  cors <- cor(part1[,-(1:2)], part2[,-(1:2)], use="pairwise.complete.obs")
+  firstHalf <- 1:7
+  secondHalf <- 8:14
+  data.frame(cbind(cirs=mean(cors[firstHalf, firstHalf]),
+  ci.sm=mean(cors[firstHalf, secondHalf]),
+  sm.ci=mean(cors[secondHalf, firstHalf]),
+  sms=mean(cors[secondHalf, secondHalf])))
+}
+
+cors <- data.frame(expand.grid(part1=1:6, part2=1:6))
+cors <- cors %>% group_by(part1, part2) %>% do(
+  meanCorr(.$part1, .$part2)
+)
+
+qplot(part1, sms, colour=factor(part2), data=cors) + scale_x_discrete()
+qplot(part1, cirs, colour=factor(part2), data=cors) + scale_x_discrete()
+@
 \bibliographystyle{apalike}
 \bibliography{references}
 
