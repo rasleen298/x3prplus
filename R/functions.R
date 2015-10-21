@@ -91,3 +91,20 @@ predCircle <- function(x, y, resid.method="response") {
 
   dframe
 }
+
+
+#' Estimate predictions and residuals for a smooth of x and y
+#' 
+#' Fit a smooth line throught x and y, find predictive values and resiudals. 
+#' @param x vector of numeric values
+#' @param y vector of numeric values
+#' @return data frame with predictions and residuals
+#' @export
+predSmooth <- function(x, y) {
+  data.lo <- loess(y~x)
+
+  dframe <- data.frame(x, y)
+  dframe$smPred <- predict(data.lo, newdata=dframe)
+  dframe$smResid <- with(dframe, y - smPred)
+  dframe
+}

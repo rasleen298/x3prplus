@@ -668,7 +668,7 @@ bru <- bru %>% group_by(part, x) %>% do (
 j <- 4
 brj1 <- NULL
 for (i in 1:6) {
-  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 1-%d.x3p", j, i)
+  bname <- sprintf("../Hamby252_3DX3P1of2/Br%d Bullet 2-%d.x3p", j, i)
   dbi <- fortify_x3p(read.x3p(bname))
   dbi$part <- i
   brj1 <- rbind(brj1, dbi)
@@ -688,7 +688,7 @@ qplot(y, resid, data=subset(bru, x>=75 & x <=80), colour=factor(x)) +
   theme_bw() + theme(legend.position="bottom") + 
   geom_point(aes(y, resid), colour="black", size=1, alpha=0.2, 
              data = subset(brj1, x>=75 & x <=80)) + 
-  ggtitle(sprintf("Unknown Bullet %s",j))
+  ggtitle(sprintf("Unknown / Bullet %s",j))
 @
 
 \section{Pictures of matches}
