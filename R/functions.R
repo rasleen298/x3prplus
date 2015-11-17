@@ -16,6 +16,67 @@ fortify_x3p <- function(x3d) {
   df
 }
 
+#' @export
+get_bullet <- function(path, x = 99.84) {
+    br111 <- read.x3p(path)
+    dbr111 <- fortify_x3p(br111)
+    
+    dbr111.fixx <- dbr111[dbr111$x == x,]
+    
+    return(dbr111.fixx)
+}
+
+#' @export
+get_grooves <- function(bullet, trim = 125) {
+    smoothed <- c(rep(NA, 10), rollapply(bullet$value, 21, function(x) mean(x, na.rm = TRUE)), rep(NA, 10))
+    subsmooth <- tail(head(smoothed, n = -trim), n = -trim)
+    
+    min.left <- which.min(subsmooth[1:(length(subsmooth) %/% 2)])
+    min.right <- which.min(subsmooth[(length(subsmooth) %/% 2):length(subsmooth)])
+    
+    p <- qplot(data=bullet, y, value) +
+        theme_bw() + coord_equal() +
+        geom_vline(xintercept = bullet$y[min.left + trim], colour = "red") +
+        geom_vline(xintercept = bullet$y[min.right + trim + (length(subsmooth) %/% 2)], colour = "blue")
+    
+    return(list(groove = c(bullet$y[min.left + trim] + 5, 
+                           bullet$y[min.right + trim + (length(subsmooth) %/% 2)] - 5), plot = p))
+}
+
+#' @export
+fit_loess <- function(bullet, groove) {
+    bullet_filter <- subset(bullet, !is.na(value) & y > groove$groove[1] & y < groove$groove[2])
+    my.loess <- loess(value ~ y, data = bullet_filter)
+    bullet_filter$fitted <- fitted(my.loess)
+    bullet_filter$resid <- resid(my.loess)
+    
+    # filter out most extreme residuals
+    bullet_filter$abs_resid <-  abs(bullet_filter$resid)
+    cutoff <- quantile(bullet_filter$abs_resid, probs = c(0.995))
+    bullet_filter$chop <- bullet_filter$abs_resid > cutoff
+    
+    p1 <- qplot(data = bullet_filter, y, resid, colour = chop) +
+        theme_bw() 
+    bullet_filter <- subset(bullet_filter, chop != TRUE)
+    
+    #qplot(data = bullet_filter, y, value) +
+    #    theme_bw() + coord_equal() +
+    #    geom_smooth()
+    
+    p2 <- qplot(data = bullet_filter, y, resid, geom="line") +
+        theme_bw()
+    
+    return(list(fitted = p1, resid = p2))
+}
+
+plot_3d_land <- function(path, bullet, groove, x = 99.84) {
+    br111 <- read.x3p(path)
+    inds <- which(bullet$y > groove$groove[1] & bullet$y < groove$groove[2])
+    surfmat <- br111$surface.matrix
+    
+    plot_ly(z = surfmat[inds,], type = "surface")
+}
+
 #' Sample every X element of a data frame
 #' 
 #' Sample every X element of a data frame in x and y direction
