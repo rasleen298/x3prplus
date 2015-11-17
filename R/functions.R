@@ -55,16 +55,17 @@ fit_loess <- function(bullet, groove) {
     cutoff <- quantile(bullet_filter$abs_resid, probs = c(0.995))
     bullet_filter$chop <- bullet_filter$abs_resid > cutoff
     
-    p1 <- qplot(data = bullet_filter, y, resid, colour = chop) +
+    bullet_filter <- subset(bullet_filter, !chop)
+    
+    p2 <- qplot(data = bullet_filter, y, resid) +
         theme_bw() 
-    bullet_filter <- subset(bullet_filter, chop != TRUE)
+
+    p1 <- qplot(data = bullet_filter, y, value) +
+        theme_bw() + coord_equal() +
+        geom_smooth()
     
-    #qplot(data = bullet_filter, y, value) +
-    #    theme_bw() + coord_equal() +
-    #    geom_smooth()
-    
-    p2 <- qplot(data = bullet_filter, y, resid, geom="line") +
-        theme_bw()
+    #p2 <- qplot(data = bullet_filter, y, resid, geom="line") +
+    #    theme_bw()
     
     return(list(fitted = p1, resid = p2))
 }
