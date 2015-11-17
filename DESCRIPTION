@@ -11,4 +11,4 @@ Description: Extends the functionality of the x3pr package to include some
 Imports:
     x3pr,
     zoo
-RoxygenNote: 5.0.0
+RoxygenNote: 5.0.1
