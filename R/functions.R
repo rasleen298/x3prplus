@@ -17,7 +17,7 @@ fortify_x3p <- function(x3d) {
 }
 
 #' @export
-get_bullet <- function(path, x = 99.84) {
+get_bullet <- function(path, x = 243.75) {
     br111 <- read.x3p(path)
     dbr111 <- fortify_x3p(br111)
     
