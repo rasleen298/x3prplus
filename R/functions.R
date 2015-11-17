@@ -27,6 +27,7 @@ get_bullet <- function(path, x = 99.84) {
 }
 
 #' @export
+#' @importFrom zoo rollapply
 get_grooves <- function(bullet, trim = 125) {
     smoothed <- c(rep(NA, 10), rollapply(bullet$value, 21, function(x) mean(x, na.rm = TRUE)), rep(NA, 10))
     subsmooth <- tail(head(smoothed, n = -trim), n = -trim)

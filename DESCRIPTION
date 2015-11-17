@@ -9,5 +9,6 @@ Description: Extends the functionality of the x3pr package to include some
     aspects of data management, and basic modelling capabilities. Hopefully to be
     merged with x3pr package at some point.
 Imports:
-    x3pr
+    x3pr,
+    zoo
 RoxygenNote: 5.0.0
