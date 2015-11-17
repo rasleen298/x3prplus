@@ -11,8 +11,8 @@ fortify_x3p <- function(x3d) {
   
   df <- data.frame(expand.grid(x=1:info$num.pts.line, y=1:info$num.lines), 
                    value=as.vector(t(x3d[[2]])))
-  df$x <- (df$x-1) / info$x.inc
-  df$y <- (df$y-1) / info$y.inc
+  df$x <- (df$x-1) * info$x.inc
+  df$y <- (df$y-1) * info$y.inc
   df
 }
 
@@ -164,9 +164,17 @@ predCircle <- function(x, y, resid.method="response") {
 #' @return data frame with predictions and residuals
 #' @export
 predSmooth <- function(x, y) {
+  dframe <- data.frame(x, y)
+
+    # return NA if more than two thirds of the values are missing
+  if (sum(is.na(y)) > 2*length(y)/3) {
+    dframe$smPred <- NA
+    dframe$smResid <- NA
+
+    return(dframe)
+  }
   data.lo <- loess(y~x)
 
-  dframe <- data.frame(x, y)
   dframe$smPred <- predict(data.lo, newdata=dframe)
   dframe$smResid <- with(dframe, y - smPred)
   dframe

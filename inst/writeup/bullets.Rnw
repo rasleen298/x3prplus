@@ -732,6 +732,8 @@ In order to match the matrix values to realistic scan measurements, we need to u
 XXXX
 this is what I don't know yet. 1.6525 gets us to a radius of 4.5mm, which seems right, but 1/1.6525 gets us to a coverage of 70 degrees. Unfortunately we can't have both, and for right now I'm stumped where the error is. 
 XXXX
+update on the error: lands do NOT cover 60 degrees each, because the grooves take some space (not sure how much), but we should go with multiplying the grid values.
+
 
 each scan covers about 70$^\circ$ of a bullet, while each bullet has a median diameter of about 9,100 $\mu m$.
 
