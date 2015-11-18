@@ -68,7 +68,7 @@ fit_loess <- function(bullet, groove) {
     #p2 <- qplot(data = bullet_filter, y, resid, geom="line") +
     #    theme_bw()
     
-    return(list(fitted = p1, resid = p2))
+    return(list(data = bullet_filter, fitted = p1, resid = p2))
 }
 
 plot_3d_land <- function(path, bullet, groove, x = 99.84) {
