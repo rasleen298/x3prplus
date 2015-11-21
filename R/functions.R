@@ -179,3 +179,56 @@ predSmooth <- function(x, y) {
   dframe$smResid <- with(dframe, y - smPred)
   dframe
 }
+
+#' @export
+processBullets <- function(paths, x = 100) {
+  br111 <- read.x3p(paths[1])
+  crosscuts <- unique(fortify_x3p(br111)$x)
+  crosscuts <- crosscuts[crosscuts >= min(x)]
+  crosscuts <- crosscuts[crosscuts <= max(x)]
+  
+  LOF <- lapply(paths, function(path) {
+    list_of_fits <- lapply(crosscuts, function(x) {
+      br111 <- get_bullet(path, x = x)
+      br111.groove <- get_grooves(br111)
+      br111.groove$plot
+      fit_loess(br111, br111.groove)
+    })
+    lof <- lapply(list_of_fits, function(x) x$resid$data) %>% bind_rows
+    lof$path <- path
+    path <- gsub("app.*//", "", as.character(path))
+    lof$bullet <- gsub(".x3p", "", path)
+    
+    lof
+  })
+  LOF %>% bind_rows()
+}
+
+#' @export
+smoothloess <- function(x, y, span, sub = 2) {
+  dat <- data.frame(x, y)
+  indx <- sub *(1: (nrow(dat) %/% sub))
+  subdat <- dat[indx, ]
+  lwp <- with(subdat, loess(y~x,span=span))
+  predict(lwp, newdata = dat)
+}
+
+#' Table of the number of consecutive matches
+#' 
+#' @param match is a Boolean vector of matches/non-matches
+#' @return a table of the number of the CMS and their frequencies
+#' @export
+CMS <- function(match) {
+  # number of consecutive matching striae
+  
+  y <- diff(match)
+  # y is -1 if change from 1 to 0, 
+  #       0 if unchanged
+  #       1 if change from 0 to 1
+  w <- c(0, y)[match][-1]
+  
+  z <- which(w == 1)
+  z <- c(0,z,length(match[match]))
+  
+  return(table(diff(z)))
+}
