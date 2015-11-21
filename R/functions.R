@@ -218,6 +218,9 @@ smoothloess <- function(x, y, span, sub = 2) {
 #' @param match is a Boolean vector of matches/non-matches
 #' @return a table of the number of the CMS and their frequencies
 #' @export
+#' @examples 
+#' x <- rbinom(100, size = 1, prob = 1/3) 
+#' CMS(x == 1) # expected value for longest match is 3
 CMS <- function(match) {
   # number of consecutive matching striae
   
@@ -231,4 +234,64 @@ CMS <- function(match) {
   z <- c(0,z,length(match[match]))
   
   return(table(diff(z)))
+}
+
+#' Identify striation marks across two bullets
+#' 
+#' @param data dataset containing crosscuts of (exactly?) two bullets as given by \code{processBullets}.
+#' @param threshold where should the smoothed values be cut? Typically, residuals from the smooth have values in (-5,5). A default value of 0.75 is taken.
+#' @return a data frame with information on all of the identified striation marks, and whether they match across the two bullets.
+#' @export
+striation_identify <- function(data, threshold = 0.75) {
+  isMatch <- function(id, type) {
+    # helper function
+    
+    if (id[1] == 0) return(FALSE)
+    #  browser()
+    types <- strsplit(type, split = "|", fixed=TRUE) 
+    t1 <- sapply(types, function(x) x[1])
+    t2 <- sapply(types, function(x) x[2])
+    if (all(t1 == "NA")) return(FALSE)
+    if (all(is.na(t2))) return(FALSE)
+    if (all(t2 == "NA")) return(FALSE)
+    
+    peak <- length(grep("peak", c(t1, t2))) > 0
+    groove <- length(grep("groove", c(t1, t2))) > 0
+    if (peak & groove) return(FALSE)
+    
+    return(TRUE)
+  }
+  
+  
+  # smooth
+  lofX <- data %>% group_by(bullet) %>% mutate(
+    l30 = smoothloess(y, resid, span = 0.03)
+  )
+  
+#  threshold <- .75
+  lofX$r05 <- threshold* sign(lofX$l30) * as.numeric(abs(lofX$l30) > threshold)
+  lofX$type <- factor(lofX$r05)
+  levels(lofX$type) <- c("groove", NA, "peak")
+  
+    
+  matches <- lofX %>% group_by(y) %>% summarise(
+    potential = (length(unique(type)) == 1),
+    allnas = sum(is.na(type))/n(),
+    type1 = na.omit(type)[1],
+    type = paste(type, sep="|", collapse="|"),
+    n = n()
+  )
+  
+  matches$id <- cumsum(matches$allnas == 1) + 1
+  matches$lineid <- as.numeric(matches$allnas != 1) * matches$id
+  
+  
+  lines <- matches %>% group_by(lineid) %>% summarise(
+    meany = mean(y, na.rm=T),
+    miny = min(y, na.rm=T),
+    maxy = max(y, na.rm=T) + 1.5625,  # need to know or infer y.increment
+    match = isMatch(lineid, type),
+    type = type1[1]
+  )
+  lines 
 }
