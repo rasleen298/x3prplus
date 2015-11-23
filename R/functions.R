@@ -236,6 +236,16 @@ CMS <- function(match) {
   return(table(diff(z)))
 }
 
+#' @export
+bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
+  lof <- data %>% group_by(bullet) %>% mutate(
+    l30 = smoothloess(y, resid, span = span)
+  )
+  lof$l30 <- pmin(max(limits), lof$l30)
+  lof$l30 <- pmax(min(limits), lof$l30)
+  lof
+}
+
 #' Identify striation marks across two bullets
 #' 
 #' @param data dataset containing crosscuts of (exactly?) two bullets as given by \code{processBullets}.
@@ -264,9 +274,7 @@ striation_identify <- function(data, threshold = 0.75) {
   
   
   # smooth
-  lofX <- data %>% group_by(bullet) %>% mutate(
-    l30 = smoothloess(y, resid, span = 0.03)
-  )
+  lofX <- bulletSmooth(lof)
   
 #  threshold <- .75
   lofX$r05 <- threshold* sign(lofX$l30) * as.numeric(abs(lofX$l30) > threshold)
