@@ -290,6 +290,7 @@ striation_identify <- function(data, threshold = 0.75) {
     t2 <- sapply(types, function(x) x[2])
     if (all(t1 == "NA")) return(FALSE)
     if (all(is.na(t2))) return(FALSE)
+    t2 <- na.omit(t2)
     if (all(t2 == "NA")) return(FALSE)
     
     peak <- length(grep("peak", c(t1, t2))) > 0
