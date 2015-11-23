@@ -236,8 +236,15 @@ CMS <- function(match) {
   return(table(diff(z)))
 }
 
+#' Smooth the surface of a bullet 
+#' 
+#' @param data data frame as returned by the function \code{processBullets}
+#' @param span width of the smoother, defaults to 0.03
+#' @param limits vector of the form c(min, max). Results will be limited to be between these values.
+#' @return data frame of the same form as the input extended by the vector l30 for the smooth.
 #' @export
 bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
+  
   lof <- data %>% group_by(bullet) %>% mutate(
     l30 = smoothloess(y, resid, span = span)
   )
@@ -253,9 +260,29 @@ bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
 #' @return a data frame with information on all of the identified striation marks, and whether they match across the two bullets.
 #' @export
 striation_identify <- function(data, threshold = 0.75) {
+  # smooth
+  lofX <- data %>% group_by(bullet) %>% mutate(
+    l30 = smoothloess(y, resid, span = 0.03)
+  )
+  
+  # cut at .75
+#  threshold <- .75
+  lofX$r05 <- threshold* sign(lofX$l30) * as.numeric(abs(lofX$l30) > threshold)
+  lofX$type <- factor(lofX$r05)
+  levels(lofX$type) <- c("groove", NA, "peak")
+  
+  matches <- lofX %>% group_by(y) %>% summarise(
+    potential = (length(unique(type)) == 1),
+    allnas = sum(is.na(type))/n(),
+    type1 = na.omit(type)[1],
+    type = paste(type, sep="|", collapse="|"),
+    n = n()
+  )
+  
+  matches$id <- cumsum(matches$allnas == 1) + 1
+  matches$lineid <- as.numeric(matches$allnas != 1) * matches$id
+  
   isMatch <- function(id, type) {
-    # helper function
-    
     if (id[1] == 0) return(FALSE)
     #  browser()
     types <- strsplit(type, split = "|", fixed=TRUE) 
@@ -272,34 +299,12 @@ striation_identify <- function(data, threshold = 0.75) {
     return(TRUE)
   }
   
-  
-  # smooth
-  lofX <- bulletSmooth(lof)
-  
-#  threshold <- .75
-  lofX$r05 <- threshold* sign(lofX$l30) * as.numeric(abs(lofX$l30) > threshold)
-  lofX$type <- factor(lofX$r05)
-  levels(lofX$type) <- c("groove", NA, "peak")
-  
-    
-  matches <- lofX %>% group_by(y) %>% summarise(
-    potential = (length(unique(type)) == 1),
-    allnas = sum(is.na(type))/n(),
-    type1 = na.omit(type)[1],
-    type = paste(type, sep="|", collapse="|"),
-    n = n()
-  )
-  
-  matches$id <- cumsum(matches$allnas == 1) + 1
-  matches$lineid <- as.numeric(matches$allnas != 1) * matches$id
-  
-  
   lines <- matches %>% group_by(lineid) %>% summarise(
     meany = mean(y, na.rm=T),
     miny = min(y, na.rm=T),
-    maxy = max(y, na.rm=T) + 1.5625,  # need to know or infer y.increment
+    maxy = max(y, na.rm=T) + 1.5625,
     match = isMatch(lineid, type),
     type = type1[1]
   )
-  lines 
+  subset(lines, lineid != 0)
 }
