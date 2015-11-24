@@ -62,7 +62,7 @@ fit_loess <- function(bullet, groove) {
         theme_bw() 
 
     p1 <- qplot(data = bullet_filter, y, value) +
-        theme_bw() + coord_equal() +
+        theme_bw() +
         geom_smooth()
     
     #p2 <- qplot(data = bullet_filter, y, resid, geom="line") +
