@@ -2,6 +2,7 @@
 
 export(CMS)
 export(bulletAlign)
+export(bulletGetMaxCMS)
 export(bulletPickThreshold)
 export(bulletSmooth)
 export(fit_loess)

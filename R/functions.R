@@ -213,6 +213,24 @@ smoothloess <- function(x, y, span, sub = 2) {
   predict(lwp, newdata = dat)
 }
 
+#' Identify the number of maximum CMS between two bullet lands
+#' 
+#' @param bullet1, bullet2 paths to two lands
+#' @param crosscut integer value specifying which surface crosscut to use for the match
+#' @param thresholds vector of potential thresholds to choose from for optimizing the number of CMS
+#' @return list of matching parameters
+#' @export
+bulletGetMaxCMS <- function(bullet1, bullet2, crosscut = 100, thresholds = seq(0.3, 1.5, by = 0.05)) {
+  lof <- processBullets(paths = c(bullet1, bullet2), x = crosscut)
+  lof <- bulletSmooth(lof)
+  lofX <- bulletAlign(lof)  
+  threshold <- bulletPickThreshold(lofX, thresholds = thresholds)
+  
+  lines <- striation_identify(lofX, threshold = threshold)
+  maxCMS <- maxCMS(lines$match==TRUE)
+  list(maxCMS = maxCMS, threshold=threshold, lines=lines, bullets=lofX)
+}  
+
 #' Number of maximum consecutively matching striae
 #' 
 #' @param match is a Boolean vector of matches/non-matches
