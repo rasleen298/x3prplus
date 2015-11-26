@@ -282,6 +282,24 @@ bulletAlign <- function(data, value = "l30") {
   rbind(data.frame(subLOFx1), data.frame(subLOFx2))
 }
 
+
+#' Pick threshold based on maximum number of CMS
+#' 
+#' @param data data frame consisting of at least two surface crosscuts as given by function \code{bulletAlign}.
+#' @param thresholds vector of thresholds under consideration. Typically in the range between 0.3 and 1.5 (with 5 being the maximum). 
+#' @return threshold value that maximizes CMS
+#' @export
+bulletPickThreshold <- function(data, thresholds) {
+  #  browser()  
+  CMS <- thresholds %>% lapply(function(threshold) {
+    lines <- striation_identify(data, threshold = threshold)
+    cms <- CMS(lines$match)
+    data.frame(threshold=threshold, maxCMS = as.numeric(rev(names(cms)))[1])
+  }) %>% bind_rows()
+  
+  CMS$threshold[which.max(CMS$maxCMS)]
+}
+
 #' Identify striation marks across two bullets
 #' 
 #' @param data dataset containing crosscuts of (exactly?) two bullets as given by \code{processBullets}.
