@@ -213,6 +213,20 @@ smoothloess <- function(x, y, span, sub = 2) {
   predict(lwp, newdata = dat)
 }
 
+#' Number of maximum consecutively matching striae
+#' 
+#' @param match is a Boolean vector of matches/non-matches
+#' @return an integer value of the maximum number of consecutive matches
+#' @export
+#' @examples 
+#' x <- rbinom(100, size = 1, prob = 1/3) 
+#' CMS(x == 1) # expected value for longest match is 3
+#' maxCMS(x==1)
+maxCMS <- function(match) {
+  cmsTable <- CMS(match)
+  as.numeric(rev(names(cmsTable)))[1]
+}
+
 #' Table of the number of consecutive matches
 #' 
 #' @param match is a Boolean vector of matches/non-matches
@@ -293,8 +307,7 @@ bulletPickThreshold <- function(data, thresholds) {
   #  browser()  
   CMS <- thresholds %>% lapply(function(threshold) {
     lines <- striation_identify(data, threshold = threshold)
-    cms <- CMS(lines$match)
-    data.frame(threshold=threshold, maxCMS = as.numeric(rev(names(cms)))[1])
+    data.frame(threshold=threshold, maxCMS = maxCMS(lines$match))
   }) %>% bind_rows()
   
   CMS$threshold[which.max(CMS$maxCMS)]
