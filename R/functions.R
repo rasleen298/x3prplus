@@ -253,18 +253,49 @@ bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
   lof
 }
 
+#' Align two surface cross cuts according to maximal correlation
+#' 
+#' @param data data frame consisting of at least two surface crosscuts as given by function \code{bulletSmooth}.
+#' @param value string of the variable to match. Defaults to l30, the variable returned from function \code{bulletSmooth}.
+#' @return same data frame as input, but y vectors are aligned for maximal correlation between the 
+#' @export
+bulletAlign <- function(data, value = "l30") {
+  b12 <- unique(data$bullet)
+
+  if (length(b12) != 2) stop("Two surfaces should be compared\n\n")
+  
+  data$val <- data.frame(data)[, value]
+  
+  subLOFx1 <- subset(data, bullet==b12[1])
+  subLOFx2 <- subset(data, bullet==b12[2]) 
+  
+  # ccf assumes that both time series start at the same y
+  # shift series into the same origin
+  subLOFx1$y <- subLOFx1$y - min(subLOFx1$y)
+  subLOFx2$y <- subLOFx2$y - min(subLOFx2$y)
+
+  ccf <- ccf(subLOFx1$val, subLOFx2$val, plot = FALSE, lag.max=150, na.action = na.omit)
+  lag <- ccf$lag[which.max(ccf$acf)]
+  incr <- min(diff(sort(unique(subLOFx1$y))))
+  
+  subLOFx1$y <- subLOFx1$y -  lag * incr # amount of shifting should just be lag * y.inc
+  rbind(data.frame(subLOFx1), data.frame(subLOFx2))
+}
+
 #' Identify striation marks across two bullets
 #' 
 #' @param data dataset containing crosscuts of (exactly?) two bullets as given by \code{processBullets}.
 #' @param threshold where should the smoothed values be cut? Typically, residuals from the smooth have values in (-5,5). A default value of 0.75 is taken.
+#' @param limits vector of the form c(min, max) to indicate cut off values. Any values in the individual characteristics outside will be set to those limits.
 #' @return a data frame with information on all of the identified striation marks, and whether they match across the two bullets.
 #' @export
-striation_identify <- function(data, threshold = 0.75) {
+striation_identify <- function(data, threshold = 0.75, limits = c(-5,5)) {
   # smooth
-  lofX <- data %>% group_by(bullet) %>% mutate(
-    l30 = smoothloess(y, resid, span = 0.03)
-  )
-  
+#  lofX <- data %>% group_by(bullet) %>% mutate(
+#    l30 = smoothloess(y, resid, span = 0.03)
+#  )
+  lofX <- bulletSmooth(data, span = 0.03, limits = limits)
+    
   # cut at .75
 #  threshold <- .75
   lofX$r05 <- threshold* sign(lofX$l30) * as.numeric(abs(lofX$l30) > threshold)
