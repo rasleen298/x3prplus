@@ -180,6 +180,14 @@ predSmooth <- function(x, y) {
   dframe
 }
 
+#' Process x3p file 
+#' 
+#' x3p file of a 3d topological bullet surface is processed at surface crosscut x, 
+#' the bullet grooves in the crosscuts are identified and removed, and a loess smooth 
+#' is used (see \code{?loess} for details) to remove the big structure. 
+#' @param paths file paths to the x3p files
+#' @param x (vector) of surface crosscuts to process. 
+#' @return data frame
 #' @export
 processBullets <- function(paths, x = 100) {
   br111 <- read.x3p(paths[1])
