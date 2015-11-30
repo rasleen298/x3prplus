@@ -194,6 +194,7 @@ processBullets <- function(paths, x = 100) {
   crosscuts <- unique(fortify_x3p(br111)$x)
   crosscuts <- crosscuts[crosscuts >= min(x)]
   crosscuts <- crosscuts[crosscuts <= max(x)]
+  if (length(x) > 2) crosscuts <- crosscuts[crosscuts %in% x]
   
   LOF <- lapply(paths, function(path) {
     list_of_fits <- lapply(crosscuts, function(x) {
@@ -226,17 +227,18 @@ smoothloess <- function(x, y, span, sub = 2) {
 #' @param bullet1, bullet2 paths to two lands
 #' @param crosscut integer value specifying which surface crosscut to use for the match
 #' @param thresholds vector of potential thresholds to choose from for optimizing the number of CMS
-#' @return list of matching parameters
+#' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
 #' @export
 bulletGetMaxCMS <- function(bullet1, bullet2, crosscut = 100, thresholds = seq(0.3, 1.5, by = 0.05)) {
   lof <- processBullets(paths = c(bullet1, bullet2), x = crosscut)
   lof <- bulletSmooth(lof)
-  lofX <- bulletAlign(lof)  
+  bAlign = bulletAlign(lof)
+  lofX <- bAlign$bullet  
   threshold <- bulletPickThreshold(lofX, thresholds = thresholds)
   
   lines <- striation_identify(lofX, threshold = threshold)
   maxCMS <- maxCMS(lines$match==TRUE)
-  list(maxCMS = maxCMS, threshold=threshold, lines=lines, bullets=lofX)
+  list(maxCMS = maxCMS, threshold=threshold, ccf = bAlign$ccf, lag=bAlign$ccf, lines=lines, bullets=lofX)
 }  
 
 #' Number of maximum consecutively matching striae
@@ -297,7 +299,7 @@ bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
 #' 
 #' @param data data frame consisting of at least two surface crosscuts as given by function \code{bulletSmooth}.
 #' @param value string of the variable to match. Defaults to l30, the variable returned from function \code{bulletSmooth}.
-#' @return same data frame as input, but y vectors are aligned for maximal correlation between the 
+#' @return list consisting of a) the maximal cross correlation, b) the lag resulting in the highest cross correlation, and c) same data frame as input, but y vectors are aligned for maximal correlation between the 
 #' @export
 bulletAlign <- function(data, value = "l30") {
   b12 <- unique(data$bullet)
@@ -319,7 +321,8 @@ bulletAlign <- function(data, value = "l30") {
   incr <- min(diff(sort(unique(subLOFx1$y))))
   
   subLOFx1$y <- subLOFx1$y -  lag * incr # amount of shifting should just be lag * y.inc
-  rbind(data.frame(subLOFx1), data.frame(subLOFx2))
+  bullets <- rbind(data.frame(subLOFx1), data.frame(subLOFx2))
+  list(ccf=max(ccf$acf), lag = lag * incr, bullets=bullets)
 }
 
 
