@@ -187,29 +187,54 @@ predSmooth <- function(x, y) {
 #' is used (see \code{?loess} for details) to remove the big structure. 
 #' @param paths file paths to the x3p files
 #' @param x (vector) of surface crosscuts to process. 
+#' @param check boolean indicating whether the crosscut should be checked for stability. Set to FALSE by default.
 #' @return data frame
 #' @export
-processBullets <- function(paths, x = 100) {
-  br111 <- read.x3p(paths[1])
-  crosscuts <- unique(fortify_x3p(br111)$x)
-  crosscuts <- crosscuts[crosscuts >= min(x)]
-  crosscuts <- crosscuts[crosscuts <= max(x)]
-  if (length(x) > 2) crosscuts <- crosscuts[crosscuts %in% x]
-  
-  LOF <- lapply(paths, function(path) {
-    list_of_fits <- lapply(crosscuts, function(x) {
-      br111 <- get_bullet(path, x = x)
+processBullets <- function(paths, x = 100, check = FALSE) {
+  if (check) {
+    if (length(x) > 1) warning("Only first crosscut value is used")
+    
+    crosscuts <- sapply(paths, function(path)
+      bulletCheckCrossCut(path, distance=25, x = seq(x[1], x[1]+100, by=25))) 
+    
+    LOF <- lapply(1:length(crosscuts), function(i) {
+      path <- paths[i]
+
+      br111 <- get_bullet(path, x = crosscuts[i])
       br111.groove <- get_grooves(br111)
       br111.groove$plot
-      fit_loess(br111, br111.groove)
+      lof <- fit_loess(br111, br111.groove)$resid$data
+
+      lof$path <- path
+      path <- gsub("app.*//", "", as.character(path))
+      lof$bullet <- gsub(".x3p", "", path)
+      
+#      browser()
+      lof
     })
-    lof <- lapply(list_of_fits, function(x) x$resid$data) %>% bind_rows
-    lof$path <- path
-    path <- gsub("app.*//", "", as.character(path))
-    lof$bullet <- gsub(".x3p", "", path)
     
-    lof
-  })
+  } else {
+    br111 <- read.x3p(paths[1])
+    crosscuts <- unique(fortify_x3p(br111)$x)
+    crosscuts <- crosscuts[crosscuts >= min(x)]
+    crosscuts <- crosscuts[crosscuts <= max(x)]
+    if (length(x) > 2) crosscuts <- crosscuts[crosscuts %in% x]
+  
+    LOF <- lapply(paths, function(path) {
+      list_of_fits <- lapply(crosscuts, function(x) {
+        br111 <- get_bullet(path, x = x)
+        br111.groove <- get_grooves(br111)
+        br111.groove$plot
+        fit_loess(br111, br111.groove)
+      })
+      lof <- lapply(list_of_fits, function(x) x$resid$data) %>% bind_rows
+      lof$path <- path
+      path <- gsub("app.*//", "", as.character(path))
+      lof$bullet <- gsub(".x3p", "", path)
+      
+      lof
+    })
+  }
   LOF %>% bind_rows()
 }
 
@@ -221,6 +246,25 @@ smoothloess <- function(x, y, span, sub = 2) {
   lwp <- with(subdat, loess(y~x,span=span))
   predict(lwp, newdata = dat)
 }
+
+#' @export
+bulletCheckCrossCut <- function(path, distance=25, x = seq(100, 225, by=distance)) {
+  crosscuts <- x
+  lof <- processBullets(path, x = x, check=FALSE)
+  lof$bullet <- paste(lof$bullet, lof$x)
+  
+  ccfs <- sapply(1:length(crosscuts[-1]), function(i) {
+    b2 <- subset(lof, x %in% crosscuts[i:(i+1)])
+    lofX <- bulletSmooth(b2)
+    bulletAlign(lofX)$ccf
+  })
+  
+  idx <- which(ccfs > .9)
+  if (!is.null(idx)) 
+    return(crosscuts[idx[1]])
+  return(NULL)
+}
+
 
 #' Identify the number of maximum CMS between two bullet lands
 #' 

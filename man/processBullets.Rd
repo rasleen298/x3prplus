@@ -4,12 +4,14 @@
 \alias{processBullets}
 \title{Process x3p file}
 \usage{
-processBullets(paths, x = 100)
+processBullets(paths, x = 100, check = FALSE)
 }
 \arguments{
 \item{paths}{file paths to the x3p files}
 
 \item{x}{(vector) of surface crosscuts to process.}
+
+\item{check}{boolean indicating whether the crosscut should be checked for stability. Set to FALSE by default.}
 }
 \value{
 data frame

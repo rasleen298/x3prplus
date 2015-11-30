@@ -2,6 +2,7 @@
 
 export(CMS)
 export(bulletAlign)
+export(bulletCheckCrossCut)
 export(bulletGetMaxCMS)
 export(bulletPickThreshold)
 export(bulletSmooth)
