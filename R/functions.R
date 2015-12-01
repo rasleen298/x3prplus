@@ -28,20 +28,26 @@ get_bullet <- function(path, x = 243.75) {
 
 #' @export
 #' @importFrom zoo rollapply
-get_grooves <- function(bullet, trim = 125) {
-    smoothed <- c(rep(NA, 10), rollapply(bullet$value, 21, function(x) mean(x, na.rm = TRUE)), rep(NA, 10))
-    subsmooth <- tail(head(smoothed, n = -trim), n = -trim)
+get_grooves <- function(bullet, smoothfactor = 21) {
+    smoothed <- c(rep(NA, floor(smoothfactor / 2)), rollapply(bullet$value, smoothfactor, function(x) mean(x, na.rm = TRUE)), rep(NA, floor(smoothfactor / 2)))
+
+    smoothed_truefalse <- c(rep(NA, floor(smoothfactor / 2)), rollapply(smoothed, smoothfactor, function(x) mean(x, na.rm = TRUE)), rep(NA, floor(smoothfactor / 2)))
     
-    min.left <- which.min(subsmooth[1:(length(subsmooth) %/% 2)])
-    min.right <- which.min(subsmooth[(length(subsmooth) %/% 2):length(subsmooth)])
+    peak_ind <- head(which(diff(smoothed_truefalse) < 0), n = 1)
+    groove_ind <- head(which(diff(tail(smoothed_truefalse, n = -(peak_ind + 10))) > 0), n = 1) + peak_ind + 10
     
-    p <- qplot(data=bullet, y, value) +
-        theme_bw() + coord_equal() +
-        geom_vline(xintercept = bullet$y[min.left + trim], colour = "red") +
-        geom_vline(xintercept = bullet$y[min.right + trim + (length(subsmooth) %/% 2)], colour = "blue")
+    peak_ind2 <- tail(which(diff(smoothed_truefalse) > 0), n = 1)
+    groove_ind2 <- tail(which(diff(head(smoothed_truefalse, n = -(length(smoothed) - peak_ind2 + 10))) < 0), n = 1)
     
-    return(list(groove = c(bullet$y[min.left + trim] + 5, 
-                           bullet$y[min.right + trim + (length(subsmooth) %/% 2)] - 5), plot = p))
+    p <- qplot(bullet$y, smoothed) +
+        theme_bw() +
+        geom_vline(xintercept = bullet$y[peak_ind], colour = "red") +
+        geom_vline(xintercept = bullet$y[groove_ind], colour = "blue") +
+        geom_vline(xintercept = bullet$y[peak_ind2], colour = "red") +
+        geom_vline(xintercept = bullet$y[groove_ind2], colour = "blue")
+    
+    return(list(groove = c(bullet$y[groove_ind], 
+                           bullet$y[groove_ind2]), plot = p))
 }
 
 #' @export
