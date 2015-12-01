@@ -198,7 +198,25 @@ predSmooth <- function(x, y) {
 #' @export
 processBullets <- function(paths, x = 100, check = FALSE) {
   if (check) {
-    if (length(x) > 1) warning("Only first crosscut value is used")
+    if (length(x) > 1) {
+      crosscuts <- x
+      LOF <- lapply(1:length(crosscuts), function(i) {
+        path <- paths[i]
+        
+        br111 <- get_bullet(path, x = crosscuts[i])
+        br111.groove <- get_grooves(br111)
+        br111.groove$plot
+        lof <- fit_loess(br111, br111.groove)$resid$data
+        
+        lof$path <- path
+        path <- gsub("app.*//", "", as.character(path))
+        lof$bullet <- gsub(".x3p", "", path)
+        
+        #      browser()
+        lof
+      })
+      
+    } else {
     
     crosscuts <- sapply(paths, function(path)
       bulletCheckCrossCut(path, distance=25, x = seq(x[1], x[1]+100, by=25))) 
@@ -218,7 +236,7 @@ processBullets <- function(paths, x = 100, check = FALSE) {
 #      browser()
       lof
     })
-    
+    }
   } else {
     br111 <- read.x3p(paths[1])
     crosscuts <- unique(fortify_x3p(br111)$x)
@@ -265,7 +283,10 @@ bulletCheckCrossCut <- function(path, distance=25, x = seq(100, 225, by=distance
     bulletAlign(lofX)$ccf
   })
   
-  idx <- which(ccfs > .9)
+  idx <- which(ccfs > .875)
+  if(length(idx) == 0) {
+    return(bulletCheckCrossCut(path=path, x=x+100))
+  }
   if (!is.null(idx)) 
     return(crosscuts[idx[1]])
   return(NULL)
@@ -279,8 +300,9 @@ bulletCheckCrossCut <- function(path, distance=25, x = seq(100, 225, by=distance
 #' @param thresholds vector of potential thresholds to choose from for optimizing the number of CMS
 #' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
 #' @export
-bulletGetMaxCMS <- function(bullet1, bullet2, crosscut = 100, thresholds = seq(0.3, 1.5, by = 0.05)) {
-  lof <- processBullets(paths = c(bullet1, bullet2), x = crosscut)
+bulletGetMaxCMS <- function(bullet1, bullet2, crosscut = 100, crosscut2 = NA, thresholds = seq(0.3, 1.5, by = 0.05), check = FALSE) {
+  if (!is.na(crosscut2)) lof <- processBullets(paths = c(bullet1, bullet2), x = c(crosscut, crosscut2), check=check)
+  else lof <- processBullets(paths = c(bullet1, bullet2), x = crosscut, check=check)
   lof <- bulletSmooth(lof)
   bAlign = bulletAlign(lof)
   lofX <- bAlign$bullet  
