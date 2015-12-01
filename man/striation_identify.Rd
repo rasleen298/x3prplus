@@ -4,12 +4,14 @@
 \alias{striation_identify}
 \title{Identify striation marks across two bullets}
 \usage{
-striation_identify(data, threshold = 0.75)
+striation_identify(data, threshold = 0.75, limits = c(-5, 5))
 }
 \arguments{
 \item{data}{dataset containing crosscuts of (exactly?) two bullets as given by \code{processBullets}.}
 
 \item{threshold}{where should the smoothed values be cut? Typically, residuals from the smooth have values in (-5,5). A default value of 0.75 is taken.}
+
+\item{limits}{vector of the form c(min, max) to indicate cut off values. Any values in the individual characteristics outside will be set to those limits.}
 }
 \value{
 a data frame with information on all of the identified striation marks, and whether they match across the two bullets.
