@@ -46,8 +46,8 @@ get_grooves <- function(bullet, smoothfactor = 21) {
         geom_vline(xintercept = bullet$y[peak_ind2], colour = "red") +
         geom_vline(xintercept = bullet$y[groove_ind2], colour = "blue")
     
-    return(list(groove = c(bullet$y[groove_ind], 
-                           bullet$y[groove_ind2]), plot = p))
+    return(list(groove = c(bullet$y[groove_ind + 5], 
+                           bullet$y[groove_ind2 - 5]), plot = p))
 }
 
 #' @export
