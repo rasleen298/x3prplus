@@ -39,6 +39,10 @@ get_grooves <- function(bullet, smoothfactor = 21) {
     peak_ind2 <- tail(which(diff(smoothed_truefalse) > 0), n = 1)
     groove_ind2 <- tail(which(diff(head(smoothed_truefalse, n = -(length(smoothed) - peak_ind2 + 10))) < 0), n = 1)
     
+    ## Check that it actually FOUND a groove...
+    if (groove_ind > 300) groove_ind <- 0
+    if (groove_ind2 < length(smoothed) - 300) groove_ind2 <- 0
+    
     p <- qplot(bullet$y, bullet$value) +
         theme_bw() +
         geom_vline(xintercept = bullet$y[peak_ind], colour = "red") +
