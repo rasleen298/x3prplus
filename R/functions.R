@@ -28,7 +28,7 @@ get_bullet <- function(path, x = 243.75) {
 
 #' @export
 #' @importFrom zoo rollapply
-get_grooves <- function(bullet, smoothfactor = 21) {
+get_grooves <- function(bullet, smoothfactor = 41) {
     smoothed <- c(rep(NA, floor(smoothfactor / 2)), rollapply(bullet$value, smoothfactor, function(x) mean(x, na.rm = TRUE)), rep(NA, floor(smoothfactor / 2)))
 
     smoothed_truefalse <- c(rep(NA, floor(smoothfactor / 2)), rollapply(smoothed, smoothfactor, function(x) mean(x, na.rm = TRUE)), rep(NA, floor(smoothfactor / 2)))
