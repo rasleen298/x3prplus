@@ -21,7 +21,9 @@ get_bullet <- function(path, x = 243.75) {
     br111 <- read.x3p(path)
     dbr111 <- fortify_x3p(br111)
     
-    dbr111.fixx <- dbr111[dbr111$x == x,]
+    pickx <- dbr111$x[which.min(abs(x - unique(dbr111$x)))]
+    
+    dbr111.fixx <- dbr111[dbr111$x == pickx,]
     
     return(dbr111.fixx)
 }
@@ -40,8 +42,8 @@ get_grooves <- function(bullet, smoothfactor = 41) {
     groove_ind2 <- tail(which(diff(head(smoothed_truefalse, n = -(length(smoothed) - peak_ind2 + 10))) < 0), n = 1)
     
     ## Check that it actually FOUND a groove...
-    if (groove_ind > 300) groove_ind <- 1
-    if (groove_ind2 < length(smoothed) - 300) groove_ind2 <- length(smoothed)
+    if (length(groove_ind) == 0 || groove_ind > 300) groove_ind <- 1
+    if (length(groove_ind2) == 0 || groove_ind2 < length(smoothed) - 300) groove_ind2 <- length(smoothed)
     
     p <- qplot(bullet$y, bullet$value) +
         theme_bw() +
