@@ -287,7 +287,7 @@ bulletCheckCrossCut <- function(path, distance=25, x = seq(100, 225, by=distance
     bulletAlign(lofX)$ccf
   })
   
-  idx <- which(ccfs > .875)
+  idx <- which(ccfs > .9)
   if(length(idx) == 0) {
     return(bulletCheckCrossCut(path=path, x=x+100))
   }
