@@ -64,8 +64,13 @@ get_grooves <- function(bullet, smoothfactor = 35) {
                            bullet$y[groove_ind2 - 10]), plot = p))
 }
 
-#' @export
+#' Identify the location and the depth of peaks and heights at a crosscut
+#' 
+#' @param loessdata export from rollapply 
+#' @param smoothfactor set to default of 35. Smaller values will pick up on smaller changes in the crosscut.
+#' @return list of several objects: 
 #' @importFrom zoo rollapply
+#' @export
 get_peaks <- function(loessdata, smoothfactor = 35) {
     smoothed <- rollapply(loessdata$resid, smoothfactor, function(x) mean(x))
     smoothed_truefalse <- rollapply(smoothed, smoothfactor, function(x) mean(x))
@@ -73,17 +78,29 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
     test <- rollapply(smoothed_truefalse, 3, function(x) which.max(x)==2)
     test2 <- rollapply(smoothed_truefalse, 3, function(x) which.min(x)==2)
 
-    p <- qplot(loessdata$y[smoothfactor:(length(loessdata$y) - smoothfactor + 1)], smoothed_truefalse, geom = "line") +
-        theme_bw() +
-        geom_vline(xintercept = loessdata$y[which(test) + smoothfactor], colour = "red") +
-        geom_vline(xintercept = loessdata$y[which(test2) + smoothfactor], colour = "blue")
     
     peaks <- loessdata$y[which(test) + smoothfactor]
     valleys <- loessdata$y[which(test2) + smoothfactor]
     peaks.heights <- smoothed_truefalse[which(test) + 1]
     valleys.heights <- loessdata$resid[which(test2) + smoothfactor]
     
-    return(list(peaks = peaks, valleys = valleys,
+    # adding on some extra stats
+    extrema <- c(peaks, valleys)
+    type <- c(rep(1, length(peaks)), rep(-1, length(valleys)))
+    idx <- order(extrema)
+    extrema <- extrema[idx]
+    type <- type[idx]
+    diffs <- diff(extrema)
+    lines <- data.frame(xmin = extrema-c(diffs[1],diffs)/3,
+                        xmax = extrema+c(diffs,diffs[length(diffs)])/3, 
+                        type = type)    
+    p <- qplot(loessdata$y[smoothfactor:(length(loessdata$y) - smoothfactor + 1)], smoothed_truefalse, geom = "line") +
+      theme_bw() +
+      geom_rect(aes(xmin=xmin, xmax=xmax), ymin=-6, ymax=6, data=lines, colour="grey60", alpha=0.2, inherit.aes = FALSE) +
+      geom_vline(xintercept = loessdata$y[which(test) + smoothfactor], colour = "red") +
+      geom_vline(xintercept = loessdata$y[which(test2) + smoothfactor], colour = "blue") 
+    
+    return(list(peaks = peaks, valleys = valleys, extrema = extrema, 
                 peaks.heights = peaks.heights, valleys.heights = valleys.heights, plot = p))
 }
 
