@@ -30,7 +30,8 @@ get_bullet <- function(path, x = 243.75) {
 
 #' @export
 #' @importFrom zoo rollapply
-get_grooves <- function(bullet, smoothfactor = 41) {
+#' @importFrom zoo na.fill
+get_grooves <- function(bullet, smoothfactor = 35) {
     value_filled <- na.fill(bullet$value, "extend")
     smoothed <- rollapply(value_filled, smoothfactor, function(x) mean(x))
     smoothed_truefalse <- rollapply(smoothed, smoothfactor, function(x) mean(x))
@@ -59,8 +60,8 @@ get_grooves <- function(bullet, smoothfactor = 41) {
         geom_vline(xintercept = bullet$y[peak_ind2], colour = "red") +
         geom_vline(xintercept = bullet$y[groove_ind2], colour = "blue")
     
-    return(list(groove = c(bullet$y[groove_ind], 
-                           bullet$y[groove_ind2]), plot = p))
+    return(list(groove = c(bullet$y[groove_ind + 10], 
+                           bullet$y[groove_ind2 - 10]), plot = p))
 }
 
 #' @export
