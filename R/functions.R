@@ -101,7 +101,8 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
       geom_vline(xintercept = loessdata$y[which(test2) + smoothfactor], colour = "blue") 
     
     return(list(peaks = peaks, valleys = valleys, extrema = extrema, 
-                peaks.heights = peaks.heights, valleys.heights = valleys.heights, plot = p))
+                peaks.heights = peaks.heights, valleys.heights = valleys.heights, 
+                lines=lines, plot = p))
 }
 
 #' @export
@@ -382,56 +383,34 @@ bulletGetMaxCMS <- function(bullet1, bullet2, crosscut = 100, crosscut2 = NA, th
 
 #' Identify the number of maximum CMS between two bullet lands
 #' 
-#' @param bullet1, bullet2 load from bullets.RData
+#' @param bullet1, bullet2 paths to x3pr files. 
+#' @param crosscut1, crosscut2 crosscuts at which to evaluate the match. 
 #' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
 #' @export
-bulletGetMaxCMSXXX <- function(bullet1, bullet2) {
-  # browser()
-  lof <- rbind(bullet1$bullet, bullet2$bullet)
+bulletGetMaxCMSXXX <- function(bullet1, bullet2, crosscut1, crosscut2) {
+  lof1 <- processBullets(paths = bullet1, x = crosscut1, check=FALSE)
+  lof2 <- processBullets(paths = bullet2, x = crosscut2, check=FALSE)
+  
+  lof <- rbind(lof1, lof2)
   lof <- bulletSmooth(lof)
   bAlign = bulletAlign(lof)
   lofX <- bAlign$bullet  
-  min1 <- min(bullet1$bullet$y)
-  min2 <- min(bullet2$bullet$y)
-  bullet1$lines$xmin <- bullet1$lines$xmin - min1 -  bAlign$lag 
-  bullet2$lines$xmin <- bullet2$lines$xmin - min2
-  bullet1$lines$xmax <- bullet1$lines$xmax - min1 -  bAlign$lag 
-  bullet2$lines$xmax <- bullet2$lines$xmax - min2
+
+  b12 <- unique(lof$bullet)
+  peaks1 <- get_peaks(subset(lofX, bullet==b12[1]))
+  peaks2 <- get_peaks(subset(lofX, bullet == b12[2]))
+
   qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
     theme_bw() +
-    geom_rect(data=bullet1$lines, aes(xmin=xmin, xmax=xmax, fill=factor(type)), ymin=-5, ymax=5, inherit.aes = FALSE, alpha=I(0.25)) +
-    geom_rect(data=bullet2$lines, aes(xmin=xmin, xmax=xmax, fill=factor(type)), ymin=-5, ymax=5, inherit.aes = FALSE, alpha=I(0.25))
+    geom_rect(data=peaks1$lines, aes(xmin=xmin, xmax=xmax, fill=factor(type)), ymin=-5, ymax=5, inherit.aes = FALSE, alpha=I(0.25)) +
+    geom_rect(data=peaks2$lines, aes(xmin=xmin, xmax=xmax, fill=factor(type)), ymin=-5, ymax=5, inherit.aes = FALSE, alpha=I(0.25))
   
-  bullet1$lines$bullet <- bullet1$path
-  bullet2$lines$bullet <- bullet2$path
-  lines <- rbind(bullet1$lines, bullet2$lines)
-  lines <- lines[order(lines$xmin),]
-  library(reshape2)
-  ml <- melt(lines, measure.vars=c("xmin", "xmax"))
-  ml <- ml[order(ml$value),]
-  ml$overlap <- c(1,-1)[as.numeric(ml$variable)]
-  ml$gap <- cumsum(ml$overlap)
-
-  idx <- which(ml$gap == 0)
-  lines <- data.frame(xmin = ml$value[c(1,idx[-length(idx)]+1)], 
-                      xmax = ml$value[idx])   
-  ml$group <- 0
-  ml$group[c(1, idx[-length(idx)]+1)] <- 1
-  ml$group <- cumsum(ml$group)
-  isMatch <- function(type, bullet) {
-    if (length(unique(bullet)) != 2) return(FALSE)
-    return (length(unique(type)) == 1) 
-  }
-  groups <- ml %>% group_by(group) %>% summarise(
-    match = isMatch(type, bullet),
-    size = n(),
-    type = type[1])
-  lines$match <- as.vector(groups$match)
-  lines$type <- as.vector(groups$type)
-  lines$type[!lines$match] <- NA
-  lines$meany <- with(lines, (xmin+xmax)/2)
+  peaks1$lines$bullet <- bullet1
+  peaks2$lines$bullet <- bullet2
   
-  qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
+  lines <- striation_identifyXXX(peaks1$lines, peaks2$lines)
+  
+  p <- qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
     theme_bw() +
     geom_rect(data=lines, aes(xmin=xmin, xmax=xmax, fill = factor(type)),  ymin=-6, ymax=6, inherit.aes = FALSE, alpha=I(0.25)) +
     ylim(c(-6,6)) +
@@ -439,7 +418,7 @@ bulletGetMaxCMSXXX <- function(bullet1, bullet2) {
     geom_text(aes(x = meany), y= -5.5, label= "o", data = subset(lines, match), inherit.aes = FALSE) 
     
   maxCMS <- maxCMS(lines$match==TRUE)
-  list(maxCMS = maxCMS, ccf = bAlign$ccf, lag=bAlign$lag, lines=lines, bullets=lofX)
+  list(maxCMS = maxCMS, ccf = bAlign$ccf, lag=bAlign$lag, lines=lines, bullets=lofX, plot=p)
 }  
 
 #' Number of maximum consecutively matching striae
@@ -541,6 +520,38 @@ bulletPickThreshold <- function(data, thresholds) {
   }) %>% bind_rows()
   
   CMS$threshold[which.max(CMS$maxCMS)]
+}
+
+#' @export
+striation_identifyXXX <- function(lines1, lines2) {
+  lines <- rbind(lines1, lines2)
+  lines <- lines[order(lines$xmin),]
+  
+  library(reshape2)
+  ml <- melt(lines, measure.vars=c("xmin", "xmax"))
+  ml <- ml[order(ml$value),]
+  ml$overlap <- c(1,-1)[as.numeric(ml$variable)]
+  ml$gap <- cumsum(ml$overlap)
+  
+  idx <- which(ml$gap == 0)
+  lines <- data.frame(xmin = ml$value[c(1,idx[-length(idx)]+1)], 
+                      xmax = ml$value[idx])   
+  ml$group <- 0
+  ml$group[c(1, idx[-length(idx)]+1)] <- 1
+  ml$group <- cumsum(ml$group)
+  isMatch <- function(type, bullet) {
+    if (length(unique(bullet)) != 2) return(FALSE)
+    return (length(unique(type)) == 1) 
+  }
+  groups <- ml %>% group_by(group) %>% summarise(
+    match = isMatch(type, bullet),
+    size = n(),
+    type = type[1])
+  lines$match <- as.vector(groups$match)
+  lines$type <- as.vector(groups$type)
+  lines$type[!lines$match] <- NA
+  lines$meany <- with(lines, (xmin+xmax)/2)
+  lines
 }
 
 #' Identify striation marks across two bullets
