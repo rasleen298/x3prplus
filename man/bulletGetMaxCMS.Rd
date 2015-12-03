@@ -4,8 +4,8 @@
 \alias{bulletGetMaxCMS}
 \title{Identify the number of maximum CMS between two bullet lands}
 \usage{
-bulletGetMaxCMS(bullet1, bullet2, crosscut = 100, thresholds = seq(0.3, 1.5,
-  by = 0.05), check = FALSE)
+bulletGetMaxCMS(bullet1, bullet2, crosscut = 100, crosscut2 = NA,
+  thresholds = seq(0.3, 1.5, by = 0.05), check = FALSE)
 }
 \arguments{
 \item{bullet1, }{bullet2 paths to two lands}

@@ -65,23 +65,22 @@ get_grooves <- function(bullet, smoothfactor = 41) {
 
 #' @export
 #' @importFrom zoo rollapply
-get_peaks <- function(loessdata, smoothfactor = 41) {
-    smoothed <- c(rep(NA, floor(smoothfactor / 2)), rollapply(loessdata$resid, smoothfactor, function(x) mean(x, na.rm = TRUE)), rep(NA, floor(smoothfactor / 2)))
-    
-    smoothed_truefalse <- c(rep(NA, floor(smoothfactor / 2)), rollapply(smoothed, smoothfactor, function(x) mean(x, na.rm = TRUE)), rep(NA, floor(smoothfactor / 2)))
+get_peaks <- function(loessdata, smoothfactor = 35) {
+    smoothed <- rollapply(loessdata$resid, smoothfactor, function(x) mean(x))
+    smoothed_truefalse <- rollapply(smoothed, smoothfactor, function(x) mean(x))
     
     test <- rollapply(smoothed_truefalse, 3, function(x) which.max(x)==2)
     test2 <- rollapply(smoothed_truefalse, 3, function(x) which.min(x)==2)
 
-    p <- qplot(loessdata$y, smoothed_truefalse) +
+    p <- qplot(loessdata$y[smoothfactor:(length(loessdata$y) - smoothfactor + 1)], smoothed_truefalse, geom = "line") +
         theme_bw() +
-        geom_vline(xintercept = loessdata$y[which(test) + floor(smoothfactor / 2)], colour = "red") +
-        geom_vline(xintercept = loessdata$y[which(test2) + floor(smoothfactor / 2)], colour = "blue")
+        geom_vline(xintercept = loessdata$y[which(test) + smoothfactor], colour = "red") +
+        geom_vline(xintercept = loessdata$y[which(test2) + smoothfactor], colour = "blue")
     
-    peaks <- loessdata$y[which(test) + floor(smoothfactor / 2)]
-    valleys <- loessdata$y[which(test2) + floor(smoothfactor / 2)]
-    peaks.heights <- loessdata$resid[which(test) + floor(smoothfactor / 2)]
-    valleys.heights <- loessdata$resid[which(test2) + floor(smoothfactor / 2)]
+    peaks <- loessdata$y[which(test) + smoothfactor]
+    valleys <- loessdata$y[which(test2) + smoothfactor]
+    peaks.heights <- smoothed_truefalse[which(test) + 1]
+    valleys.heights <- loessdata$resid[which(test2) + smoothfactor]
     
     return(list(peaks = peaks, valleys = valleys,
                 peaks.heights = peaks.heights, valleys.heights = valleys.heights, plot = p))
