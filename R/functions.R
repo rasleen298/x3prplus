@@ -311,7 +311,20 @@ smoothloess <- function(x, y, span, sub = 2) {
 #' @export
 bulletCheckCrossCut <- function(path, distance=25, x = seq(100, 225, by=distance)) {
   crosscuts <- x
-  lof <- processBullets(path, x = x, check=FALSE)
+#  lof <- processBullets(path, x = x, check=FALSE)
+  
+  list_of_fits <- lapply(crosscuts, function(x) {
+    br111 <- get_bullet(path, x = x)
+    br111.groove <- get_grooves(br111)
+#    br111.groove$plot
+#    browser()
+    fit_loess(br111, br111.groove)
+  })
+  lof <- lapply(list_of_fits, function(x) x$resid$data) %>% bind_rows
+  lof$path <- path
+  path <- gsub("app.*//", "", as.character(path))
+  lof$bullet <- gsub(".x3p", "", path)
+  
   lof$bullet <- paste(lof$bullet, lof$x)
   
   ccfs <- sapply(1:length(crosscuts[-1]), function(i) {
@@ -348,6 +361,68 @@ bulletGetMaxCMS <- function(bullet1, bullet2, crosscut = 100, crosscut2 = NA, th
   lines <- striation_identify(lofX, threshold = threshold)
   maxCMS <- maxCMS(lines$match==TRUE)
   list(maxCMS = maxCMS, threshold=threshold, ccf = bAlign$ccf, lag=bAlign$ccf, lines=lines, bullets=lofX)
+}  
+
+#' Identify the number of maximum CMS between two bullet lands
+#' 
+#' @param bullet1, bullet2 load from bullets.RData
+#' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
+#' @export
+bulletGetMaxCMSXXX <- function(bullet1, bullet2) {
+  # browser()
+  lof <- rbind(bullet1$bullet, bullet2$bullet)
+  lof <- bulletSmooth(lof)
+  bAlign = bulletAlign(lof)
+  lofX <- bAlign$bullet  
+  min1 <- min(bullet1$bullet$y)
+  min2 <- min(bullet2$bullet$y)
+  bullet1$lines$xmin <- bullet1$lines$xmin - min1 -  bAlign$lag 
+  bullet2$lines$xmin <- bullet2$lines$xmin - min2
+  bullet1$lines$xmax <- bullet1$lines$xmax - min1 -  bAlign$lag 
+  bullet2$lines$xmax <- bullet2$lines$xmax - min2
+  qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
+    theme_bw() +
+    geom_rect(data=bullet1$lines, aes(xmin=xmin, xmax=xmax, fill=factor(type)), ymin=-5, ymax=5, inherit.aes = FALSE, alpha=I(0.25)) +
+    geom_rect(data=bullet2$lines, aes(xmin=xmin, xmax=xmax, fill=factor(type)), ymin=-5, ymax=5, inherit.aes = FALSE, alpha=I(0.25))
+  
+  bullet1$lines$bullet <- bullet1$path
+  bullet2$lines$bullet <- bullet2$path
+  lines <- rbind(bullet1$lines, bullet2$lines)
+  lines <- lines[order(lines$xmin),]
+  library(reshape2)
+  ml <- melt(lines, measure.vars=c("xmin", "xmax"))
+  ml <- ml[order(ml$value),]
+  ml$overlap <- c(1,-1)[as.numeric(ml$variable)]
+  ml$gap <- cumsum(ml$overlap)
+
+  idx <- which(ml$gap == 0)
+  lines <- data.frame(xmin = ml$value[c(1,idx[-length(idx)]+1)], 
+                      xmax = ml$value[idx])   
+  ml$group <- 0
+  ml$group[c(1, idx[-length(idx)]+1)] <- 1
+  ml$group <- cumsum(ml$group)
+  isMatch <- function(type, bullet) {
+    if (length(unique(bullet)) != 2) return(FALSE)
+    return (length(unique(type)) == 1) 
+  }
+  groups <- ml %>% group_by(group) %>% summarise(
+    match = isMatch(type, bullet),
+    size = n(),
+    type = type[1])
+  lines$match <- as.vector(groups$match)
+  lines$type <- as.vector(groups$type)
+  lines$type[!lines$match] <- NA
+  lines$meany <- with(lines, (xmin+xmax)/2)
+  
+  qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
+    theme_bw() +
+    geom_rect(data=lines, aes(xmin=xmin, xmax=xmax, fill = factor(type)),  ymin=-6, ymax=6, inherit.aes = FALSE, alpha=I(0.25)) +
+    ylim(c(-6,6)) +
+    geom_text(aes(x = meany), y= -5.5, label= "x", data = subset(lines, !match), inherit.aes = FALSE) +
+    geom_text(aes(x = meany), y= -5.5, label= "o", data = subset(lines, match), inherit.aes = FALSE) 
+    
+  maxCMS <- maxCMS(lines$match==TRUE)
+  list(maxCMS = maxCMS, ccf = bAlign$ccf, lag=bAlign$lag, lines=lines, bullets=lofX)
 }  
 
 #' Number of maximum consecutively matching striae
