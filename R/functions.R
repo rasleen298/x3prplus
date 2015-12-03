@@ -31,19 +31,26 @@ get_bullet <- function(path, x = 243.75) {
 #' @export
 #' @importFrom zoo rollapply
 get_grooves <- function(bullet, smoothfactor = 41) {
-    smoothed <- c(rep(NA, floor(smoothfactor / 2)), rollapply(bullet$value, smoothfactor, function(x) mean(x, na.rm = TRUE)), rep(NA, floor(smoothfactor / 2)))
+    value_filled <- na.fill(bullet$value, "extend")
+    smoothed <- rollapply(value_filled, smoothfactor, function(x) mean(x))
+    smoothed_truefalse <- rollapply(smoothed, smoothfactor, function(x) mean(x))
+    
+    lengthdiff <- length(bullet$value) - length(smoothed_truefalse)
+    
+    peak_ind_smoothed <- head(which(rollapply(smoothed_truefalse, 3, function(x) which.max(x) == 2)), n = 1)
+    peak_ind <- peak_ind_smoothed + floor(lengthdiff / 2)
+    groove_ind <- head(which(rollapply(tail(smoothed_truefalse, n = -peak_ind_smoothed), 3, function(x) which.min(x) == 2)), n = 1) + peak_ind
 
-    smoothed_truefalse <- c(rep(NA, floor(smoothfactor / 2)), rollapply(smoothed, smoothfactor, function(x) mean(x, na.rm = TRUE)), rep(NA, floor(smoothfactor / 2)))
+    peak_ind2_smoothed_temp <- head(which(rollapply(rev(smoothed_truefalse), 3, function(x) which.max(x) == 2)), n = 1)
+    peak_ind2_temp <- peak_ind2_smoothed_temp + floor(lengthdiff / 2)
+    groove_ind2_temp <- head(which(rollapply(tail(rev(smoothed_truefalse), n = -peak_ind2_smoothed_temp), 3, function(x) which.min(x) == 2)), n = 1) + peak_ind2_temp
     
-    peak_ind <- head(which(diff(smoothed_truefalse) < 0), n = 1)
-    groove_ind <- head(which(diff(tail(smoothed_truefalse, n = -(peak_ind + 10))) > 0), n = 1) + peak_ind + 10
-    
-    peak_ind2 <- tail(which(diff(smoothed_truefalse) > 0), n = 1)
-    groove_ind2 <- tail(which(diff(head(smoothed_truefalse, n = -(length(smoothed) - peak_ind2 + 10))) < 0), n = 1)
+    peak_ind2 <- length(bullet$value) - peak_ind2_temp + 1
+    groove_ind2 <- length(bullet$value) - groove_ind2_temp + 1
     
     ## Check that it actually FOUND a groove...
     if (length(groove_ind) == 0 || groove_ind > 300) groove_ind <- 1
-    if (length(groove_ind2) == 0 || groove_ind2 < length(smoothed) - 300) groove_ind2 <- length(smoothed)
+    if (length(groove_ind2) == 0 || groove_ind2 < length(bullet$value) - 300) groove_ind2 <- length(bullet$value)
     
     p <- qplot(bullet$y, bullet$value) +
         theme_bw() +
@@ -52,8 +59,32 @@ get_grooves <- function(bullet, smoothfactor = 41) {
         geom_vline(xintercept = bullet$y[peak_ind2], colour = "red") +
         geom_vline(xintercept = bullet$y[groove_ind2], colour = "blue")
     
-    return(list(groove = c(bullet$y[groove_ind + 5], 
-                           bullet$y[groove_ind2 - 5]), plot = p))
+    return(list(groove = c(bullet$y[groove_ind], 
+                           bullet$y[groove_ind2]), plot = p))
+}
+
+#' @export
+#' @importFrom zoo rollapply
+get_peaks <- function(loessdata, smoothfactor = 41) {
+    smoothed <- c(rep(NA, floor(smoothfactor / 2)), rollapply(loessdata$resid, smoothfactor, function(x) mean(x, na.rm = TRUE)), rep(NA, floor(smoothfactor / 2)))
+    
+    smoothed_truefalse <- c(rep(NA, floor(smoothfactor / 2)), rollapply(smoothed, smoothfactor, function(x) mean(x, na.rm = TRUE)), rep(NA, floor(smoothfactor / 2)))
+    
+    test <- rollapply(smoothed_truefalse, 3, function(x) which.max(x)==2)
+    test2 <- rollapply(smoothed_truefalse, 3, function(x) which.min(x)==2)
+
+    p <- qplot(loessdata$y, smoothed_truefalse) +
+        theme_bw() +
+        geom_vline(xintercept = loessdata$y[which(test) + floor(smoothfactor / 2)], colour = "red") +
+        geom_vline(xintercept = loessdata$y[which(test2) + floor(smoothfactor / 2)], colour = "blue")
+    
+    peaks <- loessdata$y[which(test) + floor(smoothfactor / 2)]
+    valleys <- loessdata$y[which(test2) + floor(smoothfactor / 2)]
+    peaks.heights <- loessdata$resid[which(test) + floor(smoothfactor / 2)]
+    valleys.heights <- loessdata$resid[which(test2) + floor(smoothfactor / 2)]
+    
+    return(list(peaks = peaks, valleys = valleys,
+                peaks.heights = peaks.heights, valleys.heights = valleys.heights, plot = p))
 }
 
 #' @export
