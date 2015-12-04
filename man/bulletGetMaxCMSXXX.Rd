@@ -4,12 +4,14 @@
 \alias{bulletGetMaxCMSXXX}
 \title{Identify the number of maximum CMS between two bullet lands}
 \usage{
-bulletGetMaxCMSXXX(bullet1, bullet2, crosscut1, crosscut2)
+bulletGetMaxCMSXXX(bullet1, bullet2, crosscut1, crosscut2, span = 35)
 }
 \arguments{
 \item{bullet1, }{bullet2 paths to x3pr files.}
 
 \item{crosscut1, }{crosscut2 crosscuts at which to evaluate the match.}
+
+\item{span}{smoothfactor to use for assessing peaks.}
 }
 \value{
 list of matching parameters, data set of the identified striae, and the aligned data sets.

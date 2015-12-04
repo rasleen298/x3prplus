@@ -93,7 +93,7 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
     diffs <- diff(extrema)
     lines <- data.frame(xmin = extrema-c(diffs[1],diffs)/3,
                         xmax = extrema+c(diffs,diffs[length(diffs)])/3, 
-                        type = type)    
+                        type = type, extrema = extrema)    
     p <- qplot(loessdata$y[smoothfactor:(length(loessdata$y) - smoothfactor + 1)], smoothed_truefalse, geom = "line") +
       theme_bw() +
       geom_rect(aes(xmin=xmin, xmax=xmax), ymin=-6, ymax=6, data=lines, colour="grey60", alpha=0.2, inherit.aes = FALSE) +
@@ -384,10 +384,11 @@ bulletGetMaxCMS <- function(bullet1, bullet2, crosscut = 100, crosscut2 = NA, th
 #' Identify the number of maximum CMS between two bullet lands
 #' 
 #' @param bullet1, bullet2 paths to x3pr files. 
-#' @param crosscut1, crosscut2 crosscuts at which to evaluate the match. 
+#' @param crosscut1, crosscut2 crosscuts at which to evaluate the match.
+#' @param span  smoothfactor to use for assessing peaks. 
 #' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
 #' @export
-bulletGetMaxCMSXXX <- function(bullet1, bullet2, crosscut1, crosscut2) {
+bulletGetMaxCMSXXX <- function(bullet1, bullet2, crosscut1, crosscut2, span=35) {
   lof1 <- processBullets(paths = bullet1, x = crosscut1, check=FALSE)
   lof2 <- processBullets(paths = bullet2, x = crosscut2, check=FALSE)
   
@@ -397,8 +398,8 @@ bulletGetMaxCMSXXX <- function(bullet1, bullet2, crosscut1, crosscut2) {
   lofX <- bAlign$bullet  
 
   b12 <- unique(lof$bullet)
-  peaks1 <- get_peaks(subset(lofX, bullet==b12[1]))
-  peaks2 <- get_peaks(subset(lofX, bullet == b12[2]))
+  peaks1 <- get_peaks(subset(lofX, bullet==b12[1]), smoothfactor = span)
+  peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = span)
 
   qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
     theme_bw() +
