@@ -86,14 +86,16 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
     
     # adding on some extra stats
     extrema <- c(peaks, valleys)
+    heights <- c(peaks.heights, valleys.heights)
     type <- c(rep(1, length(peaks)), rep(-1, length(valleys)))
     idx <- order(extrema)
     extrema <- extrema[idx]
+    heights <- heights[idx]
     type <- type[idx]
     diffs <- diff(extrema)
     lines <- data.frame(xmin = extrema-c(diffs[1],diffs)/3,
                         xmax = extrema+c(diffs,diffs[length(diffs)])/3, 
-                        type = type, extrema = extrema)    
+                        type = type, extrema = extrema, heights = heights)    
     p <- qplot(loessdata$y[smoothfactor:(length(loessdata$y) - smoothfactor + 1)], smoothed_truefalse, geom = "line") +
       theme_bw() +
       geom_rect(aes(xmin=xmin, xmax=xmax), ymin=-6, ymax=6, data=lines, colour="grey60", alpha=0.2, inherit.aes = FALSE) +
@@ -411,15 +413,15 @@ bulletGetMaxCMSXXX <- function(bullet1, bullet2, crosscut1, crosscut2, span=35) 
   
   lines <- striation_identifyXXX(peaks1$lines, peaks2$lines)
   
-  p <- qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
-    theme_bw() +
-    geom_rect(data=lines, aes(xmin=xmin, xmax=xmax, fill = factor(type)),  ymin=-6, ymax=6, inherit.aes = FALSE, alpha=I(0.25)) +
-    ylim(c(-6,6)) +
-    geom_text(aes(x = meany), y= -5.5, label= "x", data = subset(lines, !match), inherit.aes = FALSE) +
-    geom_text(aes(x = meany), y= -5.5, label= "o", data = subset(lines, match), inherit.aes = FALSE) 
+#   p <- qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
+#     theme_bw() +
+#     geom_rect(data=lines, aes(xmin=xmin, xmax=xmax, fill = factor(type)),  ymin=-6, ymax=6, inherit.aes = FALSE, alpha=I(0.25)) +
+#     ylim(c(-6,6)) +
+#     geom_text(aes(x = meany), y= -5.5, label= "x", data = subset(lines, !match), inherit.aes = FALSE) +
+#     geom_text(aes(x = meany), y= -5.5, label= "o", data = subset(lines, match), inherit.aes = FALSE) 
     
   maxCMS <- maxCMS(lines$match==TRUE)
-  list(maxCMS = maxCMS, ccf = bAlign$ccf, lag=bAlign$lag, lines=lines, bullets=lofX, plot=p)
+  list(maxCMS = maxCMS, ccf = bAlign$ccf, lag=bAlign$lag, lines=lines, bullets=lofX)
 }  
 
 #' Number of maximum consecutively matching striae
@@ -547,11 +549,15 @@ striation_identifyXXX <- function(lines1, lines2) {
   groups <- ml %>% group_by(group) %>% summarise(
     match = isMatch(type, bullet),
     size = n(),
-    type = type[1])
+    type = type[1],
+    sdheights = sd(heights),
+    heights = mean(heights))
   lines$match <- as.vector(groups$match)
   lines$type <- as.vector(groups$type)
   lines$type[!lines$match] <- NA
   lines$meany <- with(lines, (xmin+xmax)/2)
+  lines$heights <- as.vector(groups$heights)
+  lines$sdheights <- as.vector(groups$sdheights)
   lines
 }
 
