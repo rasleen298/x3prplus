@@ -55,14 +55,29 @@ get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 
     
     xvals <- bullet$y
     yvals <- bullet$value
-    if (smoothplot) xvals <- 1:length(smoothed_truefalse); yvals <- smoothed_truefalse
+    
+    plot_peak_ind <- peak_ind
+    plot_groove_ind <- groove_ind
+    plot_peak_ind2 <- peak_ind2
+    plot_groove_ind2 <- groove_ind2
+    
+    if (smoothplot) {
+        xvals <- 1:length(smoothed_truefalse)
+        yvals <- smoothed_truefalse
+    }
+    if (smoothplot) {
+        plot_peak_ind <- peak_ind_smoothed
+        plot_groove_ind <- groove_ind - floor(lengthdiff / 2)
+        plot_peak_ind2 <- peak_ind2 - floor(lengthdiff / 2)
+        plot_groove_ind2 <- groove_ind2 - floor(lengthdiff / 2)
+    }
     
     p <- qplot(xvals, yvals) +
         theme_bw() +
-        geom_vline(xintercept = bullet$y[peak_ind], colour = "red") +
-        geom_vline(xintercept = bullet$y[groove_ind], colour = "blue") +
-        geom_vline(xintercept = bullet$y[peak_ind2], colour = "red") +
-        geom_vline(xintercept = bullet$y[groove_ind2], colour = "blue")
+        geom_vline(xintercept = xvals[plot_peak_ind], colour = "red") +
+        geom_vline(xintercept = xvals[plot_groove_ind], colour = "blue") +
+        geom_vline(xintercept = xvals[plot_peak_ind2], colour = "red") +
+        geom_vline(xintercept = xvals[plot_groove_ind2], colour = "blue")
     
     return(list(groove = c(bullet$y[groove_ind + adjust], 
                            bullet$y[groove_ind2 - adjust]), plot = p))
