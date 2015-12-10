@@ -31,7 +31,7 @@ get_bullet <- function(path, x = 243.75) {
 #' @export
 #' @importFrom zoo rollapply
 #' @importFrom zoo na.fill
-get_grooves <- function(bullet, smoothfactor = 35) {
+get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10) {
     value_filled <- na.fill(bullet$value, "extend")
     smoothed <- rollapply(value_filled, smoothfactor, function(x) mean(x))
     smoothed_truefalse <- rollapply(smoothed, smoothfactor, function(x) mean(x))
@@ -53,15 +53,19 @@ get_grooves <- function(bullet, smoothfactor = 35) {
     if (length(groove_ind) == 0 || groove_ind > 300) groove_ind <- 1
     if (length(groove_ind2) == 0 || groove_ind2 < length(bullet$value) - 300) groove_ind2 <- length(bullet$value)
     
-    p <- qplot(bullet$y, bullet$value) +
+    xvals <- bullet$y
+    yvals <- bullet$value
+    if (smoothplot) xvals <- 1:length(smoothed_truefalse); yvals <- smoothed_truefalse
+    
+    p <- qplot(xvals, yvals) +
         theme_bw() +
         geom_vline(xintercept = bullet$y[peak_ind], colour = "red") +
         geom_vline(xintercept = bullet$y[groove_ind], colour = "blue") +
         geom_vline(xintercept = bullet$y[peak_ind2], colour = "red") +
         geom_vline(xintercept = bullet$y[groove_ind2], colour = "blue")
     
-    return(list(groove = c(bullet$y[groove_ind + 10], 
-                           bullet$y[groove_ind2 - 10]), plot = p))
+    return(list(groove = c(bullet$y[groove_ind + adjust], 
+                           bullet$y[groove_ind2 - adjust]), plot = p))
 }
 
 #' Identify the location and the depth of peaks and heights at a crosscut
