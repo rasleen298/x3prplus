@@ -17,6 +17,7 @@ fortify_x3p <- function(x3d) {
 }
 
 #' @export
+#' @importFrom x3pr read.x3p
 get_bullet <- function(path, x = 243.75) {
     br111 <- read.x3p(path)
     dbr111 <- fortify_x3p(br111)
@@ -29,6 +30,7 @@ get_bullet <- function(path, x = 243.75) {
 }
 
 #' @export
+#' @import ggplot2
 #' @importFrom zoo rollapply
 #' @importFrom zoo na.fill
 get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10) {
@@ -89,6 +91,7 @@ get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 
 #' @param smoothfactor set to default of 35. Smaller values will pick up on smaller changes in the crosscut.
 #' @return list of several objects: 
 #' @importFrom zoo rollapply
+#' @import ggplot2
 #' @export
 get_peaks <- function(loessdata, smoothfactor = 35) {
     smoothed <- rollapply(loessdata$resid, smoothfactor, function(x) mean(x))

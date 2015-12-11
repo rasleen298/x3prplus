@@ -10,5 +10,6 @@ Description: Extends the functionality of the x3pr package to include some
     merged with x3pr package at some point.
 Imports:
     x3pr,
-    zoo
+    zoo,
+    ggplot2
 RoxygenNote: 5.0.1
