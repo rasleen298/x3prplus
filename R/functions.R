@@ -118,7 +118,8 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
     lines <- data.frame(xmin = extrema-c(diffs[1],diffs)/3,
                         xmax = extrema+c(diffs,diffs[length(diffs)])/3, 
                         type = type, extrema = extrema, heights = heights)    
-    p <- qplot(loessdata$y[smoothfactor:(length(loessdata$y) - smoothfactor + 1)], smoothed_truefalse, geom = "line") +
+    dframe <- data.frame(y=loessdata$y[smoothfactor:(length(loessdata$y) - smoothfactor + 1)], smoothed=smoothed_truefalse)
+    p <- qplot(data=dframe, x=y, y=smoothed, geom = "line") +
       theme_bw() +
       geom_rect(aes(xmin=xmin, xmax=xmax), ymin=-6, ymax=6, data=lines, colour="grey60", alpha=0.2, inherit.aes = FALSE) +
       geom_vline(xintercept = loessdata$y[which(test) + smoothfactor], colour = "red") +
