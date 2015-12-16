@@ -275,6 +275,7 @@ predSmooth <- function(x, y) {
 #' @param x (vector) of surface crosscuts to process. 
 #' @param check boolean indicating whether the crosscut should be checked for stability. Set to FALSE by default.
 #' @return data frame
+#' @importFrom dplyr bind_rows %>%
 #' @export
 processBullets <- function(paths, x = 100, check = FALSE) {
   if (check) {
@@ -548,12 +549,13 @@ bulletPickThreshold <- function(data, thresholds) {
   CMS$threshold[which.max(CMS$maxCMS)]
 }
 
+#' @importFrom dplyr group_by %>% summarise
+#' @importFrom reshape2 melt
 #' @export
 striation_identifyXXX <- function(lines1, lines2) {
   lines <- rbind(lines1, lines2)
   lines <- lines[order(lines$xmin),]
   
-  library(reshape2)
   ml <- melt(lines, measure.vars=c("xmin", "xmax"))
   ml <- ml[order(ml$value),]
   ml$overlap <- c(1,-1)[as.numeric(ml$variable)]
@@ -590,12 +592,10 @@ striation_identifyXXX <- function(lines1, lines2) {
 #' @param threshold where should the smoothed values be cut? Typically, residuals from the smooth have values in (-5,5). A default value of 0.75 is taken.
 #' @param limits vector of the form c(min, max) to indicate cut off values. Any values in the individual characteristics outside will be set to those limits.
 #' @return a data frame with information on all of the identified striation marks, and whether they match across the two bullets.
+#' @importFrom dplyr group_by %>% n summarise
 #' @export
 striation_identify <- function(data, threshold = 0.75, limits = c(-5,5)) {
   # smooth
-#  lofX <- data %>% group_by(bullet) %>% mutate(
-#    l30 = smoothloess(y, resid, span = 0.03)
-#  )
   lofX <- bulletSmooth(data, span = 0.03, limits = limits)
     
   # cut at .75
