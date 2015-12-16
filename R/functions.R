@@ -6,7 +6,6 @@
 #' @return data frame with variables x, y, and value
 #' @export
 fortify_x3p <- function(x3d) {
-  require(x3pr)
   info <- x3d[[1]]
   
   df <- data.frame(expand.grid(x=1:info$num.pts.line, y=1:info$num.lines), 
@@ -16,17 +15,28 @@ fortify_x3p <- function(x3d) {
   df
 }
 
-#' @export
+#' Read a crosscut from a 3d surface file
+#' 
 #' @importFrom x3pr read.x3p
+#' @param path path to an x3p file
+#' @param x level of the crosscut to be taken. If this level does not exist, the crosscut with the closest level is returned.
+#' @return data frame 
+#' @export
+get_crosscut <- function(path, x = 243.75) {
+  br111 <- read.x3p(path)
+  dbr111 <- fortify_x3p(br111)
+  
+  pickx <- dbr111$x[which.min(abs(x - unique(dbr111$x)))]
+  
+  dbr111.fixx <- dbr111[dbr111$x == pickx,]
+  
+  return(dbr111.fixx)
+}
+  
+#' @export
 get_bullet <- function(path, x = 243.75) {
-    br111 <- read.x3p(path)
-    dbr111 <- fortify_x3p(br111)
-    
-    pickx <- dbr111$x[which.min(abs(x - unique(dbr111$x)))]
-    
-    dbr111.fixx <- dbr111[dbr111$x == pickx,]
-    
-    return(dbr111.fixx)
+  cat("Use function get_crosscut instead of get_bullet\n\n")
+  get_crosscut(path, x=x)
 }
 
 #' @export
@@ -157,6 +167,7 @@ fit_loess <- function(bullet, groove) {
     return(list(data = bullet_filter, fitted = p1, resid = p2))
 }
 
+#' @importFrom plotly plot_ly
 plot_3d_land <- function(path, bullet, groove, x = 99.84) {
     br111 <- read.x3p(path)
     inds <- which(bullet$y > groove$groove[1] & bullet$y < groove$groove[2])
@@ -284,7 +295,7 @@ processBullets <- function(paths, x = 100, check = FALSE) {
       LOF <- lapply(1:length(crosscuts), function(i) {
         path <- paths[i]
         
-        br111 <- get_bullet(path, x = crosscuts[i])
+        br111 <- get_crosscut(path, x = crosscuts[i])
         br111.groove <- get_grooves(br111)
         br111.groove$plot
         lof <- fit_loess(br111, br111.groove)$resid$data
@@ -305,7 +316,7 @@ processBullets <- function(paths, x = 100, check = FALSE) {
     LOF <- lapply(1:length(crosscuts), function(i) {
       path <- paths[i]
 
-      br111 <- get_bullet(path, x = crosscuts[i])
+      br111 <- get_crosscut(path, x = crosscuts[i])
       br111.groove <- get_grooves(br111)
       br111.groove$plot
       lof <- fit_loess(br111, br111.groove)$resid$data
@@ -327,7 +338,7 @@ processBullets <- function(paths, x = 100, check = FALSE) {
   
     LOF <- lapply(paths, function(path) {
       list_of_fits <- lapply(crosscuts, function(x) {
-        br111 <- get_bullet(path, x = x)
+        br111 <- get_crosscut(path, x = x)
         br111.groove <- get_grooves(br111)
         br111.groove$plot
         fit_loess(br111, br111.groove)
@@ -358,7 +369,7 @@ bulletCheckCrossCut <- function(path, distance=25, x = seq(100, 225, by=distance
 #  lof <- processBullets(path, x = x, check=FALSE)
   
   list_of_fits <- lapply(crosscuts, function(x) {
-    br111 <- get_bullet(path, x = x)
+    br111 <- get_crosscut(path, x = x)
     br111.groove <- get_grooves(br111)
 #    br111.groove$plot
 #    browser()
@@ -491,6 +502,7 @@ CMS <- function(match) {
 #' @param span width of the smoother, defaults to 0.03
 #' @param limits vector of the form c(min, max). Results will be limited to be between these values.
 #' @return data frame of the same form as the input extended by the vector l30 for the smooth.
+#' @importFrom dplyr mutate
 #' @export
 bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
   
