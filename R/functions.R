@@ -363,11 +363,56 @@ smoothloess <- function(x, y, span, sub = 2) {
   predict(lwp, newdata = dat)
 }
 
+#' Identifying a reliable cross section 
+#' 
+#' Should be changed: x should just indicate lower and upper limit. That is cleaner and should speed things up as well.
+#' @param path path to an x3p file
+#' @param distance positive numeric value indicating the distance between cross sections to use for a comparison
+#' @param x vector of values to check for cross sections
+#' @param minccf minimal value of cross correlation to indicate a stable region
 #' @export
-bulletCheckCrossCut <- function(path, distance=25, x = seq(100, 225, by=distance)) {
+bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf = 0.9) {
+  get_cc <- function(x) {
+    pickx <- dbr111$x[which.min(abs(x - unique(dbr111$x)))]
+    
+    br111 <- dbr111[dbr111$x == pickx,]
+    br111.groove <- get_grooves(br111)
+    #    br111.groove$plot
+    #    browser()
+    dframe <- fit_loess(br111, br111.groove)$resid$data
+    
+    path <- gsub(".*//", "", as.character(path))
+    dframe$bullet <- paste(gsub(".x3p", "", path), x)
+    dframe
+  }
+  bullet <- read.x3p(path)
+  dbr111 <- fortify_x3p(bullet)
+
+  done <- FALSE
+  x <- min(xlimits)
+  first_cc <- get_cc(x)
+  
+  while(!done) {
+    x <- x + distance
+    second_cc <- get_cc(x)
+    b2 <- rbind(first_cc, second_cc)
+    lofX <- bulletSmooth(b2)
+    ccf <- bulletAlign(lofX)$ccf
+    if (ccf > minccf) { 
+      done <- TRUE
+      return (x - distance)
+    } 
+    if (x + distance > max(xlimits)) done <- TRUE
+  } 
+  return (NA)
+}
+
+#' keep for backup right now
+bulletCheckCrossCutOld <- function(path, distance=25, x = seq(100, 225, by=distance)) {
   crosscuts <- x
 #  lof <- processBullets(path, x = x, check=FALSE)
-  
+
+    
   list_of_fits <- lapply(crosscuts, function(x) {
     br111 <- get_crosscut(path, x = x)
     br111.groove <- get_grooves(br111)
