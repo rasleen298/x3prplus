@@ -398,25 +398,25 @@ bulletCheckCrossCut <- function(path, distance=25, x = seq(100, 225, by=distance
 }
 
 
-#' Identify the number of maximum CMS between two bullet lands
-#' 
-#' @param bullet1, bullet2 paths to two lands
-#' @param crosscut integer value specifying which surface crosscut to use for the match
-#' @param thresholds vector of potential thresholds to choose from for optimizing the number of CMS
-#' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
-#' @export
-bulletGetMaxCMS <- function(bullet1, bullet2, crosscut = 100, crosscut2 = NA, thresholds = seq(0.3, 1.5, by = 0.05), check = FALSE) {
-  if (!is.na(crosscut2)) lof <- processBullets(paths = c(bullet1, bullet2), x = c(crosscut, crosscut2), check=check)
-  else lof <- processBullets(paths = c(bullet1, bullet2), x = crosscut, check=check)
-  lof <- bulletSmooth(lof)
-  bAlign = bulletAlign(lof)
-  lofX <- bAlign$bullet  
-  threshold <- bulletPickThreshold(lofX, thresholds = thresholds)
-  
-  lines <- striation_identify(lofX, threshold = threshold)
-  maxCMS <- maxCMS(lines$match==TRUE)
-  list(maxCMS = maxCMS, threshold=threshold, ccf = bAlign$ccf, lag=bAlign$ccf, lines=lines, bullets=lofX)
-}  
+# #' Identify the number of maximum CMS between two bullet lands
+# #' 
+# #' @param bullet1, bullet2 paths to two lands
+# #' @param crosscut integer value specifying which surface crosscut to use for the match
+# #' @param thresholds vector of potential thresholds to choose from for optimizing the number of CMS
+# #' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
+# #' @export
+# bulletGetMaxCMS_old <- function(bullet1, bullet2, crosscut = 100, crosscut2 = NA, thresholds = seq(0.3, 1.5, by = 0.05), check = FALSE) {
+#   if (!is.na(crosscut2)) lof <- processBullets(paths = c(bullet1, bullet2), x = c(crosscut, crosscut2), check=check)
+#   else lof <- processBullets(paths = c(bullet1, bullet2), x = crosscut, check=check)
+#   lof <- bulletSmooth(lof)
+#   bAlign = bulletAlign(lof)
+#   lofX <- bAlign$bullet  
+#   threshold <- bulletPickThreshold(lofX, thresholds = thresholds)
+#   
+#   lines <- striation_identify_old(lofX, threshold = threshold)
+#   maxCMS <- maxCMS(lines$match==TRUE)
+#   list(maxCMS = maxCMS, threshold=threshold, ccf = bAlign$ccf, lag=bAlign$ccf, lines=lines, bullets=lofX)
+# }  
 
 #' Identify the number of maximum CMS between two bullet lands
 #' 
@@ -544,22 +544,23 @@ bulletAlign <- function(data, value = "l30") {
   list(ccf=max(ccf$acf), lag = lag * incr, bullets=bullets)
 }
 
-
-#' Pick threshold based on maximum number of CMS
-#' 
-#' @param data data frame consisting of at least two surface crosscuts as given by function \code{bulletAlign}.
-#' @param thresholds vector of thresholds under consideration. Typically in the range between 0.3 and 1.5 (with 5 being the maximum). 
-#' @return threshold value that maximizes CMS
-#' @export
-bulletPickThreshold <- function(data, thresholds) {
-  #  browser()  
-  CMS <- thresholds %>% lapply(function(threshold) {
-    lines <- striation_identify(data, threshold = threshold)
-    data.frame(threshold=threshold, maxCMS = maxCMS(lines$match))
-  }) %>% bind_rows()
-  
-  CMS$threshold[which.max(CMS$maxCMS)]
-}
+# 
+# #' Pick threshold based on maximum number of CMS
+# #' 
+# #' @param data data frame consisting of at least two surface crosscuts as given by function \code{bulletAlign}.
+# #' @param thresholds vector of thresholds under consideration. Typically in the range between 0.3 and 1.5 (with 5 being the maximum). 
+# #' @return threshold value that maximizes CMS
+# #' @export
+# bulletPickThreshold <- function(data, thresholds) {
+#   #  browser()  
+#   CMS <- thresholds %>% lapply(function(threshold) {
+#     lines <- striation_identify_old(data, threshold = threshold)
+#     data.frame(threshold=threshold, maxCMS = maxCMS(lines$match))
+#   }) %>% bind_rows()
+#   
+#   CMS$threshold[which.max(CMS$maxCMS)]
+# }
+# 
 
 #' @importFrom dplyr group_by %>% summarise
 #' @importFrom reshape2 melt
@@ -606,7 +607,7 @@ striation_identifyXXX <- function(lines1, lines2) {
 #' @return a data frame with information on all of the identified striation marks, and whether they match across the two bullets.
 #' @importFrom dplyr group_by %>% n summarise
 #' @export
-striation_identify <- function(data, threshold = 0.75, limits = c(-5,5)) {
+striation_identify_old <- function(data, threshold = 0.75, limits = c(-5,5)) {
   # smooth
   lofX <- bulletSmooth(data, span = 0.03, limits = limits)
     
