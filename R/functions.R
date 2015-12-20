@@ -402,6 +402,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
       done <- TRUE
       return (x - distance)
     } 
+    first_cc <- second_cc
     if (x + distance > max(xlimits)) done <- TRUE
   } 
   return (NA)
