@@ -311,7 +311,7 @@ processBullets <- function(paths, x = 100, check = FALSE) {
     } else {
     
     crosscuts <- sapply(paths, function(path)
-      bulletCheckCrossCut(path, distance=25, x = seq(x[1], x[1]+100, by=25))) 
+      bulletCheckCrossCut(path, distance=25, xlimits = c(x[1], 750))) 
     
     LOF <- lapply(1:length(crosscuts), function(i) {
       path <- paths[i]
@@ -436,7 +436,7 @@ bulletCheckCrossCutOld <- function(path, distance=25, x = seq(100, 225, by=dista
   
   idx <- which(ccfs > .9)
   if(length(idx) == 0) {
-    return(bulletCheckCrossCut(path=path, x=x+100))
+    return(bulletCheckCrossCutOld(path=path, x=x+100))
   }
   if (!is.null(idx)) 
     return(crosscuts[idx[1]])
@@ -608,6 +608,10 @@ bulletAlign <- function(data, value = "l30") {
 # }
 # 
 
+#' Match striation marks across two cross sections based on previously identified peaks and valleys
+#' @param lines1, lines2 data frames as returned from get_peaks function. data frames are expected to have 
+#' the following variables: xmin, xmax, group, type, bullet, heights
+#' @export data frame of the same form as lines1 and lines2, but consisting of an additional variable of whether the striation marks are matches
 #' @importFrom dplyr group_by %>% summarise
 #' @importFrom reshape2 melt
 #' @export
