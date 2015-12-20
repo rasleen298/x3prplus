@@ -10,6 +10,9 @@ striation_identifyXXX(lines1, lines2)
 \item{lines1, }{lines2 data frames as returned from get_peaks function. data frames are expected to have 
 the following variables: xmin, xmax, group, type, bullet, heights}
 }
+\value{
+data frame of the same form as lines1 and lines2, but consisting of an additional variable of whether the striation marks are matches
+}
 \description{
 Match striation marks across two cross sections based on previously identified peaks and valleys
 }
