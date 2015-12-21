@@ -104,6 +104,10 @@ get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 
 #' @import ggplot2
 #' @export
 get_peaks <- function(loessdata, smoothfactor = 35) {
+  y <- NULL
+  xmin <- NULL
+  xmax <- NULL
+  
     smoothed <- rollapply(loessdata$resid, smoothfactor, function(x) mean(x))
     smoothed_truefalse <- rollapply(smoothed, smoothfactor, function(x) mean(x))
     
@@ -142,6 +146,10 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
 
 #' @export
 fit_loess <- function(bullet, groove) {
+  value <- NULL
+  y <- NULL
+  chop <- NULL
+  
     bullet_filter <- subset(bullet, !is.na(value) & y > groove$groove[1] & y < groove$groove[2])
     my.loess <- loess(value ~ y, data = bullet_filter)
     bullet_filter$fitted <- fitted(my.loess)
@@ -184,6 +192,8 @@ plot_3d_land <- function(path, bullet, groove, x = 99.84) {
 #' @return subset of the input variable
 #' @export
 sample.x3d <- function(dframe, byxy=c(2,2)) {
+  x <- NULL
+  y <- NULL
   # use fortified data set
   # use only every byxy sample in x and y direction 
   if(length(byxy)==1) byxy <- rep(byxy, length=2)
@@ -472,6 +482,12 @@ bulletCheckCrossCutOld <- function(path, distance=25, x = seq(100, 225, by=dista
 #' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
 #' @export
 bulletGetMaxCMSXXX <- function(bullet1, bullet2, crosscut1, crosscut2, span=35) {
+  bullet <- NULL
+  y <- NULL
+  xmin <- NULL
+  xmax <- NULL
+  type <- NULL
+  
   lof1 <- processBullets(paths = bullet1, x = crosscut1, check=FALSE)
   lof2 <- processBullets(paths = bullet2, x = crosscut2, check=FALSE)
   
@@ -551,6 +567,8 @@ CMS <- function(match) {
 #' @importFrom dplyr mutate
 #' @export
 bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
+  bullet <- NULL
+  y <- NULL
   
   lof <- data %>% group_by(bullet) %>% mutate(
     l30 = smoothloess(y, resid, span = span)
@@ -567,6 +585,7 @@ bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
 #' @return list consisting of a) the maximal cross correlation, b) the lag resulting in the highest cross correlation, and c) same data frame as input, but y vectors are aligned for maximal correlation between the 
 #' @export
 bulletAlign <- function(data, value = "l30") {
+  bullet <- NULL
   b12 <- unique(data$bullet)
 
   if (length(b12) != 2) stop("Two surfaces should be compared\n\n")
@@ -616,6 +635,11 @@ bulletAlign <- function(data, value = "l30") {
 #' @importFrom reshape2 melt
 #' @export
 striation_identifyXXX <- function(lines1, lines2) {
+  group <- NULL
+  type <- NULL
+  bullet <- NULL
+  heights <- NULL
+  
   lines <- rbind(lines1, lines2)
   lines <- lines[order(lines$xmin),]
   
@@ -649,59 +673,59 @@ striation_identifyXXX <- function(lines1, lines2) {
   lines
 }
 
-#' Identify striation marks across two bullets
-#' 
-#' @param data dataset containing crosscuts of (exactly?) two bullets as given by \code{processBullets}.
-#' @param threshold where should the smoothed values be cut? Typically, residuals from the smooth have values in (-5,5). A default value of 0.75 is taken.
-#' @param limits vector of the form c(min, max) to indicate cut off values. Any values in the individual characteristics outside will be set to those limits.
-#' @return a data frame with information on all of the identified striation marks, and whether they match across the two bullets.
-#' @importFrom dplyr group_by %>% n summarise
-#' @export
-striation_identify_old <- function(data, threshold = 0.75, limits = c(-5,5)) {
-  # smooth
-  lofX <- bulletSmooth(data, span = 0.03, limits = limits)
-    
-  # cut at .75
-#  threshold <- .75
-  lofX$r05 <- threshold* sign(lofX$l30) * as.numeric(abs(lofX$l30) > threshold)
-  lofX$type <- factor(lofX$r05)
-  levels(lofX$type) <- c("groove", NA, "peak")
-  
-  matches <- lofX %>% group_by(y) %>% summarise(
-    potential = (length(unique(type)) == 1),
-    allnas = sum(is.na(type))/n(),
-    type1 = na.omit(type)[1],
-    type = paste(type, sep="|", collapse="|"),
-    n = n()
-  )
-  
-  matches$id <- cumsum(matches$allnas == 1) + 1
-  matches$lineid <- as.numeric(matches$allnas != 1) * matches$id
-  
-  isMatch <- function(id, type) {
-    if (id[1] == 0) return(FALSE)
-    #  browser()
-    types <- strsplit(type, split = "|", fixed=TRUE) 
-    t1 <- sapply(types, function(x) x[1])
-    t2 <- sapply(types, function(x) x[2])
-    if (all(t1 == "NA")) return(FALSE)
-    if (all(is.na(t2))) return(FALSE)
-    t2 <- na.omit(t2)
-    if (all(t2 == "NA")) return(FALSE)
-    
-    peak <- length(grep("peak", c(t1, t2))) > 0
-    groove <- length(grep("groove", c(t1, t2))) > 0
-    if (peak & groove) return(FALSE)
-    
-    return(TRUE)
-  }
-  
-  lines <- matches %>% group_by(lineid) %>% summarise(
-    meany = mean(y, na.rm=T),
-    miny = min(y, na.rm=T),
-    maxy = max(y, na.rm=T) + 1.5625,
-    match = isMatch(lineid, type),
-    type = type1[1]
-  )
-  subset(lines, lineid != 0)
-}
+# #' Identify striation marks across two bullets
+# #' 
+# #' @param data dataset containing crosscuts of (exactly?) two bullets as given by \code{processBullets}.
+# #' @param threshold where should the smoothed values be cut? Typically, residuals from the smooth have values in (-5,5). A default value of 0.75 is taken.
+# #' @param limits vector of the form c(min, max) to indicate cut off values. Any values in the individual characteristics outside will be set to those limits.
+# #' @return a data frame with information on all of the identified striation marks, and whether they match across the two bullets.
+# #' @importFrom dplyr group_by %>% n summarise
+# #' @export
+# striation_identify_old <- function(data, threshold = 0.75, limits = c(-5,5)) {
+#   # smooth
+#   lofX <- bulletSmooth(data, span = 0.03, limits = limits)
+#     
+#   # cut at .75
+# #  threshold <- .75
+#   lofX$r05 <- threshold* sign(lofX$l30) * as.numeric(abs(lofX$l30) > threshold)
+#   lofX$type <- factor(lofX$r05)
+#   levels(lofX$type) <- c("groove", NA, "peak")
+#   
+#   matches <- lofX %>% group_by(y) %>% summarise(
+#     potential = (length(unique(type)) == 1),
+#     allnas = sum(is.na(type))/n(),
+#     type1 = na.omit(type)[1],
+#     type = paste(type, sep="|", collapse="|"),
+#     n = n()
+#   )
+#   
+#   matches$id <- cumsum(matches$allnas == 1) + 1
+#   matches$lineid <- as.numeric(matches$allnas != 1) * matches$id
+#   
+#   isMatch <- function(id, type) {
+#     if (id[1] == 0) return(FALSE)
+#     #  browser()
+#     types <- strsplit(type, split = "|", fixed=TRUE) 
+#     t1 <- sapply(types, function(x) x[1])
+#     t2 <- sapply(types, function(x) x[2])
+#     if (all(t1 == "NA")) return(FALSE)
+#     if (all(is.na(t2))) return(FALSE)
+#     t2 <- na.omit(t2)
+#     if (all(t2 == "NA")) return(FALSE)
+#     
+#     peak <- length(grep("peak", c(t1, t2))) > 0
+#     groove <- length(grep("groove", c(t1, t2))) > 0
+#     if (peak & groove) return(FALSE)
+#     
+#     return(TRUE)
+#   }
+#   
+#   lines <- matches %>% group_by(lineid) %>% summarise(
+#     meany = mean(y, na.rm=T),
+#     miny = min(y, na.rm=T),
+#     maxy = max(y, na.rm=T) + 1.5625,
+#     match = isMatch(lineid, type),
+#     type = type1[1]
+#   )
+#   subset(lines, lineid != 0)
+# }
