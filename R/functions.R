@@ -33,12 +33,22 @@ get_crosscut <- function(path, x = 243.75) {
   return(dbr111.fixx)
 }
   
+#' Deprecated function use get_crosscut
+#' 
+#' @param path
+#' @param x
 #' @export
 get_bullet <- function(path, x = 243.75) {
   cat("Use function get_crosscut instead of get_bullet\n\n")
   get_crosscut(path, x=x)
 }
 
+#' Find the grooves of a bullet land
+#' 
+#' @param bullet
+#' @param smoothfactor
+#' @param smoothplot
+#' @param adjust 
 #' @export
 #' @import ggplot2
 #' @importFrom zoo rollapply
@@ -144,6 +154,11 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
                 lines=lines, plot = p))
 }
 
+
+#' Fit a loess curve to a bullet data frame
+#' 
+#' @param bullet
+#' @param groove
 #' @export
 fit_loess <- function(bullet, groove) {
   value <- NULL
@@ -364,6 +379,12 @@ processBullets <- function(paths, x = 100, check = FALSE) {
   LOF %>% bind_rows()
 }
 
+#' Predict smooth from a fit
+#' 
+#' @param x
+#' @param y
+#' @param span
+#' @param sub
 #' @export
 smoothloess <- function(x, y, span, sub = 2) {
   dat <- data.frame(x, y)
