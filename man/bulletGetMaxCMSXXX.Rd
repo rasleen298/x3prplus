@@ -7,11 +7,15 @@
 bulletGetMaxCMSXXX(bullet1, bullet2, crosscut1, crosscut2, span = 35)
 }
 \arguments{
-\item{bullet1, }{bullet2 paths to x3pr files.}
+\item{bullet1}{path to x3p file of the first bullet-land.}
 
-\item{crosscut1, }{crosscut2 crosscuts at which to evaluate the match.}
+\item{bullet2}{path to x3p file of the second bullet-land.}
 
-\item{span}{smoothfactor to use for assessing peaks.}
+\item{crosscut1}{cross section at which to evaluate the match for the first bullet-land surface.}
+
+\item{crosscut2}{cross section at which to evaluate the match for the second bullet-land surface}
+
+\item{span}{positive number  for the smoothfactor to use for assessing peaks.}
 }
 \value{
 list of matching parameters, data set of the identified striae, and the aligned data sets.

@@ -12,9 +12,9 @@ bulletCheckCrossCut(path, distance = 25, xlimits = c(50, 500),
 
 \item{distance}{positive numeric value indicating the distance between cross sections to use for a comparison}
 
-\item{minccf}{minimal value of cross correlation to indicate a stable region}
+\item{xlimits}{vector of values between which to check for cross sections in a stable region}
 
-\item{x}{vector of values to check for cross sections}
+\item{minccf}{minimal value of cross correlation to indicate a stable region}
 }
 \description{
 Should be changed: x should just indicate lower and upper limit. That is cleaner and should speed things up as well.

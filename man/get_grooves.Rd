@@ -7,7 +7,9 @@
 get_grooves(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10)
 }
 \arguments{
-\item{adjust}{}
+\item{bullet}{data frame with topological data}
+
+\item{adjust}{positive number}
 }
 \description{
 Find the grooves of a bullet land

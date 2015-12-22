@@ -3,8 +3,8 @@
 \docType{data}
 \name{b1}
 \alias{b1}
-\title{3d topological surface measurements for one land of bullet}
-\format{An object of class \code{list} of length 2.}
+\title{3d topological surface measurements for one land of a bullet from the Hamby study}
+\format{a list}
 \usage{
 b1
 }

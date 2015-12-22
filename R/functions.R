@@ -45,10 +45,10 @@ get_bullet <- function(path, x = 243.75) {
 
 #' Find the grooves of a bullet land
 #' 
-#' @param bullet
+#' @param bullet data frame with topological data
 #' @param smoothfactor
 #' @param smoothplot
-#' @param adjust 
+#' @param adjust positive number 
 #' @export
 #' @import ggplot2
 #' @importFrom zoo rollapply
@@ -399,7 +399,7 @@ smoothloess <- function(x, y, span, sub = 2) {
 #' Should be changed: x should just indicate lower and upper limit. That is cleaner and should speed things up as well.
 #' @param path path to an x3p file
 #' @param distance positive numeric value indicating the distance between cross sections to use for a comparison
-#' @param x vector of values to check for cross sections
+#' @param xlimits vector of values between which to check for cross sections in a stable region
 #' @param minccf minimal value of cross correlation to indicate a stable region
 #' @export
 bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf = 0.9) {
@@ -439,40 +439,40 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
   return (NA)
 }
 
-#' keep for backup right now
-bulletCheckCrossCutOld <- function(path, distance=25, x = seq(100, 225, by=distance)) {
-  crosscuts <- x
-#  lof <- processBullets(path, x = x, check=FALSE)
-
-    
-  list_of_fits <- lapply(crosscuts, function(x) {
-    br111 <- get_crosscut(path, x = x)
-    br111.groove <- get_grooves(br111)
-#    br111.groove$plot
-#    browser()
-    fit_loess(br111, br111.groove)
-  })
-  lof <- lapply(list_of_fits, function(x) x$resid$data) %>% bind_rows
-  lof$path <- path
-  path <- gsub("app.*//", "", as.character(path))
-  lof$bullet <- gsub(".x3p", "", path)
-  
-  lof$bullet <- paste(lof$bullet, lof$x)
-  
-  ccfs <- sapply(1:length(crosscuts[-1]), function(i) {
-    b2 <- subset(lof, x %in% crosscuts[i:(i+1)])
-    lofX <- bulletSmooth(b2)
-    bulletAlign(lofX)$ccf
-  })
-  
-  idx <- which(ccfs > .9)
-  if(length(idx) == 0) {
-    return(bulletCheckCrossCutOld(path=path, x=x+100))
-  }
-  if (!is.null(idx)) 
-    return(crosscuts[idx[1]])
-  return(NULL)
-}
+# #' keep for backup right now
+# bulletCheckCrossCutOld <- function(path, distance=25, x = seq(100, 225, by=distance)) {
+#   crosscuts <- x
+# #  lof <- processBullets(path, x = x, check=FALSE)
+# 
+#     
+#   list_of_fits <- lapply(crosscuts, function(x) {
+#     br111 <- get_crosscut(path, x = x)
+#     br111.groove <- get_grooves(br111)
+# #    br111.groove$plot
+# #    browser()
+#     fit_loess(br111, br111.groove)
+#   })
+#   lof <- lapply(list_of_fits, function(x) x$resid$data) %>% bind_rows
+#   lof$path <- path
+#   path <- gsub("app.*//", "", as.character(path))
+#   lof$bullet <- gsub(".x3p", "", path)
+#   
+#   lof$bullet <- paste(lof$bullet, lof$x)
+#   
+#   ccfs <- sapply(1:length(crosscuts[-1]), function(i) {
+#     b2 <- subset(lof, x %in% crosscuts[i:(i+1)])
+#     lofX <- bulletSmooth(b2)
+#     bulletAlign(lofX)$ccf
+#   })
+#   
+#   idx <- which(ccfs > .9)
+#   if(length(idx) == 0) {
+#     return(bulletCheckCrossCutOld(path=path, x=x+100))
+#   }
+#   if (!is.null(idx)) 
+#     return(crosscuts[idx[1]])
+#   return(NULL)
+# }
 
 
 # #' Identify the number of maximum CMS between two bullet lands
@@ -497,9 +497,11 @@ bulletCheckCrossCutOld <- function(path, distance=25, x = seq(100, 225, by=dista
 
 #' Identify the number of maximum CMS between two bullet lands
 #' 
-#' @param bullet1, bullet2 paths to x3pr files. 
-#' @param crosscut1, crosscut2 crosscuts at which to evaluate the match.
-#' @param span  smoothfactor to use for assessing peaks. 
+#' @param bullet1 path to x3p file of the first bullet-land. 
+#' @param bullet2 path to x3p file of the second bullet-land.
+#' @param crosscut1 cross section at which to evaluate the match for the first bullet-land surface.
+#' @param crosscut2 cross section at which to evaluate the match for the second bullet-land surface
+#' @param span positive number  for the smoothfactor to use for assessing peaks. 
 #' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
 #' @export
 bulletGetMaxCMSXXX <- function(bullet1, bullet2, crosscut1, crosscut2, span=35) {
@@ -660,6 +662,7 @@ striation_identifyXXX <- function(lines1, lines2) {
   type <- NULL
   bullet <- NULL
   heights <- NULL
+  n <- NULL
   
   lines <- rbind(lines1, lines2)
   lines <- lines[order(lines$xmin),]
