@@ -157,8 +157,12 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
 
 #' Fit a loess curve to a bullet data frame
 #' 
+#' First, the surface measurements of the bullet land is trimmed to be within left and right groove as specified by vector \code{groove}.
+#' A loess is fit to the remaining surface measurements and residuals are calculated.
+#' The most extreme 0.5% of residuals are then trimmed from the result. The result is called the sigature of the bullet land.
 #' @param bullet
-#' @param groove
+#' @param groove vector of two numeric values indicating the location of the left and right groove. 
+#' @return a list of a data frame of the original bullet measurements extended by loess fit and residuals and two plots: a plot of the fit, and a plot of the bullet's land signature. 
 #' @export
 fit_loess <- function(bullet, groove) {
   value <- NULL
