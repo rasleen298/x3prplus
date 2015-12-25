@@ -182,12 +182,18 @@ fit_loess <- function(bullet, groove) {
     
     bullet_filter <- subset(bullet_filter, !chop)
     
-    p2 <- qplot(data = bullet_filter, y, resid) +
+    poly <- with(bullet_filter, 
+                 data.frame(x=c(y, rev(y)), 
+                            y=c(resid-1.96*se, rev(resid+1.96*se))))
+    p2 <- ggplot(aes(x=y, y=resid), data=bullet_filter) + 
+      geom_polygon(aes(x=x,y=y), fill="#0066cc", data=poly) +
+      geom_line(size=0.1) +
         theme_bw() 
 
     p1 <- qplot(data = bullet_filter, y, value) +
         theme_bw() +
         geom_smooth()
+
 
     #p2 <- qplot(data = bullet_filter, y, resid, geom="line") +
     #    theme_bw()
