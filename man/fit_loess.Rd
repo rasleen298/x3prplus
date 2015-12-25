@@ -10,7 +10,7 @@ fit_loess(bullet, groove)
 \item{groove}{vector of two numeric values indicating the location of the left and right groove.}
 }
 \value{
-a list of a data frame of the original bullet measurements extended by loess fit and residuals and two plots: a plot of the fit, and a plot of the bullet's land signature.
+a list of a data frame of the original bullet measurements extended by loess fit, residuals, and standard errors and two plots: a plot of the fit, and a plot of the bullet's land signature.
 }
 \description{
 First, the surface measurements of the bullet land is trimmed to be within left and right groove as specified by vector \code{groove}.

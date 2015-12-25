@@ -162,7 +162,7 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
 #' The most extreme 0.5% of residuals are then trimmed from the result. The result is called the sigature of the bullet land.
 #' @param bullet
 #' @param groove vector of two numeric values indicating the location of the left and right groove. 
-#' @return a list of a data frame of the original bullet measurements extended by loess fit and residuals and two plots: a plot of the fit, and a plot of the bullet's land signature. 
+#' @return a list of a data frame of the original bullet measurements extended by loess fit, residuals, and standard errors and two plots: a plot of the fit, and a plot of the bullet's land signature. 
 #' @export
 fit_loess <- function(bullet, groove) {
   value <- NULL
@@ -173,6 +173,7 @@ fit_loess <- function(bullet, groove) {
     my.loess <- loess(value ~ y, data = bullet_filter)
     bullet_filter$fitted <- fitted(my.loess)
     bullet_filter$resid <- resid(my.loess)
+    bullet_filter$se <- predict(my.loess, se=TRUE)$se.fit
     
     # filter out most extreme residuals
     bullet_filter$abs_resid <-  abs(bullet_filter$resid)
@@ -187,7 +188,7 @@ fit_loess <- function(bullet, groove) {
     p1 <- qplot(data = bullet_filter, y, value) +
         theme_bw() +
         geom_smooth()
-    
+
     #p2 <- qplot(data = bullet_filter, y, resid, geom="line") +
     #    theme_bw()
     
@@ -607,6 +608,7 @@ bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
 
 #' Align two surface cross cuts according to maximal correlation
 #' 
+#' 
 #' @param data data frame consisting of at least two surface crosscuts as given by function \code{bulletSmooth}.
 #' @param value string of the variable to match. Defaults to l30, the variable returned from function \code{bulletSmooth}.
 #' @return list consisting of a) the maximal cross correlation, b) the lag resulting in the highest cross correlation, and c) same data frame as input, but y vectors are aligned for maximal correlation between the 
@@ -618,7 +620,8 @@ bulletAlign <- function(data, value = "l30") {
   if (length(b12) != 2) stop("Two surfaces should be compared\n\n")
   
   data$val <- data.frame(data)[, value]
-  
+  miny <- min(data$y, na.rm=T)
+    
   subLOFx1 <- subset(data, bullet==b12[1])
   subLOFx2 <- subset(data, bullet==b12[2]) 
   
@@ -631,8 +634,9 @@ bulletAlign <- function(data, value = "l30") {
   lag <- ccf$lag[which.max(ccf$acf)]
   incr <- min(diff(sort(unique(subLOFx1$y))))
   
-  subLOFx1$y <- subLOFx1$y -  lag * incr # amount of shifting should just be lag * y.inc
+  subLOFx1$y <- subLOFx1$y -  lag * incr # amount of shifting 
   bullets <- rbind(data.frame(subLOFx1), data.frame(subLOFx2))
+#  bullets$y <- bullets$y + miny # we can, but we don't have to shift the series back. This is rather cosmetic.
   list(ccf=max(ccf$acf), lag = lag * incr, bullets=bullets)
 }
 
