@@ -154,12 +154,39 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
                 lines=lines, plot = p))
 }
 
+#' @export
+boot_fit_loess <- function(bullet, groove, B=1000, alpha=0.95) {
+  value <- NULL
+  y <- NULL
+
+  bullet_filter <- subset(bullet, !is.na(value) & y > groove$groove[1] & y < groove$groove[2])
+  my.loess <- loess(value ~ y, data = bullet_filter)
+  bullet_filter$fitted <- fitted(my.loess)
+  bullet_filter$resid <- resid(my.loess)
+
+  N <- nrow(bullet_filter)
+  resids <- plyr::rdply(B, function(n) {
+    bf <- bullet_filter[sample(N,N, replace=TRUE),]
+    my.loess <- loess(value ~ y, data = bf)
+    
+    dframe <- data.frame(y=bullet_filter$y, fitted=predict(my.loess, newdata=bullet_filter))
+    dframe$resid <- bullet_filter$value-dframe$fitted
+    dframe
+  })
+  
+  quantiles <- resids %>% group_by(y) %>% summarize(
+    nas = sum(is.na(resid)),
+    low = quantile(resid, probs=(1-alpha)/2, na.rm=TRUE),
+    high = quantile(resid, probs=1 - (1-alpha)/2, na.rm=TRUE)
+  )
+  quantiles
+}
 
 #' Fit a loess curve to a bullet data frame
 #' 
 #' First, the surface measurements of the bullet land is trimmed to be within left and right groove as specified by vector \code{groove}.
-#' A loess is fit to the remaining surface measurements and residuals are calculated.
-#' The most extreme 0.5% of residuals are then trimmed from the result. The result is called the sigature of the bullet land.
+#' A loess regression is fit to the remaining surface measurements and residuals are calculated.
+#' The result is called the signature of the bullet land.
 #' @param bullet
 #' @param groove vector of two numeric values indicating the location of the left and right groove. 
 #' @return a list of a data frame of the original bullet measurements extended by loess fit, residuals, and standard errors and two plots: a plot of the fit, and a plot of the bullet's land signature. 
@@ -177,10 +204,10 @@ fit_loess <- function(bullet, groove) {
     
     # filter out most extreme residuals
     bullet_filter$abs_resid <-  abs(bullet_filter$resid)
-    cutoff <- quantile(bullet_filter$abs_resid, probs = c(0.995))
-    bullet_filter$chop <- bullet_filter$abs_resid > cutoff
+#    cutoff <- quantile(bullet_filter$abs_resid, probs = c(0.995))
+#    bullet_filter$chop <- bullet_filter$abs_resid > cutoff
     
-    bullet_filter <- subset(bullet_filter, !chop)
+#    bullet_filter <- subset(bullet_filter, !chop)
     
     poly <- with(bullet_filter, 
                  data.frame(x=c(y, rev(y)), 
@@ -188,7 +215,7 @@ fit_loess <- function(bullet, groove) {
     p2 <- ggplot(aes(x=y, y=resid), data=bullet_filter) + 
  #     geom_polygon(aes(x=x,y=y), fill="#0066cc", data=poly) +
  #      geom_line(size=0.1) +
-      geom_point()+ 
+      geom_line()+ 
         theme_bw() 
 
     p1 <- qplot(data = bullet_filter, y, value) +
