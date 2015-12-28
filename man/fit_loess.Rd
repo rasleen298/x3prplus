@@ -15,6 +15,7 @@ a list of a data frame of the original bullet measurements extended by loess fit
 \description{
 First, the surface measurements of the bullet land is trimmed to be within left and right groove as specified by vector \code{groove}.
 A loess regression is fit to the remaining surface measurements and residuals are calculated.
+The most extreme 0.25% of residuals are filtered from further consideration.
 The result is called the signature of the bullet land.
 }
 

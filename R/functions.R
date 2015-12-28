@@ -186,6 +186,7 @@ boot_fit_loess <- function(bullet, groove, B=1000, alpha=0.95) {
 #' 
 #' First, the surface measurements of the bullet land is trimmed to be within left and right groove as specified by vector \code{groove}.
 #' A loess regression is fit to the remaining surface measurements and residuals are calculated.
+#' The most extreme 0.25% of residuals are filtered from further consideration.
 #' The result is called the signature of the bullet land.
 #' @param bullet
 #' @param groove vector of two numeric values indicating the location of the left and right groove. 
@@ -204,10 +205,10 @@ fit_loess <- function(bullet, groove) {
     
     # filter out most extreme residuals
     bullet_filter$abs_resid <-  abs(bullet_filter$resid)
-#    cutoff <- quantile(bullet_filter$abs_resid, probs = c(0.995))
-#    bullet_filter$chop <- bullet_filter$abs_resid > cutoff
+    cutoff <- quantile(bullet_filter$abs_resid, probs = c(0.9975))
+    bullet_filter$chop <- bullet_filter$abs_resid > cutoff
     
-#    bullet_filter <- subset(bullet_filter, !chop)
+    bullet_filter <- subset(bullet_filter, !chop)
     
     poly <- with(bullet_filter, 
                  data.frame(x=c(y, rev(y)), 
