@@ -18,12 +18,13 @@ fortify_x3p <- function(x3d) {
 #' Read a crosscut from a 3d surface file
 #' 
 #' @importFrom x3pr read.x3p
-#' @param path path to an x3p file
+#' @param path path to an x3p file. The path will only be considered, if bullet is not specified.
 #' @param x level of the crosscut to be taken. If this level does not exist, the crosscut with the closest level is returned.
+#' @param bullet alternative access to the surface measurements. 
 #' @return data frame 
 #' @export
-get_crosscut <- function(path, x = 243.75) {
-  br111 <- read.x3p(path)
+get_crosscut <- function(path = NULL, x = 243.75, bullet = NULL) {
+  if (is.null(bullet)) bullet <- read.x3p(path)
   dbr111 <- fortify_x3p(br111)
   
   pickx <- dbr111$x[which.min(abs(x - unique(dbr111$x)))]
