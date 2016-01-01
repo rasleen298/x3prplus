@@ -25,7 +25,7 @@ fortify_x3p <- function(x3d) {
 #' @export
 get_crosscut <- function(path = NULL, x = 243.75, bullet = NULL) {
   if (is.null(bullet)) bullet <- read.x3p(path)
-  dbr111 <- fortify_x3p(br111)
+  dbr111 <- fortify_x3p(bullet)
   
   pickx <- dbr111$x[which.min(abs(x - unique(dbr111$x)))]
   
@@ -644,7 +644,7 @@ bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
 
 #' Align two surface cross cuts according to maximal correlation
 #' 
-#' 
+#' The bullet with the first name serves as a reference, the second bullet is shifted.
 #' @param data data frame consisting of at least two surface crosscuts as given by function \code{bulletSmooth}.
 #' @param value string of the variable to match. Defaults to l30, the variable returned from function \code{bulletSmooth}.
 #' @return list consisting of a) the maximal cross correlation, b) the lag resulting in the highest cross correlation, and c) same data frame as input, but y vectors are aligned for maximal correlation between the 
@@ -666,11 +666,12 @@ bulletAlign <- function(data, value = "l30") {
   subLOFx1$y <- subLOFx1$y - min(subLOFx1$y)
   subLOFx2$y <- subLOFx2$y - min(subLOFx2$y)
 
-  ccf <- ccf(subLOFx1$val, subLOFx2$val, plot = FALSE, lag.max=150, na.action = na.omit)
+  ccf <- ccf(subLOFx1$val, subLOFx2$val, plot = FALSE, lag.max=150, 
+             na.action = na.omit)
   lag <- ccf$lag[which.max(ccf$acf)]
   incr <- min(diff(sort(unique(subLOFx1$y))))
   
-  subLOFx1$y <- subLOFx1$y -  lag * incr # amount of shifting 
+  subLOFx2$y <- subLOFx2$y +  lag * incr # amount of shifting 
   bullets <- rbind(data.frame(subLOFx1), data.frame(subLOFx2))
 #  bullets$y <- bullets$y + miny # we can, but we don't have to shift the series back. This is rather cosmetic.
   list(ccf=max(ccf$acf), lag = lag * incr, bullets=bullets)
