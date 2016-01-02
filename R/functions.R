@@ -348,77 +348,91 @@ predSmooth <- function(x, y) {
 #' x3p file of a 3d topological bullet surface is processed at surface crosscut x, 
 #' the bullet grooves in the crosscuts are identified and removed, and a loess smooth 
 #' is used (see \code{?loess} for details) to remove the big structure. 
-#' @param paths file paths to the x3p files
+#' @param bullet file as returned from read.x3p
 #' @param x (vector) of surface crosscuts to process. 
-#' @param check boolean indicating whether the crosscut should be checked for stability. Set to FALSE by default.
 #' @return data frame
 #' @importFrom dplyr bind_rows %>%
 #' @export
-processBullets <- function(paths, x = 100, check = FALSE) {
-  if (check) {
-    if (length(x) > 1) {
-      crosscuts <- x
-      LOF <- lapply(1:length(crosscuts), function(i) {
-        path <- paths[i]
-        
-        br111 <- get_crosscut(path, x = crosscuts[i])
-        br111.groove <- get_grooves(br111)
-        br111.groove$plot
-        lof <- fit_loess(br111, br111.groove)$resid$data
-        
-        lof$path <- path
-        path <- gsub("app.*//", "", as.character(path))
-        lof$bullet <- gsub(".x3p", "", path)
-        
-        #      browser()
-        lof
-      })
-      
-    } else {
-    
-    crosscuts <- sapply(paths, function(path)
-      bulletCheckCrossCut(path, distance=25, xlimits = c(x[1], 750))) 
-    
-    LOF <- lapply(1:length(crosscuts), function(i) {
-      path <- paths[i]
-
-      br111 <- get_crosscut(path, x = crosscuts[i])
-      br111.groove <- get_grooves(br111)
-      br111.groove$plot
-      lof <- fit_loess(br111, br111.groove)$resid$data
-
-      lof$path <- path
-      path <- gsub("app.*//", "", as.character(path))
-      lof$bullet <- gsub(".x3p", "", path)
-      
-#      browser()
-      lof
-    })
-    }
-  } else {
-    br111 <- read.x3p(paths[1])
-    crosscuts <- unique(fortify_x3p(br111)$x)
-    crosscuts <- crosscuts[crosscuts >= min(x)]
-    crosscuts <- crosscuts[crosscuts <= max(x)]
-    if (length(x) > 2) crosscuts <- crosscuts[crosscuts %in% x]
+processBullets <- function(bullet, x = 100) {
+  crosscuts <- unique(fortify_x3p(bullet)$x)
+  crosscuts <- crosscuts[crosscuts >= min(x)]
+  crosscuts <- crosscuts[crosscuts <= max(x)]
+  if (length(x) > 2) crosscuts <- crosscuts[crosscuts %in% x]
   
-    LOF <- lapply(paths, function(path) {
-      list_of_fits <- lapply(crosscuts, function(x) {
-        br111 <- get_crosscut(path, x = x)
-        br111.groove <- get_grooves(br111)
-        br111.groove$plot
-        fit_loess(br111, br111.groove)
-      })
-      lof <- lapply(list_of_fits, function(x) x$resid$data) %>% bind_rows
-      lof$path <- path
-      path <- gsub("app.*//", "", as.character(path))
-      lof$bullet <- gsub(".x3p", "", path)
-      
-      lof
-    })
-  }
-  LOF %>% bind_rows()
+  list_of_fits <- lapply(crosscuts, function(x) {
+    br111 <- get_crosscut(path = NULL, x = x, bullet = bullet)
+    br111.groove <- get_grooves(br111)
+    fit_loess(br111, br111.groove)$resid$data
+  })
+  lof <- list_of_fits %>% bind_rows
+  
+  data.frame(lof, bullet = bullet$path, stringsAsFactors = FALSE)
 }
+# processBullets <- function(paths, x = 100, check = FALSE) {
+#   if (check) {
+#     if (length(x) > 1) {
+#       crosscuts <- x
+#       LOF <- lapply(1:length(crosscuts), function(i) {
+#         path <- paths[i]
+#         
+#         br111 <- get_crosscut(path, x = crosscuts[i])
+#         br111.groove <- get_grooves(br111)
+#         br111.groove$plot
+#         lof <- fit_loess(br111, br111.groove)$resid$data
+#         
+#         lof$path <- path
+#         path <- gsub("app.*//", "", as.character(path))
+#         lof$bullet <- gsub(".x3p", "", path)
+#         
+#         #      browser()
+#         lof
+#       })
+#       
+#     } else {
+#     
+#     crosscuts <- sapply(paths, function(path)
+#       bulletCheckCrossCut(path, distance=25, xlimits = c(x[1], 750))) 
+#     
+#     LOF <- lapply(1:length(crosscuts), function(i) {
+#       path <- paths[i]
+# 
+#       br111 <- get_crosscut(path, x = crosscuts[i])
+#       br111.groove <- get_grooves(br111)
+#       br111.groove$plot
+#       lof <- fit_loess(br111, br111.groove)$resid$data
+# 
+#       lof$path <- path
+#       path <- gsub("app.*//", "", as.character(path))
+#       lof$bullet <- gsub(".x3p", "", path)
+#       
+# #      browser()
+#       lof
+#     })
+#     }
+#   } else {
+#     br111 <- read.x3p(paths[1])
+#     crosscuts <- unique(fortify_x3p(br111)$x)
+#     crosscuts <- crosscuts[crosscuts >= min(x)]
+#     crosscuts <- crosscuts[crosscuts <= max(x)]
+#     if (length(x) > 2) crosscuts <- crosscuts[crosscuts %in% x]
+#   
+#     LOF <- lapply(paths, function(path) {
+#       list_of_fits <- lapply(crosscuts, function(x) {
+#         br111 <- get_crosscut(path, x = x)
+#         br111.groove <- get_grooves(br111)
+#         br111.groove$plot
+#         fit_loess(br111, br111.groove)
+#       })
+#       lof <- lapply(list_of_fits, function(x) x$resid$data) %>% bind_rows
+#       lof$path <- path
+#       path <- gsub("app.*//", "", as.character(path))
+#       lof$bullet <- gsub(".x3p", "", path)
+#       
+#       lof
+#     })
+#   }
+#   LOF %>% bind_rows()
+# }
 
 #' Predict smooth from a fit
 #' 

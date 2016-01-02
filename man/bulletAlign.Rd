@@ -15,6 +15,6 @@ bulletAlign(data, value = "l30")
 list consisting of a) the maximal cross correlation, b) the lag resulting in the highest cross correlation, and c) same data frame as input, but y vectors are aligned for maximal correlation between the
 }
 \description{
-Align two surface cross cuts according to maximal correlation
+The bullet with the first name serves as a reference, the second bullet is shifted.
 }
 
