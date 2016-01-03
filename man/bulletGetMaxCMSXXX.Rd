@@ -4,16 +4,12 @@
 \alias{bulletGetMaxCMSXXX}
 \title{Identify the number of maximum CMS between two bullet lands}
 \usage{
-bulletGetMaxCMSXXX(bullet1, bullet2, crosscut1, crosscut2, span = 35)
+bulletGetMaxCMSXXX(lof1, lof2, span = 35)
 }
 \arguments{
-\item{bullet1}{path to x3p file of the first bullet-land.}
+\item{lof1}{dataframe of smoothed first signature}
 
-\item{bullet2}{path to x3p file of the second bullet-land.}
-
-\item{crosscut1}{cross section at which to evaluate the match for the first bullet-land surface.}
-
-\item{crosscut2}{cross section at which to evaluate the match for the second bullet-land surface}
+\item{lof2}{dataframe of smoothed second signature}
 
 \item{span}{positive number  for the smoothfactor to use for assessing peaks.}
 }
