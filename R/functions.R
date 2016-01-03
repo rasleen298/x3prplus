@@ -349,11 +349,12 @@ predSmooth <- function(x, y) {
 #' the bullet grooves in the crosscuts are identified and removed, and a loess smooth 
 #' is used (see \code{?loess} for details) to remove the big structure. 
 #' @param bullet file as returned from read.x3p
+#' @param name name of the bullet
 #' @param x (vector) of surface crosscuts to process. 
 #' @return data frame
 #' @importFrom dplyr bind_rows %>%
 #' @export
-processBullets <- function(bullet, x = 100) {
+processBullets <- function(bullet, name = "", x = 100) {
   crosscuts <- unique(fortify_x3p(bullet)$x)
   crosscuts <- crosscuts[crosscuts >= min(x)]
   crosscuts <- crosscuts[crosscuts <= max(x)]
@@ -366,7 +367,7 @@ processBullets <- function(bullet, x = 100) {
   })
   lof <- list_of_fits %>% bind_rows
   
-  data.frame(lof, bullet = bullet$path, stringsAsFactors = FALSE)
+  data.frame(lof, bullet = name, stringsAsFactors = FALSE)
 }
 # processBullets <- function(paths, x = 100, check = FALSE) {
 #   if (check) {
