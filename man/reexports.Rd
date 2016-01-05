@@ -4,6 +4,7 @@
 \name{reexports}
 \alias{read.x3p}
 \alias{reexports}
+\alias{xmlRoot}
 \title{Objects exported from other packages}
 \description{
 These objects are imported from other packages. Follow the links
@@ -11,6 +12,8 @@ below to see their documentation.
 
 \describe{
   \item{x3pr}{\code{\link[x3pr]{read.x3p}}}
+
+  \item{XML}{\code{\link[XML]{xmlRoot}}}
 }}
 \keyword{internal}
 
