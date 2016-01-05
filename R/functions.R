@@ -1,8 +1,3 @@
-#' @import XML
-#' @importFrom x3pr read.x3p
-#' @export
-x3pr::read.x3p
-
 #' Convert a list of x3d file into a data frame
 #' 
 #' x3d format consists of a list with header info and a 2d matrix of scan depths. 
