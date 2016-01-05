@@ -1,10 +1,7 @@
+#' @import XML
 #' @importFrom x3pr read.x3p
 #' @export
 x3pr::read.x3p
-
-#' @importFrom XML xmlRoot
-#' @export
-XML::xmlRoot
 
 #' Convert a list of x3d file into a data frame
 #' 
