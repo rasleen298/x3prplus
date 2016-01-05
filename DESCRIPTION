@@ -13,6 +13,7 @@ Imports:
     x3pr,
     zoo,
     ggplot2,
+    plyr,
     dplyr,
     reshape2,
     plotly

@@ -6,6 +6,11 @@
 \usage{
 get_bullet(path, x = 243.75)
 }
+\arguments{
+\item{path}{The path to the x3p file}
+
+\item{x}{The crosscut value}
+}
 \description{
 Deprecated function use get_crosscut
 }

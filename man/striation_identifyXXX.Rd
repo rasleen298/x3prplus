@@ -7,7 +7,10 @@
 striation_identifyXXX(lines1, lines2)
 }
 \arguments{
-\item{lines1, }{lines2 data frames as returned from get_peaks function. data frames are expected to have 
+\item{lines1}{data frame as returned from get_peaks function. data frames are expected to have 
+the following variables: xmin, xmax, group, type, bullet, heights}
+
+\item{lines2}{data frame as returned from get_peaks function. data frames are expected to have 
 the following variables: xmin, xmax, group, type, bullet, heights}
 }
 \value{

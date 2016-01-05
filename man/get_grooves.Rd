@@ -9,6 +9,10 @@ get_grooves(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10)
 \arguments{
 \item{bullet}{data frame with topological data}
 
+\item{smoothfactor}{The smoothing window to use}
+
+\item{smoothplot}{Whether to show smoothed data on the resulting plot}
+
 \item{adjust}{positive number}
 }
 \description{

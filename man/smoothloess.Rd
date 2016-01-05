@@ -6,6 +6,15 @@
 \usage{
 smoothloess(x, y, span, sub = 2)
 }
+\arguments{
+\item{x}{X values to use}
+
+\item{y}{Y values to use}
+
+\item{span}{The span of the loess fit}
+
+\item{sub}{Subsample factor}
+}
 \description{
 Predict smooth from a fit
 }

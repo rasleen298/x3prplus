@@ -4,10 +4,12 @@
 \alias{processBullets}
 \title{Process x3p file}
 \usage{
-processBullets(bullet, x = 100)
+processBullets(bullet, name = "", x = 100)
 }
 \arguments{
 \item{bullet}{file as returned from read.x3p}
+
+\item{name}{name of the bullet}
 
 \item{x}{(vector) of surface crosscuts to process.}
 }

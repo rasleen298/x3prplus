@@ -1,3 +1,7 @@
+#' @importFrom x3pr read.x3p
+#' @export
+x3pr::read.x3p
+
 #' Convert a list of x3d file into a data frame
 #' 
 #' x3d format consists of a list with header info and a 2d matrix of scan depths. 
@@ -36,8 +40,8 @@ get_crosscut <- function(path = NULL, x = 243.75, bullet = NULL) {
   
 #' Deprecated function use get_crosscut
 #' 
-#' @param path
-#' @param x
+#' @param path The path to the x3p file
+#' @param x The crosscut value
 #' @export
 get_bullet <- function(path, x = 243.75) {
   cat("Use function get_crosscut instead of get_bullet\n\n")
@@ -47,8 +51,8 @@ get_bullet <- function(path, x = 243.75) {
 #' Find the grooves of a bullet land
 #' 
 #' @param bullet data frame with topological data
-#' @param smoothfactor
-#' @param smoothplot
+#' @param smoothfactor The smoothing window to use
+#' @param smoothplot Whether to show smoothed data on the resulting plot
 #' @param adjust positive number 
 #' @export
 #' @import ggplot2
@@ -155,7 +159,15 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
                 lines=lines, plot = p))
 }
 
+#' Fit a LOESS model with bootstrap samples
+#' 
+#' @param bullet Bullet as returned from fortify_x3p
+#' @param groove Groove as returned from get_grooves
+#' @param B number of Bootstrap samples
+#' @param alpha The significance level
 #' @export
+#' @importFrom plyr rdply
+#' @importFrom dplyr summarize
 boot_fit_loess <- function(bullet, groove, B=1000, alpha=0.95) {
   value <- NULL
   y <- NULL
@@ -189,7 +201,7 @@ boot_fit_loess <- function(bullet, groove, B=1000, alpha=0.95) {
 #' A loess regression is fit to the remaining surface measurements and residuals are calculated.
 #' The most extreme 0.25% of residuals are filtered from further consideration.
 #' The result is called the signature of the bullet land.
-#' @param bullet
+#' @param bullet The bullet object as returned from fortify_x3p
 #' @param groove vector of two numeric values indicating the location of the left and right groove. 
 #' @return a list of a data frame of the original bullet measurements extended by loess fit, residuals, and standard errors and two plots: a plot of the fit, and a plot of the bullet's land signature. 
 #' @export
@@ -437,10 +449,10 @@ processBullets <- function(bullet, name = "", x = 100) {
 
 #' Predict smooth from a fit
 #' 
-#' @param x
-#' @param y
-#' @param span
-#' @param sub
+#' @param x X values to use
+#' @param y Y values to use
+#' @param span The span of the loess fit
+#' @param sub Subsample factor
 #' @export
 smoothloess <- function(x, y, span, sub = 2) {
   dat <- data.frame(x, y)
@@ -739,7 +751,9 @@ bulletAlign <- function(data, value = "l30") {
 # 
 
 #' Match striation marks across two cross sections based on previously identified peaks and valleys
-#' @param lines1, lines2 data frames as returned from get_peaks function. data frames are expected to have 
+#' @param lines1 data frame as returned from get_peaks function. data frames are expected to have 
+#' the following variables: xmin, xmax, group, type, bullet, heights
+#' @param lines2 data frame as returned from get_peaks function. data frames are expected to have 
 #' the following variables: xmin, xmax, group, type, bullet, heights
 #' @return data frame of the same form as lines1 and lines2, but consisting of an additional variable of whether the striation marks are matches
 #' @importFrom dplyr group_by %>% summarise
