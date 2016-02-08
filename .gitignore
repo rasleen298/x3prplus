@@ -1,3 +1,13 @@
 .Rproj.user
 .Rhistory
 .RData
+aoas-2016/cache
+aoas-2016/figure
+aoas-2016/images/Hamby*
+*.tex
+*.bbl
+*.blg
+*.log
+*.aux
+*.gz
+*pdf

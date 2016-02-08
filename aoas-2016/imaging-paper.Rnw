@@ -94,12 +94,12 @@ In 2009, the National Academy of Sciences published a report questioning the sci
 #wd <- getwd()
 library(extrafont)
 library(knitr)
-imgdir <- "Figure/"
+imgdir <- "figure"
 codedir <- "code"
-datadir <- "app/images/Hamby252_3DX3P1of2/"
+datadir <- "images/Hamby252_3DX3P1of2/"
 
 options(replace.assign=TRUE,scipen=3, digits=2)
-bstats <- read.csv("data-25-25/bullet-stats.csv")
+bstats <- read.csv("data/data-25-25/bullet-stats.csv")
 
 scrubPath <- function(x) {
   splits <- strsplit(as.character(x), split="/")
@@ -867,7 +867,7 @@ It might not be reasonable to assume that we can match all lands, but the idea i
 \begin{subfigure}[t]{\textwidth}\centering
 \caption{Maximal number of CMS between unknown bullet C-3 and all of the other 118 considered (known) lands. For two lands the number of maximum CMS is high. }
 <<cms, echo=FALSE, fig.width=7, fig.height=3.5, out.width='.5\\textwidth'>>=
-load("data-25-25/unkn9.RData")
+load("data/data-25-25/unkn9.RData")
 cmsdist <- sapply(reslist, function(x) x$maxCMS)
 
 qplot(cmsdist, geom="bar") + theme_bw() + xlab("Number of CMS")
@@ -986,7 +986,7 @@ There are two things that should be noted at this point: the automated algorithm
 \begin{figure}[hbtp]
   \centering
 <<strange-res, echo=FALSE, fig.width=7, fig.height=3.25, out.width='.65\\textwidth', warning=FALSE>>=
-load("data-25-25/unkn47.RData")
+load("data/data-25-25/unkn47.RData")
 res <- reslist[[106]]
 res$bullets$bullet <- scrubPath(res$bullets$bullet)
 
