@@ -1,0 +1,104 @@
+---
+title: "Matching Striae in Bullets"
+author: "Eric Hare, Heike Hofmann, Alicia Carriquiry"
+date: "February 9, 2016"
+output: 
+    revealjs::revealjs_presentation:
+        theme: blood
+        highlight: pygments
+        transition: fade
+---
+
+```{r,echo=FALSE, message=FALSE,warning=FALSE}
+library(x3pr)
+library(x3prplus)
+library(ggplot2)
+```
+
+## Goal
+
+- We wish to determine whether two bullets were fired from the same gun barrel
+- Striation patterns are unique to barrels and fairly stable
+- Forensic Examiners shoot bullets from guns of suspects, compare it to bullet from crime scene
+
+![](images/striations.jpg)
+
+## James Hamby Study
+
+- Ten consecutively rifled Ruger P-85 pistol barrels used to fire 20 "known" test bullets and 15 "unknown" bullets for comparison
+- Sets of 35 bullets sent to 507 Forensic Examiners for examination
+- 0 false positive identifications, 8 inconclusive results (out of 7605)
+
+## Data Format
+
+- 3D topographical images of each bullet
+- x3p format, array of surface measurements at the micrometer level
+- R package x3pr available for working with these images
+- R package x3prplus is our additional functions to perform this analysis
+- Each bullet is a set of 6 land-to-land scans
+
+![](images/bullet12.jpg)
+
+## Procedure
+
+The basic procedure can be described as follows:
+
+1. Extract a profile at a fixed bullet height
+2. Identify and remove the grooves from that profile
+3. Fit a loess regression to the remaining profile (called the signature)
+4. Get the residuals from this regression
+5. Identify peaks and valleys in residuals
+6. Extract features from the residuals
+7. Use these features in a random forest to predict matches
+
+## Step One: Extract a Profile
+
+```{r, fig.width=6, fig.height=3, warning=FALSE}
+br111 <- get_crosscut("images/Br1 Bullet 1-1.x3p", x = 243.75)
+
+qplot(y, value, data = br111) + theme_bw()
+```
+
+## Step Two: Remove Grooves
+
+1. At a fixed height $x$ extract a bullet's profile (Figure~\ref{fig:loess_step1}, with $x = 243.75\mu m$).
+2. For each $y$ value, smooth out any deviations occurring near the minima by twice applying a rolling average with a pre-set \emph{smoothing factor} $s$.
+3. For each smoothed $y$ value, compute another rolling average using the same smoothing factor as above.
+4. Determine the location of the peak of the left groove by finding the first doubly-smoothed value $y_i$ that is the maximum within its smoothing window. (Similar for valley of left groove).
+
+## Step Two: Remove Grooves (Continued)
+
+```{r, fig.width=6, fig.height=3, warning=FALSE}
+br111.groove <- get_grooves(br111, smoothfactor = 35)
+br111.groove
+```
+
+## Step Three: Fit Loess Regression
+
+```{r, fig.width=6, fig.height=3, warning=FALSE}
+br111.loess <- fit_loess(br111, br111.groove)
+br111.loess$fitted
+```
+
+## Step Four: Get the Residuals
+
+```{r, fig.width=6, fig.height=3, warning=FALSE}
+br111.loess$resid
+```
+
+## Step Five: Peaks and Valleys
+
+What defines a peak and a valley? That's a tough question.
+
+There's a lot of noise in the residual plots. We can do some smoothing in a similar manner to how we did for detecting grooves.
+
+## Step Five: Peaks and Valleys (Continued)
+
+```{r, fig.width=6, fig.height=3, warning=FALSE}
+br111.peaks <- get_peaks(br111.loess$data)
+br111.peaks$plot
+```
+
+## Step Six: Extract Features
+
+
