@@ -12,3 +12,5 @@ student-paper-competition-2016/images/Hamby*
 *.aux
 *.gz
 *pdf
+
+*.toc

@@ -144,12 +144,12 @@ Iowa State University% Your institution
 library(extrafont)
 library(knitr)
 opts_chunk$set(fig.path='Figure/fig-', cache.path='cache/', fig.align='center', fig.width=5, fig.height=5, fig.show='hold', par=TRUE, cache=F, tidy=T, concordance=TRUE, autodep=TRUE, root.dir="../", comment="|", dev="CairoPDF")
-imgdir <- "Figure/"
+imgdir <- "figure"
 codedir <- "code"
-datadir <- "../app/images/Hamby252_3DX3P1of2/"
+datadir <- "images/Hamby252_3DX3P1of2/"
 
 options(replace.assign=TRUE,scipen=3, digits=2)
-bstats <- read.csv("data-25-25/bullet-stats.csv")
+bstats <- read.csv("data/data-25-25/bullet-stats.csv")
 
 scrubPath <- function(x) {
   splits <- strsplit(as.character(x), split="/")

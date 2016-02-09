@@ -76,7 +76,7 @@ codedir <- "code"
 datadir <- "images/Hamby252_3DX3P1of2/"
 
 options(replace.assign=TRUE,scipen=3, digits=2)
-bstats <- read.csv("data-25-25/bullet-stats.csv")
+bstats <- read.csv("data/data-25-25/bullet-stats.csv")
 
 scrubPath <- function(x) {
   splits <- strsplit(as.character(x), split="/")
@@ -348,8 +348,8 @@ library(ggplot2)
 library(gridExtra)
 library(zoo)
 
-knowndatadir <- "app/images/Hamby252_3DX3P1of2/"
-unknowndatadir <- "app/images/Hamby252_3DX3P2of2/"
+knowndatadir <- "images/Hamby252_3DX3P1of2/"
+unknowndatadir <- "images/Hamby252_3DX3P2of2/"
 
 
 ###############
@@ -486,17 +486,17 @@ However, if we use all of the available comparisons to fit another random forest
 
 %\hh{XXX maybe use log of D to remove the left boundary XXX}
 <<allhamby, echo=FALSE, message=FALSE, warning=FALSE>>=
-knowndatadir <- "app/images/Hamby252_3DX3P1of2/"
+knowndatadir <- "images/Hamby252_3DX3P1of2/"
 knowns <- dir(path=knowndatadir)
 knowns <- gsub(".x3p", "", knowns)
 
-unknowndatadir <- "app/images/Hamby252_3DX3P2of2/"
+unknowndatadir <- "images/Hamby252_3DX3P2of2/"
 unknowns <- dir(path=unknowndatadir)
 unknowns <- gsub(".x3p", "", unknowns)
 
 #bstats <- read.csv("data-25-25/bullet-stats.csv")
 #flagged <- c("Br6 Bullet 2-1", "Br9 Bullet 2-4", "Ukn Bullet B-2", "Ukn Bullet Q-4")
-ballstats <- read.csv("data-new-all-25-25/bullet-stats-single.csv")
+ballstats <- read.csv("data/data-new-all-25-25/bullet-stats-single.csv")
 
 includesVar <- setdiff(names(ballstats), c("b1", "b2", "data", "resID", "id.x", "id.y", "id", "pred", "forest", "bullet", "span", "crosscutdist", "flagged", "km", "forestsmall",
                                         "left_cms", "right_cms", "left_noncms", "right_noncms"))
@@ -641,7 +641,7 @@ qplot(x=y, y=l30, data=subset(aligned, barrel > 5),
 Two random forests were calculated for the Hamby study. For the first random forest only comparisons of bullet lands from known bullets and unknown bullets were used. The second random forest is based on a full comparison of every land with every other land, increasing the number of comparisons from originally 10,384 (10,212 known non-matches and 172 known matches) by another 10,931 comparisons (10,637 known non-matches and 94 known matches). Random forests allow an assessment of variable importance (also called feature importance) as the mean decrease in Gini index when including each variable. 
 Table~\ref{tab:importance} shows the results for feature importance for both of these random forests. Importance~1 refers to the smaller subset, Importance~2 is the feature importance derived from the random forest based on all pairwise comparisons. 
 <<setup-rtrees, echo=FALSE, message=FALSE>>=
-bstats <- read.csv("data-25-25/bullet-stats.csv", stringsAsFactors = FALSE)
+bstats <- read.csv("data/data-25-25/bullet-stats.csv", stringsAsFactors = FALSE)
 
 library(randomForest)
 set.seed(20151202)
