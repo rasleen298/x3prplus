@@ -1,0 +1,70 @@
+---
+title: "x3pr Walkthrough"
+author: "Heike Hofmann & Eric Hare"
+date: "October 13, 2015"
+output: html_document
+---
+
+This document serves as a guide to get the **x3pr** and **x3prplus** packages loaded into R, and to plot images of bullets in the x3p format.
+
+1. R and RStudio must be installed.
+
+2. If you are using Windows, Rtools must be installed.
+
+3. If you are using Mac, XQuartz must be installed.
+
+4. Install the required support packages from CRAN:
+    ```{r, eval=FALSE}
+        install.packages("devtools")
+        install.packages("XML")
+        install.packages("rgl")
+        install.packages("shiny")
+        install.packages("shinyRGL")
+    ```
+   
+5. Install x3pr from GitHub 
+    ```{r, eval=FALSE}
+    devtools::install_github("npetraco/x3pr")
+    ```
+    
+6. Install x3prplus from GitHub 
+    ```{r, eval=FALSE}
+    devtools::install_github("heike/x3prplus")
+    ```
+    
+7. Try to run the plotting routine. This should open a separate window that allows direct manipulation with the plotted surface.
+    ```{r, results='hide', message=FALSE}
+    library(x3pr)
+    library(x3prplus)
+    ## Loading images from rda
+    ## b1 is an R object including 3d topographic data on land 3 of bullet 1, barrel 1 from the Hamby study
+    data(b1)   
+    plot3D.x3p.file(b1, , plot.type = "surface")  # there will be warnings - ignore, answer question with 'yes' 
+    
+    ## breech face data from the Todd Weller study (included in the x3prplus package, 
+    ## the remainder of the data would need to be downloaded from the NIST databaase 
+    ## as described below)
+    data(bf11)
+    plot3D.x3p.file(bf11, aspect = c(1,1,0.2), plot.type = "surface")
+
+    ```
+    
+8.  Same thing as before, but this time, an x3p file is read from disk. 
+    ```{r, results='hide', message=FALSE}
+    file.path <- system.file("extdata", "Br1 Bullet 1-3.x3p", package = "x3prplus")
+    br13 <- read.x3p(file.path)
+    
+    plot3D.x3p.file(br13, plot.type = "surface") # same result as above, but from an x3p file, not an R object
+    ```
+    
+9.  NIST database: Similarly, files can be read from the NIST Ballistics Toolmark Datasets located at [http://www.nist.gov/forensics/ballisticsdb/ballistics-datasets.cfm]. (Note, that in the past we sometimes had trouble with the database being offline when trying to download data). A description of the x3p file format can be found at [http://www.nist.gov/forensics/ballisticsdb/dataformat.cfm].
+
+10.  Getting the data from an x3p R objects into a regular format:
+    ```{r, results='show', message=FALSE}
+           fb13 <- fortify_x3p(br13)
+           head(fb13)
+    ```
+
+     The function fortify_x3p results in a data set with columns x, y, and value. 'value' specifies the "height" of the object at location (x, y). x and y are spanning a grid, the values are generally given in micrometers (this information can be found in the meta data part of the x3p file br13[[1]]).
+
+

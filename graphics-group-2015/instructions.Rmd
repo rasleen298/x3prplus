@@ -1,0 +1,56 @@
+---
+title: "Instructions"
+author: "Heike Hofmann & Eric Hare"
+date: "September 24, 2015"
+output: html_document
+---
+
+To get these bullet images working on your own computer...
+
+0. *Note for Mac users*: You must have **XQuartz** installed in order to work with RGL 3D plots. If you do not have it installed, you can get it from https://xquartz.macosforge.org/landing/
+
+1. Make sure **devtools** and the required support packages are installed:
+    ```{r, eval=FALSE}
+    install.packages("devtools")
+    install.packages("XML")
+    install.packages("rgl")
+    install.packages("shiny")
+    install.packages("shinyRGL")
+    ```
+
+2. Install the **x3pr** package:
+    ```{r, eval=FALSE}
+    devtools::install_github("npetraco/x3pr")
+    ```
+    
+3. Load the **x3pr** package:
+    ```{r, message=FALSE, warning=FALSE}
+    library(x3pr)
+    ```
+
+4. Try loading a bullet image from GitHub:
+    ```{r, eval=FALSE}
+    bullet1 <- read.x3p("https://github.com/erichare/x3prproto/raw/master/images/Hamby252_3DX3P1of2/Br1%20Bullet%201-1.x3p")
+    ```
+    
+    ```{r, echo=FALSE}
+    load("bullet1.RData")
+    ```
+
+5. Call the special plot function to produce a 3d rendering:
+    ```{r, eval=FALSE}
+    plot3D.x3p.file(bullet1, 1024, 80, aspect = c(1, 3, 0.4), plot.type = "surface")
+    ```
+
+6. If this does not work, you can instead try the threejs package:
+    ```{r, message=FALSE, warning=FALSE}
+    if (!require(threejs)) devtools::install_github("bwlewis/threejs")
+    if (!require(x3prplus)) devtools::install_github("heike/x3prplus")
+    
+    library(threejs)
+    library(x3prplus)
+    
+    fortified <- fortify_x3p(bullet1)
+    
+    scatterplot3js(x = fortified, color = rainbow(nrow(fortified)))
+    ```
