@@ -566,7 +566,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
 #' @param span positive number  for the smoothfactor to use for assessing peaks. 
 #' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
 #' @export
-bulletGetMaxCMSXXX <- function(lof1, lof2, span=35) {
+bulletGetMaxCMS <- function(lof1, lof2, span=35) {
   lof <- rbind(lof1, lof2)
   bAlign = bulletAlign(lof)
   lofX <- bAlign$bullet  
@@ -583,7 +583,7 @@ bulletGetMaxCMSXXX <- function(lof1, lof2, span=35) {
   peaks1$lines$bullet <- b12[1]
   peaks2$lines$bullet <- b12[2]
   
-  lines <- striation_identifyXXX(peaks1$lines, peaks2$lines)
+  lines <- striation_identify(peaks1$lines, peaks2$lines)
   
   #   p <- qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
   #     theme_bw() +
@@ -623,7 +623,7 @@ bulletGetMaxCMSXXX <- function(lof1, lof2, span=35) {
 #   peaks1$lines$bullet <- bullet1
 #   peaks2$lines$bullet <- bullet2
 #   
-#   lines <- striation_identifyXXX(peaks1$lines, peaks2$lines)
+#   lines <- striation_identify(peaks1$lines, peaks2$lines)
 #   
 # #   p <- qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
 # #     theme_bw() +
@@ -755,7 +755,7 @@ bulletAlign <- function(data, value = "l30") {
 #' @importFrom dplyr group_by %>% summarise
 #' @importFrom reshape2 melt
 #' @export
-striation_identifyXXX <- function(lines1, lines2) {
+striation_identify <- function(lines1, lines2) {
   group <- NULL
   type <- NULL
   bullet <- NULL
