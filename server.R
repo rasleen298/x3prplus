@@ -150,7 +150,7 @@ shinyServer(function(input, output, session) {
         br1 <- filter(smoothed(), bullet == values$path1)
         br2 <- filter(smoothed(), bullet == values$path2)
         
-        bulletGetMaxCMSXXX(br1, br2, span = 25)
+        bulletGetMaxCMS(br1, br2, span = 25)
     })
     
     features <- reactive({
