@@ -1,7 +1,7 @@
 ---
 title: "Matching Striae in Bullets"
 author: "Eric Hare, Heike Hofmann, Alicia Carriquiry"
-date: "February 9, 2016"
+date: "February 10, 2016"
 output: 
     revealjs::revealjs_presentation:
         theme: blood
@@ -101,4 +101,68 @@ br111.peaks$plot
 
 ## Step Six: Extract Features
 
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+library(dplyr)
 
+mypaths <- c("images/Br1 Bullet 1-1.x3p", "images/Br1 Bullet 2-3.x3p")
+my_bullets <- lapply(mypaths, function(x) {
+    result <- read.x3p(x)
+    result[[3]] <- x
+    names(result)[3] <- "path"
+        
+    return(result)
+})
+bullets_processed <- lapply(my_bullets, function(bul) {
+    processBullets(bullet = bul, name = bul$path, x = 243.75)
+})
+names(bullets_processed) <- mypaths
+
+bullets_smoothed <- bullets_processed %>% bind_rows %>% bulletSmooth
+
+br111 <- filter(bullets_smoothed, bullet == mypaths[1])
+br123 <- filter(bullets_smoothed, bullet == mypaths[2])
+```
+
+- Maximal number of CMS (consecutive matching striae), and, similarly, the number of consecutively non-matching striae (CNMS), 
+- Number of matches and non-matches,
+- Average difference $D$ between signatures, defined as the Euclidean vertical distance between surface measurements of aligned signatures.
+\[
+D^2 = \frac{1}{\text{\#}t}\sum_t \left[f(t) - g(t)\right]^2,
+\]
+- The sum $S$ of average absolute heights of matched extrema
+
+## Consecutively Matching Striae (CMS)
+
+11 CMS
+
+![](images/smoothmatch-1.png)
+
+## Cross Correlation Function (CCF)
+
+![](images/ccf-1.png)
+
+## Distribution of Features
+
+![](images/density-overview-1.png)
+
+## Step Seven: Random Forest
+
+![](images/forest-1.png)
+
+## Feature Importance
+
+![](images/importance-1.png)
+
+## Web Application
+
+https://erichare.shinyapps.io/x3prproto
+
+## Future Work
+
+- We are extremely limited by data here - Currently we've only assessed this algorithm on one particular set of 35 bullets
+- There is likely an effect from the equipment used to scan the bullets, or the person performing the scan
+- We need to assess the quality of the algorithm in case we don't have full bullet lands available, as is the case in many forensics applications
+
+## Thank You
+
+Any Questions?
