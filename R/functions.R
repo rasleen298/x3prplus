@@ -12,7 +12,26 @@ fortify_x3p <- function(x3d) {
                    value=as.vector(t(x3d[[2]])))
   df$x <- (df$x-1) * info$x.inc
   df$y <- (df$y-1) * info$y.inc
+  
+  attr(df, "info") <- info
+  
   df
+}
+
+#' Convert a data frame into an x3d file
+#' 
+#' @param df A data frame produced by fortify_x3p
+#' @return An x3d object
+#' @export
+unfortify_x3p <- function(df) {
+    my.info <- attr(df, "info")
+    my.lst <- list(header.info = my.info, 
+                   surface.matrix = matrix(df$value, 
+                                           nrow = length(unique(df$y)), 
+                                           ncol = length(unique(df$x)),
+                                           byrow = TRUE))
+    
+    return(my.lst)
 }
 
 #' Read a crosscut from a 3d surface file
@@ -567,6 +586,8 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
 #' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
 #' @export
 bulletGetMaxCMS <- function(lof1, lof2, span=35) {
+    bullet <- NULL
+    
   lof <- rbind(lof1, lof2)
   bAlign = bulletAlign(lof)
   lofX <- bAlign$bullet  
