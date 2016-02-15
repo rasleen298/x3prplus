@@ -31,12 +31,12 @@ write.csv(dframe, file="csvs/crosscuts-25.csv", row.names=FALSE)
 
 
 
-ccs <- read.csv("data/crosscuts.csv")
+#ccs <- read.csv("data/crosscuts.csv")
 
 
-bullets <- lapply(c(knowns, unknowns), function(path) {
-  lof <- processBullets(paths = path, x = ccs$cc[which(ccs$path==path)], check=FALSE)
-  peaks <- get_peaks(lof)
-
-  list(path=path, bullet=lof, peaks=peaks, lines=peaks$lines)
-})
+#bullets <- lapply(c(knowns, unknowns), function(path) {
+#  lof <- processBullets(paths = path, x = ccs$cc[which(ccs$path==path)], check=FALSE)
+#  peaks <- get_peaks(lof)
+#
+#  list(path=path, bullet=lof, peaks=peaks, lines=peaks$lines)
+#})
