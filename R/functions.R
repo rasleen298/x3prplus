@@ -487,10 +487,10 @@ smoothloess <- function(x, y, span, sub = 2) {
 #' @param span The span for the loess smooth function
 #' @export
 bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf = 0.9, span = 0.03) {
-  get_cc <- function(x) {
-    pickx <- dbr111$x[which.min(abs(x - unique(dbr111$x)))]
+  get_cc <- function(x, mybullet) {
+    pickx <- mybullet$x[which.min(abs(x - unique(mybullet$x)))]
     
-    br111 <- dbr111[dbr111$x == pickx,]
+    br111 <- mybullet[mybullet$x == pickx,]
     br111.groove <- get_grooves(br111)
     #    br111.groove$plot
     #    browser()
@@ -505,7 +505,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
 
   done <- FALSE
   x <- min(xlimits)
-  first_cc <- get_cc(x)
+  first_cc <- get_cc(x, mybullet = dbr111)
   
   while(!done) {
     x <- x + distance
