@@ -82,11 +82,11 @@ get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 
     
     peak_ind_smoothed <- head(which(rollapply(smoothed_truefalse, 3, function(x) which.max(x) == 2)), n = 1)
     peak_ind <- peak_ind_smoothed + floor(lengthdiff / 2)
-    groove_ind <- head(which(rollapply(tail(smoothed_truefalse, n = -peak_ind_smoothed), 3, function(x) which.min(x) == 2)), n = 1) + peak_ind
+    if (length(peak_ind) == 0) groove_ind <- peak_ind else groove_ind <- head(which(rollapply(tail(smoothed_truefalse, n = -peak_ind_smoothed), 3, function(x) which.min(x) == 2)), n = 1) + peak_ind
 
     peak_ind2_smoothed_temp <- head(which(rollapply(rev(smoothed_truefalse), 3, function(x) which.max(x) == 2)), n = 1)
     peak_ind2_temp <- peak_ind2_smoothed_temp + floor(lengthdiff / 2)
-    groove_ind2_temp <- head(which(rollapply(tail(rev(smoothed_truefalse), n = -peak_ind2_smoothed_temp), 3, function(x) which.min(x) == 2)), n = 1) + peak_ind2_temp
+    if (length(peak_ind2_temp) == 0) groove_ind2_temp <- peak_ind2_temp else groove_ind2_temp <- head(which(rollapply(tail(rev(smoothed_truefalse), n = -peak_ind2_smoothed_temp), 3, function(x) which.min(x) == 2)), n = 1) + peak_ind2_temp
     
     peak_ind2 <- length(bullet$value) - peak_ind2_temp + 1
     groove_ind2 <- length(bullet$value) - groove_ind2_temp + 1
