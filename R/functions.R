@@ -484,8 +484,9 @@ smoothloess <- function(x, y, span, sub = 2) {
 #' @param distance positive numeric value indicating the distance between cross sections to use for a comparison
 #' @param xlimits vector of values between which to check for cross sections in a stable region
 #' @param minccf minimal value of cross correlation to indicate a stable region
+#' @param span The span for the loess smooth function
 #' @export
-bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf = 0.9) {
+bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf = 0.9, span = 0.03) {
   get_cc <- function(x) {
     pickx <- dbr111$x[which.min(abs(x - unique(dbr111$x)))]
     
@@ -510,7 +511,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
     x <- x + distance
     second_cc <- get_cc(x)
     b2 <- rbind(first_cc, second_cc)
-    lofX <- bulletSmooth(b2)
+    lofX <- bulletSmooth(b2, span = span)
     ccf <- bulletAlign(lofX)$ccf
     if (ccf > minccf) { 
       done <- TRUE
