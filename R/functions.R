@@ -509,7 +509,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
   
   while(!done) {
     x <- x + distance
-    second_cc <- get_cc(x)
+    second_cc <- get_cc(x, mybullet = dbr111)
     b2 <- rbind(first_cc, second_cc)
     lofX <- bulletSmooth(b2, span = span)
     ccf <- bulletAlign(lofX)$ccf
