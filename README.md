@@ -8,7 +8,7 @@ This repository contains the R package `x3prplus`, along with supporting resourc
 - **application** Contains a companion Shiny application to assess the probability that two bullets are a match
 - **papers** Contains academic papers involving this package
 - **presentations** Contains presentations involving this package
-- 
+
 ## Installation
 
 The `x3prplus` package can be installed using `devtools`:
