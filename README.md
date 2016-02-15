@@ -22,3 +22,5 @@ The Hamby study bullets can be assessed using this package, as detailed in Hare,
 1. In an R session, install `x3pr` (Petraco) with `install_github("npetraco/x3pr")` (See http://www.github.com/npetraco/x3pr for more information)
 2. Install `x3prplus` with `devtools::install_github("heike/x3prplus")`
 3. Download the Hamby study images from the [NIST Database](http://www.nist.gov/forensics/ballisticsdb/hamby-consecutively-rifled-barrels.cfm)
+4. Unzip the folders of images to a directory of your choosing. For instance, a path such as "~/Desktop/Hamby252_3DX3P1of2" should contain all the images of the form "Br1 Bullet 1-1.x3p", and a path such as "~/Desktop/Hamby252_3DX3P2of2" should contain all the images of the form "Ukn Bullet B-1.x3p"
+5. 
