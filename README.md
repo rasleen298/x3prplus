@@ -24,7 +24,8 @@ The Hamby study bullets can be assessed using this package, as detailed in Hare,
 3. Install more supporting packages with `install.packages(c("dplyr", "ggplot2", "gridExtra", "zoo"))`
 4. Download the Hamby study images from the [NIST Database](http://www.nist.gov/forensics/ballisticsdb/hamby-consecutively-rifled-barrels.cfm)
 5. Unzip the folders of images to a directory of your choosing. For instance, a path such as `~/Desktop/Hamby252_3DX3P1of2` should contain all the images of the form "Br1 Bullet 1-1.x3p", and a path such as `~/Desktop/Hamby252_3DX3P2of2` should contain all the images of the form "Ukn Bullet B-1.x3p"
-6. Download the file `papers/jcgs-2016/csvs/crosscuts-25.csv` and save it to a folder `csvs` in the same location as the Hamby image directories (In the previous example, this would be the desktop)
-7. Execute the code stored in `papers/jcgs-2016/code/complete_hamby.R`. Make sure to set the variables `knowndatadir` and `unknowndatadir` to the two directories from step 5.
-8. Execute the code stored in `papers/jcgs-2016/code/evaluation_hamby.R`. 
-9. The complete results will be stored in the csvs folder, in the file name `bullet-stats.csv`
+6. Create a folder `csvs` in the same location that contains the Hamby folders
+7. Execute the code stored in `papers/jcgs-2016/code/checkBullets.R` Make sure to set the variables `knowndatadir` and `unknowndatadir` to the two directories from step 5.
+8. Execute the code stored in `papers/jcgs-2016/code/complete_hamby.R`. Again, make sure to set the variables `knowndatadir` and `unknowndatadir` to the two directories from step 5.
+9. Execute the code stored in `papers/jcgs-2016/code/evaluation_hamby.R`. 
+10. The complete results will be stored in the csvs folder, in the file name `bullet-stats.csv`
