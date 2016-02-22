@@ -159,8 +159,14 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
     heights <- heights[idx]
     type <- type[idx]
     diffs <- diff(extrema)
-    lines <- data.frame(xmin = extrema-c(diffs[1],diffs)/3,
-                        xmax = extrema+c(diffs,diffs[length(diffs)])/3, 
+    
+    firstval <- diffs[1]
+    if (is.na(firstval)) firstval <- 0
+    lastval <- diffs[length(diffs)]
+    if (length(lastval) == 0) lastval <- 0
+    
+    lines <- data.frame(xmin = extrema-c(firstval,diffs)/3,
+                        xmax = extrema+c(diffs,lastval)/3, 
                         type = type, extrema = extrema, heights = heights)    
     dframe <- data.frame(y=loessdata$y[smoothfactor:(length(loessdata$y) - smoothfactor + 1)], smoothed=smoothed_truefalse)
     p <- qplot(data=dframe, x=y, y=smoothed, geom = "line") +
