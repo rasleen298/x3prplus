@@ -177,7 +177,7 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
     
     return(list(peaks = peaks, valleys = valleys, extrema = extrema, 
                 peaks.heights = peaks.heights, valleys.heights = valleys.heights, 
-                lines=lines, plot = p))
+                lines=lines, plot = p, dframe = dframe))
 }
 
 #' Fit a LOESS model with bootstrap samples
