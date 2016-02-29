@@ -749,8 +749,12 @@ bulletAlign_new <- function (data, value = "l30")  {
     #lag <- ccf$lag[which.max(ccf$acf)]
     lag <- which.max(mycors)
     incr <- min(diff(sort(unique(subLOFx1$y))))
-    subLOFx2$y <- subLOFx2$y + lag * incr
-    bullets <- rbind(data.frame(subLOFx1), data.frame(subLOFx2))
+    
+    mydat <- ifelse(whichmin == 1, subLOFx1, subLOFx2)
+    mydat2 <- ifelse(whichmin == 1, subLOFx2, subLOFx1)
+        
+    mydat$y <- mydat$y + lag * incr
+    bullets <- rbind(data.frame(mydat), data.frame(mydat2))
     list(ccf = max(mycors), lag = lag * incr, bullets = bullets)
 }
 
