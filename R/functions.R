@@ -518,7 +518,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
     second_cc <- get_cc(x, mybullet = dbr111)
     b2 <- rbind(first_cc, second_cc)
     lofX <- bulletSmooth(b2, span = span)
-    ccf <- bulletAlign(lofX)$ccf
+    ccf <- bulletAlign_new(lofX)$ccf
     if (ccf > minccf) { 
       done <- TRUE
       return (x - distance)
@@ -596,7 +596,7 @@ bulletGetMaxCMS <- function(lof1, lof2, span=35) {
     bullet <- NULL
     
   lof <- rbind(lof1, lof2)
-  bAlign = bulletAlign(lof)
+  bAlign = bulletAlign_new(lof)
   lofX <- bAlign$bullet  
   
   b12 <- unique(lof$bullet)
@@ -719,6 +719,39 @@ bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
   lof$l30 <- pmin(max(limits), lof$l30)
   lof$l30 <- pmax(min(limits), lof$l30)
   lof
+}
+
+bulletAlign_new <- function (data, value = "l30")  {
+    bullet <- NULL
+    b12 <- unique(data$bullet)
+    if (length(b12) != 2) 
+        stop("Two surfaces should be compared\n\n")
+    data$val <- data.frame(data)[, value]
+    miny <- min(data$y, na.rm = T)
+    subLOFx1 <- subset(data, bullet == b12[1])
+    subLOFx2 <- subset(data, bullet == b12[2])
+    subLOFx1$y <- subLOFx1$y - min(subLOFx1$y)
+    subLOFx2$y <- subLOFx2$y - min(subLOFx2$y)
+    
+    whichmin <- which.min(c(length(subLOFx1$val), length(subLOFx2$val)))
+    minval <- min(c(length(subLOFx1$val), length(subLOFx2$val)))
+    shorter <- list(subLOFx1$val, subLOFx2$val)[[whichmin]]
+    longer <- list(subLOFx1$val, subLOFx2$val)[[3 - whichmin]]
+    
+    mycors <- NULL
+    for (i in 1:(length(longer) - length(shorter))) {
+        longersub <- longer[i:(i + length(shorter) - 1)]
+        mycors <- c(mycors, cor(shorter, longersub, use = "pairwise.complete.obs"))
+    }
+    
+    #ccf <- ccf(subLOFx1$val, subLOFx2$val, plot = FALSE, lag.max = 150, 
+    #           na.action = na.omit)
+    #lag <- ccf$lag[which.max(ccf$acf)]
+    lag <- which.max(mycors)
+    incr <- min(diff(sort(unique(subLOFx1$y))))
+    subLOFx2$y <- subLOFx2$y + lag * incr
+    bullets <- rbind(data.frame(subLOFx1), data.frame(subLOFx2))
+    list(ccf = max(mycors), lag = lag * incr, bullets = bullets)
 }
 
 #' Align two surface cross cuts according to maximal correlation
