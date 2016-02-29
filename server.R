@@ -157,21 +157,15 @@ shinyServer(function(input, output, session) {
         if (is.null(CMS())) return(NULL)
         
         res <- CMS()
-        
+
         lofX <- res$bullets
+        
+        aligned <- bulletAlign_new(lofX)
         b12 <- unique(lofX$bullet)
         
-        subLOFx1 <- subset(lofX, bullet==b12[1])
-        subLOFx2 <- subset(lofX, bullet==b12[2]) 
+        subLOFx1 <- subset(aligned$bullets, bullet==b12[1])
+        subLOFx2 <- subset(aligned$bullets, bullet==b12[2]) 
         
-        subLOFx1$y <- subLOFx1$y - min(subLOFx1$y)
-        subLOFx2$y <- subLOFx2$y - min(subLOFx2$y)
-        
-        ccf <- ccf(subLOFx1$val, subLOFx2$val, plot = FALSE, lag.max=200, na.action = na.omit)
-        lag <- ccf$lag[which.max(ccf$acf)]
-        incr <- min(diff(sort(unique(subLOFx1$y))))
-        
-        subLOFx1$y <- subLOFx1$y -  lag * incr # amount of shifting should just be lag * y.inc
         ys <- intersect(subLOFx1$y, subLOFx2$y)
         idx1 <- which(subLOFx1$y %in% ys)
         idx2 <- which(subLOFx2$y %in% ys)
@@ -183,7 +177,7 @@ shinyServer(function(input, output, session) {
         if (length(knm) == 0) knm <- c(length(km)+1,0)
         # browser()    
         # feature extraction
-        data.frame(ccf=max(ccf$acf), lag=which.max(ccf$acf), 
+        data.frame(ccf=aligned$ccf, lag=aligned$lag, 
                    D=distr.dist, 
                    sd.D = distr.sd,
                    b1=b12[1], b2=b12[2], x1 = subLOFx1$x[1], x2 = subLOFx2$x[1],
