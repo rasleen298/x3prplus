@@ -94,16 +94,20 @@ shinyServer(function(input, output, session) {
         mydat <- rbind(smoothed, smoothed2)
         mydat$bullet <- c(rep("b1", nrow(smoothed)), rep("b2", nrow(smoothed2)))
         
-        save(mydat, file = "mydat.RData")
-        
         aligned <- x3prplus:::bulletAlign_new(mydat)
 
         lofX <- aligned$bullet
         b12 <- unique(lofX$bullet)
         peaks1 <- get_peaks(subset(lofX, bullet == b12[1]), smoothfactor = 35)
         peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = 35)
+        
+        dframe1 <- peaks1$dframe
+        dframe2 <- peaks2$dframe
+        dframe <- rbind(dframe1, dframe2)
+        dframe$bullet <- c(rep("b1", nrow(dframe1)), rep("b2", nrow(dframe2)))
        
-        grid.arrange(peaks1$plot, peaks2$plot, nrow = 2)
+        qplot(y, smoothed, data = dframe, colour = bullet, geom = "line", size = I(2)) +
+            theme_bw()
     })
     
     processed1 <- reactive({
