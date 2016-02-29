@@ -81,35 +81,29 @@ shinyServer(function(input, output, session) {
     })
     
     observe({
-        fort1 <- fortify_x3p(bullet1())
-        fort2 <- fortify_x3p(bullet2())
-        
-        fixedcoord1 <- values$xcoord %% (length(unique(fort1$x)) / input$subsample)
-        fixedcoord2 <- values$xcoord %% (length(unique(fort2$x)) / input$subsample)
-        
-        ind1 <- which.min(abs(fort1$x - fixedcoord1))
-        ind2 <- which.min(abs(fort2$x - fixedcoord2))
-        
-        values$fort1_fixed <- fort1[fort1$x == fort1[ind1,"x"],]
-        values$fort2_fixed <- fort2[fort2$x == fort2[ind2,"x"],]
+        values$fort1_fixed <- processBullets(bullet1())
+        values$fort2_fixed <- processBullets(bullet2())
     })
     
     output$residuals <- renderPlot({
         if (is.null(values$fort1_fixed) || is.null(values$fort2_fixed) || is.null(values$xcoord)) return(NULL)
         
-        b1.groove <- get_grooves(values$fort1_fixed)
-        b2.groove <- get_grooves(values$fort2_fixed)
+        smoothed <- bulletSmooth(values$fort1_fixed)
+        smoothed2 <- bulletSmooth(values$fort2_fixed)
         
-        l1 <- fit_loess(values$fort1_fixed, b1.groove)
-        l2 <- fit_loess(values$fort2_fixed, b2.groove)
+        mydat <- rbind(smoothed, smoothed2)
+        mydat$bullet <- c(rep("b1", nrow(smoothed)), rep("b2", nrow(smoothed2)))
         
-        my.dat <- data.frame(y = c(l1$data$y, l2$data$y),
-                        resid = c(l1$data$resid, l2$data$resid),
-                        bullet = factor(c(rep(1, length(l1$data$y)), rep(2, length(l2$data$y)))))
+        save(mydat, file = "mydat.RData")
         
-        qplot(y, resid, data = my.dat, geom = "line", colour = bullet, group = bullet, size = I(1.3), alpha = I(0.8)) +
-            theme_bw() +
-            theme(legend.position = "bottom")
+        aligned <- x3prplus:::bulletAlign_new(mydat)
+
+        lofX <- aligned$bullet
+        b12 <- unique(lofX$bullet)
+        peaks1 <- get_peaks(subset(lofX, bullet == b12[1]), smoothfactor = 35)
+        peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = 35)
+       
+        grid.arrange(peaks1$plot, peaks2$plot, nrow = 2)
     })
     
     processed1 <- reactive({
@@ -160,11 +154,14 @@ shinyServer(function(input, output, session) {
 
         lofX <- res$bullets
         
-        aligned <- bulletAlign_new(lofX)
+        aligned <- x3prplus:::bulletAlign_new(lofX)
         b12 <- unique(lofX$bullet)
         
         subLOFx1 <- subset(aligned$bullets, bullet==b12[1])
         subLOFx2 <- subset(aligned$bullets, bullet==b12[2]) 
+        
+        subLOFx1$y <- subLOFx1$y - min(subLOFx1$y)
+        subLOFx2$y <- subLOFx2$y - min(subLOFx2$y)
         
         ys <- intersect(subLOFx1$y, subLOFx2$y)
         idx1 <- which(subLOFx1$y %in% ys)
