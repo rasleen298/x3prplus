@@ -10,19 +10,21 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
     sidebarLayout(
         sidebarPanel(width = 3,
             h4("Bullet Options"),
-            fileInput("file1", "First Bullet"),
-            fileInput("file2", "Second Bullet"),
+            fileInput("file1", "First Bullet Land"),
+            fileInput("file2", "Second Bullet Land"),
             
             hr(),
             
-            h4("Matching"),
+            h4("Algorithm Options"),
             sliderInput("xcoord", "X Coordinate", min = 1, max = 1000, value = 136, step = 1),
+            sliderInput("span", "Loess Span", min = 0.03, max = 0.2, value = 0.15, step = 0.01),
+            sliderInput("smoothfactor", "Smoothing Factor", min = 5, max = 50, step = 5, value = 35),
             
             actionButton("compute", "Compute Match Probability"),
             
             hr(),
             
-            h4("Plot Options"),
+            h4("Lighting Options"),
             sliderInput("subsample", "Subsample Factor", min = 1, max = 20, value = 2),
             sliderInput("ambient_lighting", "Ambient Lighting", min = 0, max = 1, step = 0.1, value = 0.8),
             sliderInput("diffuse_lighting", "Diffuse Lighting", min = 0, max = 1, step = 0.1, value = 0.8),

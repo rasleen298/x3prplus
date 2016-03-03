@@ -8,6 +8,8 @@ library(zoo)
 library(reshape2)
 library(randomForest)
 
+options(shiny.maxRequestSize=30*1024^2) 
+
 source(system.file("gui/view", "helpers.R", package = "x3pr"))
 
 Sys.setenv("plotly_username" = "erichare")
@@ -88,8 +90,8 @@ shinyServer(function(input, output, session) {
     output$residuals <- renderPlot({
         if (is.null(values$fort1_fixed) || is.null(values$fort2_fixed) || is.null(values$xcoord)) return(NULL)
         
-        smoothed <- bulletSmooth(values$fort1_fixed)
-        smoothed2 <- bulletSmooth(values$fort2_fixed)
+        smoothed <- bulletSmooth(values$fort1_fixed, span = input$span)
+        smoothed2 <- bulletSmooth(values$fort2_fixed, span = input$span)
         
         mydat <- rbind(smoothed, smoothed2)
         mydat$bullet <- c(rep("b1", nrow(smoothed)), rep("b2", nrow(smoothed2)))
@@ -98,8 +100,8 @@ shinyServer(function(input, output, session) {
 
         lofX <- aligned$bullet
         b12 <- unique(lofX$bullet)
-        peaks1 <- get_peaks(subset(lofX, bullet == b12[1]), smoothfactor = 35)
-        peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = 35)
+        peaks1 <- get_peaks(subset(lofX, bullet == b12[1]), smoothfactor = input$smoothfactor)
+        peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = input$smoothfactor)
         
         dframe1 <- peaks1$dframe
         dframe2 <- peaks2$dframe
