@@ -739,7 +739,7 @@ bulletAlign_new <- function (data, value = "l30")  {
     longer <- list(subLOFx1$val, subLOFx2$val)[[3 - whichmin]]
     
     mycors <- NULL
-    for (i in 1:(length(longer) - length(shorter))) {
+    for (i in 1:(length(longer) - length(shorter) + 1)) {
         longersub <- longer[i:(i + length(shorter) - 1)]
         mycors <- c(mycors, cor(shorter, longersub, use = "pairwise.complete.obs"))
     }
