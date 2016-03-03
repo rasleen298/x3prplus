@@ -52,6 +52,10 @@ shinyServer(function(input, output, session) {
         
         surf.b1 <- b1[[2]]
         surf.b2 <- b2[[2]]
+        if (input$transpose) {
+            surf.b1 <- t(surf.b1)
+            surf.b2 <- t(surf.b2)
+        }
         
         minrows <- min(nrow(surf.b1), nrow(surf.b2))
         
