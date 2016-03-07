@@ -508,7 +508,12 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
     dframe
   }
   bullet <- read.x3p(path)
-  if (transpose) bullet$surface.matrix <- t(bullet$surface.matrix)
+  if (transpose) {
+      bullet$surface.matrix <- t(bullet$surface.matrix)
+      temp <- bullet$header.info$num.pts.line
+      bullet$header.info$num.pts.line <- bullet$header.info$num.lines
+      bullet$header.info$num.lines <- temp
+  } 
   dbr111 <- fortify_x3p(bullet)
 
   done <- FALSE
