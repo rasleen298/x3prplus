@@ -5,7 +5,7 @@
 \title{Identifying a reliable cross section}
 \usage{
 bulletCheckCrossCut(path, distance = 25, xlimits = c(50, 500),
-  minccf = 0.9, span = 0.03)
+  minccf = 0.9, span = 0.03, transpose = FALSE)
 }
 \arguments{
 \item{path}{path to an x3p file}
@@ -17,6 +17,8 @@ bulletCheckCrossCut(path, distance = 25, xlimits = c(50, 500),
 \item{minccf}{minimal value of cross correlation to indicate a stable region}
 
 \item{span}{The span for the loess smooth function}
+
+\item{transpose}{if TRUE, transpose the x3p matrix}
 }
 \description{
 Should be changed: x should just indicate lower and upper limit. That is cleaner and should speed things up as well.

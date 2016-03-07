@@ -491,8 +491,9 @@ smoothloess <- function(x, y, span, sub = 2) {
 #' @param xlimits vector of values between which to check for cross sections in a stable region
 #' @param minccf minimal value of cross correlation to indicate a stable region
 #' @param span The span for the loess smooth function
+#' @param transpose if TRUE, transpose the x3p matrix
 #' @export
-bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf = 0.9, span = 0.03) {
+bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf = 0.9, span = 0.03, transpose = FALSE) {
   get_cc <- function(x, mybullet) {
     pickx <- mybullet$x[which.min(abs(x - unique(mybullet$x)))]
     
@@ -507,6 +508,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
     dframe
   }
   bullet <- read.x3p(path)
+  if (transpose) bullet$surface.matrix <- t(bullet$surface.matrix)
   dbr111 <- fortify_x3p(bullet)
 
   done <- FALSE
