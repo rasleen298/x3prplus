@@ -11,7 +11,10 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
         sidebarPanel(width = 3,
             h4("Bullet Options"),
             fileInput("file1", "First Bullet Land"),
+            checkboxInput("transpose1", "Transpose Bullet 1"),
+            
             fileInput("file2", "Second Bullet Land"),
+            checkboxInput("transpose2", "Transpose Bullet 2"),
             
             hr(),
             
@@ -19,8 +22,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             sliderInput("xcoord", "X Coordinate", min = 1, max = 1000, value = 136, step = 1),
             sliderInput("span", "Loess Span", min = 0.03, max = 0.2, value = 0.15, step = 0.01),
             sliderInput("smoothfactor", "Smoothing Factor", min = 5, max = 50, step = 5, value = 35),
-            checkboxInput("transpose", "Transpose Matrix"),
-            
+
             actionButton("compute", "Compute Match Probability"),
             
             hr(),

@@ -35,13 +35,13 @@ shinyServer(function(input, output, session) {
     bullet1 <- reactive({
         if (!is.null(input$file1)) values$path1 <- input$file1$datapath
         
-        return(x3pr::read.x3p(values$path1))
+        return(x3prplus::read.x3pplus(values$path1, transpose = input$transpose1))
     })
     
     bullet2 <- reactive({
         if (!is.null(input$file2)) values$path2 <- input$file2$datapath
         
-        return(x3pr::read.x3p(values$path2))
+        return(x3prplus::read.x3pplus(values$path2, transpose = input$transpose2))
     })
     
     theSurface <- reactive({
@@ -52,10 +52,6 @@ shinyServer(function(input, output, session) {
         
         surf.b1 <- b1[[2]]
         surf.b2 <- b2[[2]]
-        if (input$transpose) {
-            surf.b1 <- t(surf.b1)
-            surf.b2 <- t(surf.b2)
-        }
         
         minrows <- min(nrow(surf.b1), nrow(surf.b2))
         
@@ -86,38 +82,8 @@ shinyServer(function(input, output, session) {
         values$xcoord <- input$xcoord
     })
     
-    observe({
-        values$fort1_fixed <- processBullets(bullet1())
-        values$fort2_fixed <- processBullets(bullet2())
-    })
-    
-    output$residuals <- renderPlot({
-        if (is.null(values$fort1_fixed) || is.null(values$fort2_fixed) || is.null(values$xcoord)) return(NULL)
-        
-        smoothed <- bulletSmooth(values$fort1_fixed, span = input$span)
-        smoothed2 <- bulletSmooth(values$fort2_fixed, span = input$span)
-        
-        mydat <- rbind(smoothed, smoothed2)
-        mydat$bullet <- c(rep("b1", nrow(smoothed)), rep("b2", nrow(smoothed2)))
-        
-        aligned <- x3prplus:::bulletAlign_new(mydat)
-
-        lofX <- aligned$bullet
-        b12 <- unique(lofX$bullet)
-        peaks1 <- get_peaks(subset(lofX, bullet == b12[1]), smoothfactor = input$smoothfactor)
-        peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = input$smoothfactor)
-        
-        dframe1 <- peaks1$dframe
-        dframe2 <- peaks2$dframe
-        dframe <- rbind(dframe1, dframe2)
-        dframe$bullet <- c(rep("b1", nrow(dframe1)), rep("b2", nrow(dframe2)))
-       
-        qplot(y, smoothed, data = dframe, colour = bullet, geom = "line", size = I(2)) +
-            theme_bw()
-    })
-    
     processed1 <- reactive({
-        if (is.null(values$fort1_fixed) || is.null(values$xcoord)) return(NULL)
+        if (is.null(bullet1()) || is.null(values$xcoord)) return(NULL)
         
         bul <- bullet1()
         bul[[3]] <- values$path1
@@ -130,7 +96,7 @@ shinyServer(function(input, output, session) {
     })
     
     processed2 <- reactive({
-        if (is.null(values$fort2_fixed) || is.null(values$xcoord)) return(NULL)
+        if (is.null(bullet2()) || is.null(values$xcoord)) return(NULL)
         
         bul <- bullet2()
         bul[[3]] <- values$path2
@@ -145,7 +111,29 @@ shinyServer(function(input, output, session) {
     smoothed <- reactive({
         if (is.null(processed1()) || is.null(processed2())) return(NULL)
 
-        bulletSmooth(rbind(processed1(), processed2()))
+        bulletSmooth(rbind(processed1(), processed2()), span = input$span)
+    })
+    
+    output$residuals <- renderPlot({
+        if (is.null(smoothed())) return(NULL)
+        
+        mydat <- smoothed()
+        mydat$bullet <- c(rep("b1", nrow(processed1())), rep("b2", nrow(processed2())))
+        
+        aligned <- x3prplus:::bulletAlign_new(mydat)
+        
+        lofX <- aligned$bullet
+        b12 <- unique(lofX$bullet)
+        peaks1 <- get_peaks(subset(lofX, bullet == b12[1]), smoothfactor = input$smoothfactor)
+        peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = input$smoothfactor)
+        
+        dframe1 <- peaks1$dframe
+        dframe2 <- peaks2$dframe
+        dframe <- rbind(dframe1, dframe2)
+        dframe$bullet <- c(rep("b1", nrow(dframe1)), rep("b2", nrow(dframe2)))
+        
+        qplot(y, smoothed, data = dframe, colour = bullet, geom = "line", size = I(2)) +
+            theme_bw()
     })
     
     CMS <- reactive({
@@ -154,7 +142,7 @@ shinyServer(function(input, output, session) {
         br1 <- filter(smoothed(), bullet == values$path1)
         br2 <- filter(smoothed(), bullet == values$path2)
         
-        bulletGetMaxCMS(br1, br2, span = 25)
+        bulletGetMaxCMS(br1, br2, span = input$smoothfactor)
     })
     
     features <- reactive({
