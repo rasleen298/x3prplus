@@ -483,6 +483,22 @@ smoothloess <- function(x, y, span, sub = 2) {
   predict(lwp, newdata = dat)
 }
 
+#' Read X3P File
+#' 
+#' @export
+read.x3pplus <- function(fpath, transpose = FALSE) {
+    bullet <- read.x3p(fpath)
+    
+    if (transpose) {
+        bullet$surface.matrix <- t(bullet$surface.matrix)
+        temp <- bullet$header.info$num.pts.line
+        bullet$header.info$num.pts.line <- bullet$header.info$num.lines
+        bullet$header.info$num.lines <- temp
+    } 
+    
+    return(bullet)
+}
+
 #' Identifying a reliable cross section 
 #' 
 #' Should be changed: x should just indicate lower and upper limit. That is cleaner and should speed things up as well.
@@ -507,13 +523,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
     dframe$bullet <- paste(gsub(".x3p", "", path), x)
     dframe
   }
-  bullet <- read.x3p(path)
-  if (transpose) {
-      bullet$surface.matrix <- t(bullet$surface.matrix)
-      temp <- bullet$header.info$num.pts.line
-      bullet$header.info$num.pts.line <- bullet$header.info$num.lines
-      bullet$header.info$num.lines <- temp
-  } 
+  bullet <- read.x3p(path, transpose = transpose)
   dbr111 <- fortify_x3p(bullet)
 
   done <- FALSE
