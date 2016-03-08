@@ -6,6 +6,11 @@
 \usage{
 read.x3pplus(fpath, transpose = FALSE)
 }
+\arguments{
+\item{fpath}{The file path to the x3p file}
+
+\item{transpose}{If TRUE, transpose the resulting matrix}
+}
 \description{
 Read X3P File
 }

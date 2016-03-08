@@ -485,6 +485,9 @@ smoothloess <- function(x, y, span, sub = 2) {
 
 #' Read X3P File
 #' 
+#' @param fpath The file path to the x3p file
+#' @param transpose If TRUE, transpose the resulting matrix
+#' 
 #' @export
 read.x3pplus <- function(fpath, transpose = FALSE) {
     bullet <- read.x3p(fpath)
@@ -751,9 +754,9 @@ bulletAlign_new <- function (data, value = "l30")  {
     subLOFx2$y <- subLOFx2$y - min(subLOFx2$y)
     
     whichmin <- which.min(c(length(subLOFx1$val), length(subLOFx2$val)))
-    minval <- min(c(length(subLOFx1$val), length(subLOFx2$val)))
-    shorter <- list(subLOFx1$val, subLOFx2$val)[[whichmin]]
-    longer <- list(subLOFx1$val, subLOFx2$val)[[3 - whichmin]]
+    minval <- min(c(length(subLOFx1$value), length(subLOFx2$value)))
+    shorter <- list(subLOFx1$value, subLOFx2$value)[[whichmin]]
+    longer <- list(subLOFx1$value, subLOFx2$value)[[3 - whichmin]]
     
     mycors <- NULL
     for (i in 1:(length(longer) - length(shorter) + 1)) {
