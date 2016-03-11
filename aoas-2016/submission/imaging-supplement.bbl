@@ -1,0 +1,19 @@
+\begin{thebibliography}{1}
+% BibTex style file: imsart-nameyear.bst, 2013-01-28
+% Default style options (sort=1,type=nameyear).
+% Used options (sort=1,type=nameyear).
+
+\bibitem[\protect\citeauthoryear{{AFTE Criteria for Identification
+  Committee}}{1992}]{afte:1992}
+\begin{barticle}[author]
+\bauthor{\bsnm{{AFTE Criteria for Identification Committee}}}
+(\byear{1992}).
+\btitle{Theory of identification, range striae comparison reports and modified
+  glossary definitions – AFTE criteria for identification committee report}.
+\bjournal{AFTE Journal}
+\bvolume{24}
+\bpages{336--340}.
+\end{barticle}
+\endbibitem
+
+\end{thebibliography}

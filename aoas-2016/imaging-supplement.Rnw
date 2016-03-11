@@ -1,0 +1,702 @@
+% Template for the submission to:
+%   The Annals of Probability           [aop]
+%   The Annals of Applied Probability   [aap]
+%   The Annals of Statistics            [aos] 
+%   The Annals of Applied Statistics    [aoas]
+%   Stochastic Systems                  [ssy]
+%
+%Author: In this template, the places where you need to add information
+%        (or delete line) are indicated by {???}.  Mostly the information
+%        required is obvious, but some explanations are given in lines starting
+%Author:
+%All other lines should be ignored.  After editing, there should be
+%no instances of ??? after this line.
+
+% use option [preprint] to remove info line at bottom
+% journal options: aop,aap,aos,aoas,ssy
+% natbib option: authoryear
+\documentclass[aoas]{imsart}
+
+\usepackage{amsthm,amsmath,natbib}
+\RequirePackage[colorlinks,citecolor=blue,urlcolor=blue]{hyperref}
+
+% provide arXiv number if available:
+\arxiv{arXiv:1601.05788}
+
+% put your definitions there:
+\startlocaldefs
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{subcaption}
+\usepackage{lineno}
+\modulolinenumbers[5]
+
+\usepackage{dcolumn}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+
+\usepackage{pdflscape}
+
+\newcommand{\hh}[1]{{\color{magenta} #1}}
+\newcommand{\eh}[1]{{\color{blue} #1}}
+\newcommand{\ac}[1]{{\color{darkgreen} #1}}
+
+\endlocaldefs
+
+\begin{document}
+
+\begin{frontmatter}
+
+% "Title of the paper"
+\title{Supplement to Automatic Matching of Bullet Lands}
+\runtitle{Supplement: Automatic Matching of Bullet Lands}
+
+% indicate corresponding author with \corref{}
+\begin{aug}
+\author{\fnms{Eric} \snm{Hare}\corref{}\ead[label=e1]{erichare@iastate.edu}\thanksref{m1}},
+\author{\fnms{Heike} \snm{Hofmann}\ead[label=e2]{hofmann@iastate.edu}\thanksref{m1}}
+\and
+\author{\fnms{Alicia} \snm{Carriquiry}\ead[label=e3]{alicia@iastate.edu}\thanksref{m1}}
+
+\affiliation{Iowa State University\thanksmark{m1}}
+
+\runauthor{E. Hare et al.}
+\end{aug}
+
+\end{frontmatter}
+
+\linenumbers
+\tableofcontents
+\newpage
+<<setup, fig.keep='all', cache=FALSE, echo=FALSE, eval=TRUE, message=F, warning=F>>=
+#rm(list=ls())
+#wd <- getwd()
+library(extrafont)
+library(knitr)
+imgdir <- "figure"
+codedir <- "code"
+datadir <- "images/Hamby252_3DX3P1of2/"
+
+options(replace.assign=TRUE,scipen=3, digits=2)
+bstats <- read.csv("data/data-25-25/bullet-stats.csv")
+
+scrubPath <- function(x) {
+  splits <- strsplit(as.character(x), split="/")
+  last <- sapply(splits, function(x) x[length(x)])
+  gsub(".x3p","", last)
+}
+
+library(RColorBrewer)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(x3pr)
+library(x3prplus)
+library(grid)
+library(gridExtra)
+library(zoo)
+library(tidyr)
+library(rpart)
+library(rpart.plot)
+library(xtable)
+library(sm)
+
+@
+
+\section{Cylindrical Fit}\label{supp:cylindrical}
+Figure~\ref{fig:fixedX} shows the  profile of surface measurements of bullet 1-5 at a fixed height. The smooth line on top is a circle, with estimated radius and center. The details of this fit are given below:
+%
+\begin{figure}[hbtp]
+  \centering
+<<fixedX, dependson='data', echo=FALSE, warning=FALSE, message=FALSE, fig.height=2, fig.width=6, out.width='0.5\\textwidth'>>=
+
+cols = c(alpha("grey60", alpha=0.6), alpha("black", 0.5))
+
+br111 <- read.x3p(paste(datadir,"Br1 Bullet 1-5.x3p", sep = "/"))
+dbr111 <- fortify_x3p(br111)
+
+pars <- data.frame(getCircle(dbr111$y, dbr111$value))
+dbr111$theta <- acos((dbr111$y-pars$x0)/pars$radius)/pi*180
+dbr111 <- dbr111 %>% mutate(
+  xpred = cos(theta/180*pi)*pars$radius + pars$x0,
+  ypred = sin(theta/180*pi)*pars$radius + pars$y0
+)
+
+qplot(data=subset(dbr111, x <= 100*1.5625^2 & x >= 99*1.5625^2), y, value, geom="line", size=I(1)) +
+  geom_line(aes(x=xpred, y=ypred, group=x), 
+            colour="grey30", size=0.25) +
+#  ylab(expression(paste("Surface Measurements (in ",mu,m,")", sep=""))) + 
+  ylab("") +
+  theme_bw() + 
+  theme(legend.position="bottom") #+ coord_equal()
+@
+\caption{\label{fig:fixedX}Side profile of the surface measurements (in $\mu m$) of a bullet land at a fixed height of $x$. Note that the global features dominate any deviations, corresponding to the individual characteristics of striation marks.}
+\end{figure}
+
+%One reasonable approach is to fit a circle to the curve and compute the residuals from this fit.
+
+Assume that $n$ data points are given in the form of data tuples $(x_1, y_1)$, $(x_2, y_2)$, $...$, $(x_n, y_n)$ that are (approximately) located on a circle. We want to estimate the location of the center and radius of the best fitting circle using a least squares approach.
+
+We minimize the following expression:
+\begin{equation}\label{eq:circle}
+D = \sum_{i=1}^n \left( r^2 - (x_i-a)^2 - (y_i-b)^2 \right)^2,
+\end{equation}
+by differentiating $D$ with respect to $r, a,$ and $b$:
+let us assume that $x_i$ and $y_i$ are centered (i.e. $\sum x_i = \sum_i y_i = 0$). Note, if they are not, make a note of the current means, subtract them now and add them to $(\hat{a}, \hat{b})$ at the end. 
+
+\noindent
+The  derivate of $D$ with respect to $r$ is:
+\begin{eqnarray*}
+\frac{d}{dr} D &=& 2 \sum_i \left( r^2 - (x_i-a)^2 - (y_i-b)^2 \right) 2 r = \\
+&=& 4 r \left( n r^2 - \sum_i (x_i-a)^2 - \sum_i(y_i-b)^2 \right).
+\end{eqnarray*}
+At the minimum:
+\begin{equation}\label{eq:rmin}
+\frac{d}{dr} D = 0 \stackrel{r \neq 0}{\iff} nr^2  = \sum_i (x_i-a)^2 + \sum_i(y_i-b)^2.
+\end{equation}
+%
+%
+The  derivative of $D$ with respect to $a$ is:
+\begin{eqnarray*}
+\frac{d}{da} D &=& 2 \sum_i \left( r^2 - (x_i-a)^2 - (y_i-b)^2 \right) 2 (x_i - a) = \\
+&=& -4 \left[ a \cdot nr^2 + \sum_i (x_i - a)^3  + \sum_i (x_i - a) (y_i - b)^2 \right].
+\end{eqnarray*}
+Using (\ref{eq:rmin}) for $nr^2$  in the equation above we get:
+\begin{eqnarray*}
+\frac{d}{da} D &=& -4 \left[  \sum_i a(x_i-a)^2 +  \sum_i a(y_i-b)^2  + \right. \\
+&& \phantom{-4 \ \ } \left . \sum_i (x_i - a)^3  + \sum_i (x_i - a) (y_i - b)^2 \right]  = \\
+&=& -4 \left[ \sum_i (x_i-a)^2 (a + x_i - a)  + \right.\\
+&& \phantom{-4 \ \ } \left .\sum_i (x_i - a + a) (y_i - b)^2 \right] = \\
+&=& -4 \left[ \sum_i (x_i-a)^2 x_i   + \sum_i x_i  (y_i - b)^2 \right] 
+\stackrel{\begin{array}{c}\sum_i x_i = 0\\
+\sum_i y_i = 0\end{array}}{=} \\
+&=& -4 \left[ \sum_i x_i^3   + \sum_i x_i y_i^2  - 2a s_{xx} - 2b s_{xy} \right],
+\end{eqnarray*}
+where $s_{xx} = \sum_i x_i^2, s_{xy} = \sum_i x_i y_i$ and $s_{yy} = \sum_i y_i^2$.
+
+\noindent
+Likewise, we get for the derivative of $D$ with respect to $b$:
+\begin{eqnarray*}
+\frac{d}{db} D &=& -4 \left[ \sum_i y_i^3   + \sum_i x_i^2 y_i - 2a s_{xy} - 2b s_{yy} \right].
+\end{eqnarray*}
+To find the minimum we therefore get a system of two linear equations in $a$ and $b$:
+\begin{eqnarray*}
+2 s_{xx} a + 2 s_{xy} b = c_1 && \text{ with } c_1 = \sum_i x_i^3 + x_i y_i^2 \\
+2 s_{xy} a + 2 s_{yy} b = c_2 &&\text{ with } c_2 = \sum_i x_i^2 y_i + y_i^3.
+\end{eqnarray*}
+The solution to the system is:
+\begin{eqnarray*}
+\hat{a} &=& \frac{c_1 s_{yy} - c_2 s_{xy}}{2 s_{xx} s_{yy} - 2 s_{xy}^2},\\
+\hat{b} &=& \frac{c_2 s_{xx} - c_1 s_{xy}}{2 s_{xx} s_{yy} - 2 s_{xy}^2}, \text{ and}\\
+\hat{r^2} &=& \frac{1}{n}s_{xx} + \frac{1}{n}s_{yy} + \hat{a}^2 + \hat{b}^2.
+\end{eqnarray*}
+
+
+The scatterplot in Figure~\ref{fig:residual} shows the residuals of such a fit.
+In this instance, the radius is estimated as $\hat{r} = \Sexpr{pars$radius}\mu m = \Sexpr{pars$radius/1000}mm$ and the land covers about \Sexpr{diff(range(dbr111$theta))} degrees.  Both of these estimates are consistent with a 9 mm bullet fired by a Ruger P-85.
+The residuals are dominated, as expected, by the grooves, which show up as large positive residuals. For a profile at height $x = 100\mu m$ there is a residual circular structure that does not show up for all signatures. 
+
+\begin{figure}[hbtp]
+  \centering
+\begin{subfigure}[b]{.49\textwidth}\centering
+\caption{\label{fig:residuala}Residual structure at height $x = 1.5625\mu m$ (bottom of the bullet).}
+<<residual2, dependson='fixedX', echo=FALSE, warning=FALSE, fig.height=3, out.width='\\textwidth'>>=
+qplot(data=subset(dbr111, x <= 1.5625), y, value-ypred, #colour=factor(x),
+      geom="line", size=I(1)) +
+#  scale_colour_brewer("x", palette="Paired") + 
+  theme_bw() + 
+  geom_hline(yintercept = 0, colour="grey50") +
+  ylab(expression(paste("Residuals (in ",mu,"m)", sep=""))) + 
+  theme(legend.position="bottom")
+@
+\end{subfigure}    
+\begin{subfigure}[b]{.49\textwidth}\centering
+\caption{\label{fig:residualb} Residual structure at height $x = 100.00\mu m$}
+<<residual, dependson='fixedX', echo=FALSE, warning=FALSE, fig.height=3, out.width='\\textwidth'>>=
+#qplot(data=subset(dbr111, x <= 80*1.5625^2 & x >=75*1.5625^2), y, value-ypred,
+qplot(data=subset(dbr111, x == 100), y, value-ypred,  #colour=factor(x), 
+      geom="line", size=I(1)) +
+#  scale_colour_brewer("x", palette="Paired") + 
+  geom_hline(yintercept = 0, colour="grey50") +
+  theme_bw() + 
+  ylab(expression(paste("Residuals (in ",mu,"m)", sep=""))) + 
+  theme(legend.position="bottom")
+@
+\end{subfigure}
+\caption{\label{fig:residual} Residual structure of circular fits at two different cross sections. Both residual plots show systematic structures, indicating that a circular fit is not entirely appropriate.}
+\end{figure}
+
+A single cylinder as a fit is unlikely to be a particularly good fit, because there seem to be quite massive deformations in the vertical direction. Even when we fit a circle at each distinct height of the bullet, as in Figure~\ref{fig:circlefits}, this does not address all of these issues. While the wider circumference at the base of the bullet can be resolved by individual circular fits, the systematic residual structure in Figure~\ref{fig:residualb} stays the same.
+
+<<bullet1, echo=FALSE, cache=TRUE>>=
+db1 <- NULL
+for (i in 1:6) {
+  bname <- sprintf(file.path(datadir, "Br1 Bullet 1-%d.x3p"), i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  db1 <- rbind(db1, dbi)
+}
+
+db1 <- db1 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+@
+
+<<bullet2, echo=FALSE, cache=TRUE>>=
+db2 <- NULL
+for (i in 1:6) {
+  bname <- sprintf(file.path(datadir, "Br1 Bullet 2-%d.x3p"), i)
+  dbi <- fortify_x3p(read.x3p(bname))
+  dbi$part <- i
+  db2 <- rbind(db2, dbi)
+}
+
+db2 <- db2 %>% group_by(part, x) %>% do (
+    data.frame(., predCircle(.$y, .$value))
+  )
+
+@
+
+\begin{figure}[hbtp]
+  \centering
+<<circlefits, echo=FALSE, fig.width=10, fig.height=5, out.width='\\textwidth', warning=FALSE>>=
+db2$land <- db2$part
+db1$land <- db1$part
+qplot(y, resid, data=subset(db2, x == 100), #colour=factor(x), 
+      geom="line", size=I(.75), colour=I("grey70")) + 
+  facet_wrap(~land, ncol=3, labeller="label_both") + 
+  scale_colour_brewer(palette="Paired") +
+  theme_bw() + theme(legend.position="bottom") + 
+  geom_line(aes(y, resid, group = x), colour="black", size=.75, alpha=0.5,
+             data = filter(db1, land==5, x == 100)[,c("y", "resid", "x")]) +
+  ylab("Residuals from circular fit") +
+  ggtitle("Bullet 1-5 in black")
+@
+\caption{Circular fit to the signature of each land of bullet 2, with signature from bullet 1-5 overlaid.\label{fig:circlefits} The signature of bullet 1-5 matches best with bullet 2-1.}
+\end{figure}
+
+\newpage
+\section{Assessing cross-correlation between signatures at multiple levels of height}\label{supp:ccf}
+
+Figure~\ref{fig:crosscuts} shows a sequence of signatures for bullet 1-5 (barrel 1) that are taken at heights 50$\mu m$ apart, between 150$\mu m$  and 400$\mu m$. These are compared to the signature at a height of 100$\mu m$. Initially, this comparison constitutes an almost perfect match between the two signatures. However, the match quickly deteriorates with increasing distance between the heights at which signatures are extracted.  Only if signatures are from heights  within 150$\mu m$ do we get a good visual match even when we know that the same bullet surface is being used. 
+Given that we have to expect some variation in nominally the same height values due to (manual) alignments in microscopes, we should take height values into account in the automatic matching routine by evaluating matches at several heights. 
+\begin{figure}[hbtp]
+  \centering
+<<crosscuts-vary, echo=FALSE, fig.width = 12, fig.height = 7, out.width = '\\textwidth', cache=TRUE, warning = FALSE>>=
+
+scrubPath <- function(x) {
+  splits <- strsplit(as.character(x), split="/")
+  last <- sapply(splits, function(x) x[length(x)])
+  gsub(".x3p","", last)
+}
+
+paths <- file.path(datadir, dir(datadir))
+crosscuts <- seq(100, 400, by = 50)
+lof <- processBullets(read.x3p(paths[5]), name = scrubPath(paths[5]), x = crosscuts)
+lof$bullet <- paste(lof$bullet, lof$x)
+
+reslist <- lapply(crosscuts[-1], function(cc) {
+#  browser()
+  b2 <- subset(lof, x %in% c(cc, 100))
+  lofX <- bulletSmooth(b2)
+  bAlign = bulletAlign(lofX)
+  lofX <- bAlign$bullet
+    b12 <- unique(b2$bullet)
+  peaks1 <- get_peaks(subset(lofX, bullet==b12[1]), smoothfactor = 25)
+  peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = 25)
+
+#  threshold <- bulletPickThreshold(lofX, thresholds = seq(0.3, 1.5, by = 0.05))
+#  lines <- striation_identify(lofX, threshold = threshold)
+  peaks1$lines$bullet <- b12[1]
+  peaks2$lines$bullet <- b12[2]
+  lines <- striation_identifyXXX(peaks1$lines, peaks2$lines)
+
+  maxCMS <- maxCMS(lines$match==TRUE)
+  list(maxCMS = maxCMS, ccf = bAlign$ccf, lines=lines, bullets=lofX)
+})
+
+ccfs <- sapply(reslist, function(res) res$ccf)
+
+lop <- lapply(reslist, function(res) {
+ggplot() +
+  theme_bw() + 
+  geom_rect(aes(xmin=xmin, xmax=xmax, fill=factor(type)), show.legend=FALSE, ymin=-6, ymax=5, data=res$lines, alpha=0.2) +
+  geom_line(aes(x = y, y = l30, linetype=bullet),   data = res$bullets, alpha=0.6) +
+  scale_colour_brewer("", palette="Set1", na.value=alpha("grey50", alpha=0.5)) +
+  scale_linetype_discrete("") +
+  scale_fill_brewer("", palette="Set2", na.value=alpha("grey50", alpha=0.5)) +
+  theme(legend.position = c(1,1.2), legend.justification=c(1,1),
+        legend.background = element_rect(fill=alpha('white', 0.4))) + 
+  ylim(c(-6,6)) +
+  geom_text(aes(x = meany), y= -5.5, label= "x", data = subset(res$lines, !match)) +
+  geom_text(aes(x = meany), y= -5.5, label= "o", data = subset(res$lines, match)) +
+    ylab("") + xlab("")
+})
+
+
+grid.arrange(lop[[1]], lop[[2]], lop[[3]], lop[[4]], lop[[5]], lop[[6]],
+             ncol = 2)
+@
+\caption{\label{fig:crosscuts}Overview of the variations in the signatures at different heights. The signature extracted at $x = 100\mu m$ is compared to signatures at every 50$\mu m$. With every step away from the original height, the number of differences between the signatures increases; the number of maximum CMS decreases from initially 22 to  four or fewer at a height of $x = 300\mu m$ and above. }
+\end{figure}
+
+\newpage
+\section{Signature intensities}\label{supp:bulletbottom}
+<<setup-signatures, echo=FALSE, message=FALSE>>=
+library(x3pr)
+library(x3prplus)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(zoo)
+
+knowndatadir <- "images/Hamby252_3DX3P1of2/"
+unknowndatadir <- "images/Hamby252_3DX3P2of2/"
+
+
+###############
+# can we identify the barrels the unknown bullets came from?
+
+new_processBullets <- function(bullet, x = 100) {
+  crosscuts <- unique(fortify_x3p(bullet)$x)
+  crosscuts <- crosscuts[crosscuts >= min(x)]
+  crosscuts <- crosscuts[crosscuts <= max(x)]
+  if (length(x) > 2) crosscuts <- crosscuts[crosscuts %in% x]
+  
+  list_of_fits <- lapply(crosscuts, function(x) {
+    br111 <- get_crosscut(path = NULL, x = x, bullet = bullet)
+    br111.groove <- get_grooves(br111)
+    fit_loess(br111, br111.groove)$resid$data
+  })
+  lof <- list_of_fits %>% bind_rows
+  
+  cbind(lof, bullet = bullet$path)
+}
+
+new_bulletGetMaxCMSXXX <- function(lof1, lof2, span=35) {
+  lof <- rbind(lof1, lof2)
+  bAlign = bulletAlign(lof)
+  lofX <- bAlign$bullet  
+  
+  b12 <- unique(lof$bullet)
+  peaks1 <- get_peaks(subset(lofX, bullet==b12[1]), smoothfactor = span)
+  peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = span)
+  
+  #qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
+  #    theme_bw() +
+  #    geom_rect(data=peaks1$lines, aes(xmin=xmin, xmax=xmax, fill=factor(type)), ymin=-5, ymax=5, inherit.aes = FALSE, alpha=I(0.25)) +
+  #    geom_rect(data=peaks2$lines, aes(xmin=xmin, xmax=xmax, fill=factor(type)), ymin=-5, ymax=5, inherit.aes = FALSE, alpha=I(0.25))
+  
+  peaks1$lines$bullet <- b12[1]
+  peaks2$lines$bullet <- b12[2]
+  
+  lines <- striation_identifyXXX(peaks1$lines, peaks2$lines)
+  
+  #   p <- qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
+  #     theme_bw() +
+  #     geom_rect(data=lines, aes(xmin=xmin, xmax=xmax, fill = factor(type)),  ymin=-6, ymax=6, inherit.aes = FALSE, alpha=I(0.25)) +
+  #     ylim(c(-6,6)) +
+  #     geom_text(aes(x = meany), y= -5.5, label= "x", data = subset(lines, !match), inherit.aes = FALSE) +
+  #     geom_text(aes(x = meany), y= -5.5, label= "o", data = subset(lines, match), inherit.aes = FALSE) 
+  
+  maxCMS <- maxCMS(lines$match==TRUE)
+  list(maxCMS = maxCMS, ccf = bAlign$ccf, lag=bAlign$lag, lines=lines, bullets=lofX)
+}  
+
+# match unknown land using crosscuts
+ccs <- read.csv("csvs/crosscuts-25.csv")
+all_bullets <- lapply(as.character(ccs$path), function(x) {
+  result <- read.x3p(x)
+  result[[3]] <- x
+  names(result)[3] <- "path"
+  
+  return(result)
+})
+
+knowns <- all_bullets[1:120]
+unknowns <- all_bullets[121:210]
+
+if (!file.exists("csvs/crosscut-sd.csv")) {
+  bullets_processed <- lapply(all_bullets, function(bul) {
+    #cat("Computing processed bullet", basename(bul$path), "\n")
+    crosscuts <- 25*(1:20)
+    dframe <- new_processBullets(bullet = bul, x = crosscuts)
+    dframe$bullet <- with(dframe, paste(bullet, x))
+    dframe
+  })
+  names(bullets_processed) <- as.character(ccs$path)
+  
+  bullets_smoothed <- bullets_processed %>% bind_rows %>% bulletSmooth
+  
+  stats <- bullets_smoothed %>% group_by(bullet, x) %>% summarize(
+    sd = sd(l30, na.rm=T)
+  )
+  splits <- strsplit(stats$bullet, split=".", fixed=TRUE)
+  bnames <- sapply(splits, function(x) paste(x[1],".x3p", sep=""))
+  stats$bullet <- bnames
+  
+  write.csv(stats, "csvs/crosscut-sd.csv", row.names=FALSE)
+} else {
+  stats <- read.csv("csvs/crosscut-sd.csv")
+}  
+@
+%
+Figure~\ref{fig:overview} shows an overview of the signatures at different heights on a single bullet. 
+\begin{figure}[hbtp]
+<<one-bulletland-sd, echo=FALSE, dependson='setup-signatures', fig.height=5, fig.width=8, out.width='0.7\\textwidth', warning=FALSE>>=
+k <- 1
+x <- as.character(ccs$path)[k]
+land <- read.x3p(x)
+land[[3]] <- x
+names(land)[3] <- "path"
+
+crosscuts <- 25*(1:20)
+dframe <- new_processBullets(bullet = land, x = crosscuts)
+dframe$bullet <- with(dframe, paste(bullet, x))
+
+bullet <- dframe %>% bind_rows %>% bulletSmooth 
+subbullet <- subset(bullet, x >= ccs$cc[k])
+qplot(x=y, geom="line", y=l30, colour=x, group=x, data=subbullet) + theme_bw() +
+  scale_colour_gradient("Crosscuts") +
+  theme(legend.position="bottom") +
+  ylab("Residuals from loess fit")
+@
+\caption{\label{fig:overview}Signatures of the same bullet at different heights.  With increasing height, peaks and valleys are less pronounced, resulting in a smaller standard deviation.}
+\end{figure}
+At larger heights  individual characteristics become less distinctive, making true matches to other bullets harder. The pattern of decreasing peaks and valleys is generally true for  bullet lands, as can be seen in Figure~\ref{fig:sds}. 
+%
+\begin{figure}[hbtp]
+\centering
+<<crosscuts-sd, echo=FALSE, fig.height=5, fig.width=8, out.width='.7\\textwidth', dependson='setup-signatures'>>=
+qplot(x, sd, data=stats, geom="line", group=bullet, alpha=I(0.5)) + theme_bw() +
+  geom_smooth(group=1) + 
+  xlab("Height (from the bottom of the bullet)") +
+  ylab("Standard deviation")
+@
+\caption{\label{fig:sds}Standard deviation reduces as height increase.}
+\end{figure}
+Figure~\ref{fig:sds} shows that the amount of standard deviation of a signature decreases on average for all bullet lands at larger heights.
+This makes standard deviation of a signature one measure to quantify the extent to which a signature is expressed. For identifying matches we should therefore use the lowest height to extract a bullet's signature once a stable surface region is detected. This is in accordance with current standard practice \citep{afte:1992}.
+
+%\newpage
+\section{Complete evaluation of the Hamby study}\label{supp:extended}
+One way to expand the use of the James Hamby study is to not only match all of the unknown bullet lands against the known bullet lands, but to compare every land against every other land. This effectively doubles the number of comparisons from 10,384 pairwise comparisons of usable bullet lands to 21,115 $\left[= (118+88)\cdot 205/2\right]$ comparisons by adding another 10,731 bullet land comparisons made up of known-to-known and unknown-to-unkown comparisons. 
+
+When we predict the new 10,731 comparisons using the random forest based on the previously considered 10,384 known-unknown comparisons, we encounter 18 false negatives and 9 false positives, corresponding to an actual false error rate of 0.19 and a false positive rate of 0.00085, which is close to the random forest's estimated OOB error rates of 0.226744 and 0.000098. 
+
+However, if we use all of the available comparisons to fit another random forest of 300 trees, the de-facto error rates for false positives and false negatives are again at 0. The estimated OOB error rates are 0.00024 for the false positive rate and 0.22180 for the false negative rate. The false positive rate is therefore virtually unchanged, while we see a slight improvement in the false negative rate for an overall OOB error rate of 0.3\%, i.e.\ an increase to twice the number of comparisons leads to a decrease of 25\% of the estimated error rate. This is yet another argument in favor of a larger database for training algorithms.
+
+%\hh{XXX maybe use log of D to remove the left boundary XXX}
+<<allhamby, echo=FALSE, message=FALSE, warning=FALSE>>=
+knowndatadir <- "images/Hamby252_3DX3P1of2/"
+knowns <- dir(path=knowndatadir)
+knowns <- gsub(".x3p", "", knowns)
+
+unknowndatadir <- "images/Hamby252_3DX3P2of2/"
+unknowns <- dir(path=unknowndatadir)
+unknowns <- gsub(".x3p", "", unknowns)
+
+#bstats <- read.csv("data-25-25/bullet-stats.csv")
+#flagged <- c("Br6 Bullet 2-1", "Br9 Bullet 2-4", "Ukn Bullet B-2", "Ukn Bullet Q-4")
+ballstats <- read.csv("data/data-new-all-25-25/bullet-stats-single.csv")
+
+includesVar <- setdiff(names(ballstats), c("b1", "b2", "data", "resID", "id.x", "id.y", "id", "pred", "forest", "bullet", "span", "crosscutdist", "flagged", "km", "forestsmall",
+                                        "left_cms", "right_cms", "left_noncms", "right_noncms"))
+
+library(randomForest)
+#set.seed(20151202)
+#rtrees <- randomForest(factor(match)~., data=subset(bstats, !flagged)[,includesVar], ntree=100)
+
+
+# names(ballstats)[10] <- "num.nonmatches"
+# names(ballstats)[11] <- "CNMS"
+# names(ballstats)[16] <- "S"
+# names(ballstats)[17] <- "CMS"
+#ballstats$forestsmall <- predict(rtrees, newdata=ballstats, type="prob")[,2]
+###########
+
+ballstats$insmall <- with(ballstats, ((b1 %in% knowns) & (b2 %in% unknowns)) | ((b2 %in% knowns) & (b1 %in% unknowns)))
+
+
+set.seed(20160512)
+rtrees2 <- randomForest(factor(match)~., data=subset(ballstats, !flagged & insmall)[,includesVar], ntree=300)
+
+
+ballstats$forestsmall <- predict(rtrees2, newdata=ballstats, type="prob")[,2]
+
+# xtabs(~(forestsmall>0.5)+match+insmall, data=ballstats[!ballstats$flagged,])
+
+
+set.seed(20151201)
+rtrees3 <- randomForest(factor(match)~., data=subset(ballstats, !flagged)[,includesVar], ntree=300)
+ballstats$forest <- predict(rtrees3, newdata=ballstats, type="prob")[,2]
+#xtabs(~(forest>0.5)+match+insmall, data=ballstats[!ballstats$flagged,])
+#qplot(forest, data=subset(ballstats, !flagged), geom="jitter", y=match)
+@
+% 9/(10628+9)
+% 18/(76+18)
+
+
+
+%\hh{Show aligned signatures for all ten barrels. }
+
+Figures~\ref{fig:aligned} and~\ref{fig:aligned-second} give an overview of all the signatures from bullet lands in the Hamby study aligned by barrel. Three to five bullets were fired from each barrel. The figures give us both some insight into how well signatures match and how consistent individual characteristics are impregnated on bullets fired from each of the barrels. Signatures for some lands match remarkably well -- such as land 5 from barrel 1, whereas all lands from barrel 5 show some variability both in the location and depths of peaks and valleys.
+
+<<aligned, echo=FALSE, warning=FALSE,  cache=TRUE>>=
+matches <- read.csv("csvs/matches.csv", header = FALSE)
+matches$barrel <- rep(1:10, each=6)
+matches$id <- 1:nrow(matches)
+library(reshape2)
+mm <- melt(matches, id.var=c("barrel", "id"), na.rm=TRUE)
+mm <- subset(mm, value != "")
+mm$value <- gsub("Br.* Bullet ", "", mm$value)
+mm$prefix <- sprintf("Br%d Bullet ", mm$barrel)
+unkns <- grep("[A-Z]",mm$value)
+mm$prefix[unkns] <- "Ukn Bullet "
+mm$path <- "~/papers/2015-imaging-paper/app/images/Hamby252_3DX3P1of2//"
+mm$path[unkns] <- "~/papers/2015-imaging-paper/app/images/Hamby252_3DX3P2of2//"
+mm$path <-   with(mm, paste0(path, prefix, value, ".x3p"))
+  
+ccs <- read.csv("csvs/crosscuts-25-new.csv")
+mm <- merge(mm, ccs, by="path", all=TRUE)
+mm <- subset(mm, !is.na(mm$cc))
+
+crosscuts <- plyr::ldply(
+  1:nrow(mm), 
+  function(i) {
+    dframe <- get_crosscut(mm$path[i], mm$cc[i])
+    groove <- get_grooves(dframe)
+    data.frame(mm[i,], fit_loess(dframe, groove)$resid$data)
+  })
+
+crossSmooth <- bulletSmooth(crosscuts)
+
+alignme <- function(data) {
+#  browser()
+  data$bullet <- as.character(data$bullet)
+  bullets <- unique(data$bullet)
+  b1 <- bullets[1]
+  lofs <- NULL
+  for (i in bullets[-1]) {
+    lof <- subset(data, bullet %in% c(b1, i))
+    lofs <- rbind(lofs, bulletAlign(lof)$bullet)
+  }
+  lofs <- unique(lofs)
+  lofs
+}
+
+aligned <- crossSmooth %>% group_by(id) %>% do(
+  data.frame(alignme(.))
+)
+aligned$land <- (aligned$id %% 6)
+aligned$land[aligned$land==0] <- 6
+aligned$bulletland <- aligned$bullet
+aligned$bullet <- gsub("-[0-9]","",aligned$bullet)
+library(RColorBrewer)
+set.seed(20160106)
+cols <- rep(brewer.pal(n=10, name="Paired"), length=35)[sample(35, 35, replace=TRUE)]
+labels <- aligned %>% group_by(bulletland) %>% summarize(
+  x = max(y),
+  y = min(l30, na.rm=T),
+  label = gsub(" Bullet","",bulletland[1]),
+  barrel = barrel[1],
+  land = land[1],
+  bullet = bullet[1]
+)
+labels <- labels %>% group_by(barrel, land) %>% mutate(id=order(bulletland))
+@
+
+\begin{landscape}
+\begin{figure}[hbtp]
+<<aligned-first, dependson='aligned', echo=FALSE, warning=FALSE, fig.width=15, fig.height=10, out.width='7.5in'>>=
+qplot(x=y, y=l30, data=subset(aligned, barrel <=5), 
+      geom="line", group=bullet, colour=bullet) + 
+  ylim(c(-7,7)) + xlab("") + ylab("") + xlim(c(0,3000)) +
+  facet_grid(facets=barrel~land, labeller="label_both") + theme_bw() +
+  theme(plot.margin=unit(c(0,0,-1,-1), unit="line"), legend.position="none") + 
+  geom_label(aes(y=2.5*(id-3), label=label, colour=bullet), 
+             x = 3000, data=subset(labels, barrel <= 5), 
+             inherit.aes = FALSE, hjust="right", size=3, 
+             fill=alpha("white", .5)) +
+  scale_colour_manual(values=cols)
+@
+\caption{\label{fig:aligned}Overview of aligned signatures for all bullet lands for  barrels 1 to 5 of the Hamby study. }
+\end{figure}
+
+\begin{figure}[hbtp]
+<<aligned-second, dependson='aligned', echo=FALSE, warning=FALSE, fig.width=15, fig.height=10, out.width='7.5in'>>=
+qplot(x=y, y=l30, data=subset(aligned, barrel > 5), 
+      geom="line", group=bullet, colour=bullet) + 
+  ylim(c(-7,7)) + xlab("") + ylab("") + xlim(c(0,3000)) +
+  facet_grid(facets=barrel~land, labeller="label_both") + theme_bw() +
+  theme(plot.margin=unit(c(0,0,-1,-1), unit="line"), legend.position="none") + 
+  geom_label(aes(y=2.5*(id-3), label=label, colour=bullet), 
+             x = 3000, data=subset(labels, barrel > 5), 
+             inherit.aes = FALSE, hjust="right", size=3) +
+  scale_colour_manual(values=cols)
+@
+\caption{\label{fig:aligned-second}Overview of aligned signatures for all bullet lands for  barrels 5 to 10 of the Hamby study. }
+\end{figure}
+\end{landscape}
+\newpage
+\section{Table of feature importance}\label{supp:randomforest}
+Two random forests were calculated for the Hamby study. For the first random forest only comparisons of bullet lands from known bullets and unknown bullets were used. The second random forest is based on a full comparison of every land with every other land, increasing the number of comparisons from originally 10,384 (10,212 known non-matches and 172 known matches) by another 10,931 comparisons (10,637 known non-matches and 94 known matches). Random forests allow an assessment of variable importance (also called feature importance) as the mean decrease in Gini index when including each variable. 
+Table~\ref{tab:importance} shows the results for feature importance for both of these random forests. Importance~1 refers to the smaller subset, Importance~2 is the feature importance derived from the random forest based on all pairwise comparisons. 
+<<setup-rtrees, echo=FALSE, message=FALSE>>=
+bstats <- read.csv("data/data-25-25/bullet-stats.csv", stringsAsFactors = FALSE)
+
+library(randomForest)
+set.seed(20151202)
+includesVar <- setdiff(names(bstats), c("b1", "b2", "data", "resID", "id.x", "id.y", "pred", "forest", "bullet", "span", "crosscutdist", "flagged", "km"))
+
+rtrees <- randomForest(factor(match)~., data=subset(bstats, !flagged)[,includesVar], ntree=300)
+@
+
+\begin{table}[tbhp]
+\caption{\label{tab:importance}Table of  features derived from bullet image ordered by importance in predicting matches. Importance is measured in terms of mean decrease in gini index when including the variable in a decision tree. Averages (and standard deviations) for known matches (KM) and known non-matches (KNM) are shown in the last four columns.}
+\centering
+<<importance, echo=FALSE, results='asis', warning=FALSE>>=
+
+imp2 <- data.frame(importance(rtrees3))
+imp2$Variable <- row.names(imp2)
+names(imp2)[1] <- "Bigforest"
+
+imp <- data.frame(importance(rtrees))
+imp$Variable <- row.names(imp2)
+
+imp <- merge(imp, imp2, by="Variable")
+
+imp <- imp[order(-imp$MeanDecreaseGini),]
+names(imp)[2:3] <- c("Importance 1", "Importance 2")
+
+bstats <- subset(ballstats, insmall == TRUE)
+imp$meanMatch <- sapply(imp$Variable, function(var) {
+  mean(subset(bstats, match)[,var])
+})
+imp$sdMatch <- sapply(imp$Variable, function(var) {
+  sd(subset(bstats, match)[,var])
+})
+imp$meanNonMatch <- sapply(imp$Variable, function(var) {
+  mean(subset(bstats, !match)[,var])
+})
+imp$sdNonMatch <- sapply(imp$Variable, function(var) {
+  sd(subset(bstats, !match)[,var])
+})
+
+
+imp$meanMatch <- round(imp$meanMatch,1)
+imp$sdMatch <- sprintf("(%5.2f)", imp$sdMatch)
+imp$meanNonMatch <- round(imp$meanNonMatch,1)
+imp$sdNonMatch <- sprintf("(%7.2f)", imp$sdNonMatch)
+row.names(imp) <- 1:nrow(imp)
+imp$Variable[c(2,3,4,6,8)] <- c("#matches", "S", "#non-matches", "CMS", "CNMS")
+names(imp)[-(1:3)] <- c("KM", "(sd)", "KNM", "(sd)")
+print(xtable(imp, align="clrrrd{3.2}rd{3.2}", digits=c(0,0,1,1,1,2,1,2)), 
+      floating = FALSE)
+@
+\end{table}
+
+\bibliographystyle{imsart-nameyear.bst}
+%\biboptions{authoryear}
+\bibliography{references}
+
+
+\end{document}

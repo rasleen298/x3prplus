@@ -1,0 +1,350 @@
+\begin{thebibliography}{29}
+% BibTex style file: imsart-nameyear.bst, 2013-01-28
+% Default style options (sort=1,type=nameyear).
+% Used options (sort=1,type=nameyear).
+
+\bibitem[\protect\citeauthoryear{Biasotti}{1959}]{biasotti:1959}
+\begin{barticle}[author]
+\bauthor{\bsnm{Biasotti},~\bfnm{Alfred~A.}\binits{A.~A.}}
+(\byear{1959}).
+\btitle{A Statistical Study of the Individual Characteristics of Fired
+  Bullets}.
+\bjournal{Journal of Forensic Sciences}
+\bvolume{4}
+\bpages{34--50}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Breiman}{2001}]{breiman:2001}
+\begin{barticle}[author]
+\bauthor{\bsnm{Breiman},~\bfnm{Leo}\binits{L.}}
+(\byear{2001}).
+\btitle{Random Forests}.
+\bjournal{Machine Learning}
+\bvolume{45}
+\bpages{5--32}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Breiman et~al.}{1984}]{breiman:1984}
+\begin{bbook}[author]
+\bauthor{\bsnm{Breiman},~\bfnm{Leo}\binits{L.}},
+  \bauthor{\bsnm{Friedman},~\bfnm{Jerry~H.}\binits{J.~H.}},
+  \bauthor{\bsnm{Olshen},~\bfnm{R.~A.}\binits{R.~A.}} \AND
+  \bauthor{\bsnm{Stone},~\bfnm{C.~J.}\binits{C.~J.}}
+(\byear{1984}).
+\btitle{Classification and Regression Trees}.
+\bpublisher{Wadsworth, Inc.}
+\end{bbook}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Chu et~al.}{2013}]{thompson:2013}
+\begin{barticle}[author]
+\bauthor{\bsnm{Chu},~\bfnm{Wei}\binits{W.}},
+  \bauthor{\bsnm{Thompson},~\bfnm{Robert~M.}\binits{R.~M.}},
+  \bauthor{\bsnm{Song},~\bfnm{John}\binits{J.}} \AND
+  \bauthor{\bsnm{Vorburger},~\bfnm{Theodore~V.}\binits{T.~V.}}
+(\byear{2013}).
+\btitle{Automatic identification of bullet signatures based on consecutive
+  matching striae (CMS) criteria}.
+\bjournal{Forensic Science International}
+\bvolume{231}
+\bpages{137 - 141}.
+\bdoi{http://dx.doi.org/10.1016/j.forsciint.2013.04.025}
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Cleveland}{1979}]{cleveland:1979}
+\begin{barticle}[author]
+\bauthor{\bsnm{Cleveland},~\bfnm{William~S.}\binits{W.~S.}}
+(\byear{1979}).
+\btitle{Robust Locally Weighted Regression and Smoothing Scatterplots}.
+\bjournal{Journal of the American Statistical Association}
+\bvolume{74}
+\bpages{829--836}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{{Committee to Assess the Feasibility, Accuracy
+  and Technical Capability of a National Ballistics Database}}{2008}]{nap:2008}
+\begin{bbook}[author]
+\bauthor{\bsnm{{Committee to Assess the Feasibility, Accuracy and Technical
+  Capability of a National Ballistics Database}}}
+(\byear{2008}).
+\btitle{Ballistic Imaging}.
+\bpublisher{The National Academies Press}, \baddress{Washington, DC}.
+\bdoi{{10.17226/12162}}
+\end{bbook}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{{National Research Council}}{2009}]{NAS:2009}
+\begin{bbook}[author]
+\bauthor{\bsnm{{National Research Council}}}
+(\byear{2009}).
+\btitle{Strengthening Forensic Science in the United States: A Path Forward}.
+\bpublisher{The National Academies Press}, \baddress{Washington, DC}.
+\bdoi{10.17226/12589}
+\end{bbook}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{{De Ceuster} and
+  Dujardin}{2015}]{deceuster:2015}
+\begin{barticle}[author]
+\bauthor{\bsnm{{De Ceuster}},~\bfnm{J.}\binits{J.}} \AND
+  \bauthor{\bsnm{Dujardin},~\bfnm{S.}\binits{S.}}
+(\byear{2015}).
+\btitle{{{T}he reference ballistic imaging database revisited}}.
+\bjournal{Forensic Science International}
+\bvolume{248}
+\bpages{82--87}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{{De Kinder}, Tulleners and
+  Thiebaut}{2004}]{dekinder:2004}
+\begin{barticle}[author]
+\bauthor{\bsnm{{De Kinder}},~\bfnm{J.}\binits{J.}},
+  \bauthor{\bsnm{Tulleners},~\bfnm{F.}\binits{F.}} \AND
+  \bauthor{\bsnm{Thiebaut},~\bfnm{H.}\binits{H.}}
+(\byear{2004}).
+\btitle{{{R}eference ballistic imaging database performance}}.
+\bjournal{Forensic Science International}
+\bvolume{140}
+\bpages{207--215}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{{AFTE Criteria for Identification
+  Committee}}{1992}]{afte:1992}
+\begin{barticle}[author]
+\bauthor{\bsnm{{AFTE Criteria for Identification Committee}}}
+(\byear{1992}).
+\btitle{Theory of identification, range striae comparison reports and modified
+  glossary definitions – AFTE criteria for identification committee report}.
+\bjournal{AFTE Journal}
+\bvolume{24}
+\bpages{336--340}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Giannelli}{2011}]{giannelli:2011}
+\begin{barticle}[author]
+\bauthor{\bsnm{Giannelli},~\bfnm{Paul~C.}\binits{P.~C.}}
+(\byear{2011}).
+\btitle{Ballistics Evidence Under Fire}.
+\bjournal{Criminal Justice}
+\bvolume{25}
+\bpages{50--51}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Hamby, Brundage and Thorpe}{2009}]{hamby:2009}
+\begin{barticle}[author]
+\bauthor{\bsnm{Hamby},~\bfnm{James~E.}\binits{J.~E.}},
+  \bauthor{\bsnm{Brundage},~\bfnm{David~J.}\binits{D.~J.}} \AND
+  \bauthor{\bsnm{Thorpe},~\bfnm{James~W.}\binits{J.~W.}}
+(\byear{2009}).
+\btitle{{The Identification of Bullets Fired from 10 Consecutively Rifled 9mm
+  Ruger Pistol Barrels: A Research Project Involving 507 Participants from 20
+  Countries}}.
+\bjournal{AFTE Journal}
+\bvolume{41}
+\bpages{99--110}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Hofmann and Hare}{2015}]{x3prplus}
+\begin{bmanual}[author]
+\bauthor{\bsnm{Hofmann},~\bfnm{Heike}\binits{H.}} \AND
+  \bauthor{\bsnm{Hare},~\bfnm{Eric}\binits{E.}}
+(\byear{2015}).
+\btitle{x3prplus: Simple Models for x3d surface topology}
+\bnote{{R} package version 0.0.1}.
+\end{bmanual}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Hummel}{1996}]{hummel}
+\begin{barticle}[author]
+\bauthor{\bsnm{Hummel},~\bfnm{J\"urgen}\binits{J.}}
+(\byear{1996}).
+\btitle{Linked Bar Charts: Analysing Categorical Data Graphically.}
+\bjournal{Journal of Computational Statistics}
+\bvolume{11}
+\bpages{23--33}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Jain and Cao}{2015}]{jain:2015}
+\begin{bincollection}[author]
+\bauthor{\bsnm{Jain},~\bfnm{Anil~K.}\binits{A.~K.}} \AND
+  \bauthor{\bsnm{Cao},~\bfnm{K.}\binits{K.}}
+(\byear{2015}).
+\btitle{Fingerprint Image Analysis: Role of Orientation Patch and Ridge
+  Structure Dictionaries}.
+In \bbooktitle{Geometry Driven Statistics}
+(\beditor{\bfnm{I.~L.}\binits{I.~L.}~\bsnm{Dryden}} \AND
+  \beditor{\bfnm{J.~T.}\binits{J.~T.}~\bsnm{Kent}}, eds.)
+\bpublisher{John Wiley and Sons}, \baddress{New York}.
+\end{bincollection}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Jain and Ross}{2015}]{jain:2015:tphil}
+\begin{barticle}[author]
+\bauthor{\bsnm{Jain},~\bfnm{A.~K.}\binits{A.~K.}} \AND
+  \bauthor{\bsnm{Ross},~\bfnm{A.}\binits{A.}}
+(\byear{2015}).
+\btitle{Bridging the Gap: From Biometrics to Forensics}.
+\bjournal{Philosophical Transactions of The Royal Society B}
+\bvolume{370}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Liaw and Wiener}{2002}]{randomForest}
+\begin{barticle}[author]
+\bauthor{\bsnm{Liaw},~\bfnm{Andy}\binits{A.}} \AND
+  \bauthor{\bsnm{Wiener},~\bfnm{Matthew}\binits{M.}}
+(\byear{2002}).
+\btitle{Classification and Regression by randomForest}.
+\bjournal{R News}
+\bvolume{2}
+\bpages{18-22}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Ma et~al.}{2004}]{ma:2004}
+\begin{barticle}[author]
+\bauthor{\bsnm{Ma},~\bfnm{L.}\binits{L.}},
+  \bauthor{\bsnm{Song},~\bfnm{J.}\binits{J.}},
+  \bauthor{\bsnm{Whitenton},~\bfnm{E.}\binits{E.}},
+  \bauthor{\bsnm{Zheng},~\bfnm{A.}\binits{A.}},
+  \bauthor{\bsnm{Vorburger},~\bfnm{T.}\binits{T.}} \AND
+  \bauthor{\bsnm{Zhou},~\bfnm{J.}\binits{J.}}
+(\byear{2004}).
+\btitle{{{N}{I}{S}{T} bullet signature measurement system for {R}{M}
+  ({R}eference {M}aterial) 8240 standard bullets}}.
+\bjournal{Journal of Forensic Sciences}
+\bvolume{49}
+\bpages{649--659}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Milborrow}{2015}]{rpart.plot}
+\begin{bmanual}[author]
+\bauthor{\bsnm{Milborrow},~\bfnm{Stephen}\binits{S.}}
+(\byear{2015}).
+\btitle{rpart.plot: Plot 'rpart' Models: An Enhanced Version of 'plot.rpart'}
+\bnote{{R} package version 1.5.3}.
+\end{bmanual}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Miller}{1998}]{miller:1998}
+\begin{barticle}[author]
+\bauthor{\bsnm{Miller},~\bfnm{J.}\binits{J.}}
+(\byear{1998}).
+\btitle{Criteria for identification of toolmarks}.
+\bjournal{AFTE Journal}
+\bvolume{30}
+\bpages{15--61}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Nichols}{1997}]{nichols:1997}
+\begin{barticle}[author]
+\bauthor{\bsnm{Nichols},~\bfnm{Ronald~G.}\binits{R.~G.}}
+(\byear{1997}).
+\btitle{Firearm and Toolmark Identification Criteria: A Review of the
+  Literature}.
+\bjournal{Journal of Forensic Sciences}
+\bvolume{42}
+\bpages{466--474}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Nichols}{2003a}]{nichols:2003}
+\begin{barticle}[author]
+\bauthor{\bsnm{Nichols},~\bfnm{Ronald~G.}\binits{R.~G.}}
+(\byear{2003}a).
+\btitle{{Consecutive Matching Striations (CMS): Its Definition, Study and
+  Application in the Discipline of Firearms and Tool Mark Identification}}.
+\bjournal{AFTE Journal}
+\bvolume{35}
+\bpages{298--306}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Nichols}{2003b}]{nichols:2003b}
+\begin{barticle}[author]
+\bauthor{\bsnm{Nichols},~\bfnm{Ronald~G.}\binits{R.~G.}}
+(\byear{2003}b).
+\btitle{Firearm and Toolmark Identification Criteria: A Review of the
+  Literature: part II}.
+\bjournal{Journal of Forensic Sciences}
+\bvolume{48}
+\bpages{318--327}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Roberge and Beauchamp}{2006}]{roberge:2006}
+\begin{barticle}[author]
+\bauthor{\bsnm{Roberge},~\bfnm{D.}\binits{D.}} \AND
+  \bauthor{\bsnm{Beauchamp},~\bfnm{A.}\binits{A.}}
+(\byear{2006}).
+\btitle{The use of BulletTrax-3D in a study of consecutively manufactured
+  barrels}.
+\bjournal{AFTE Journal}
+\bvolume{38}
+\bpages{166--172}.
+\end{barticle}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{{R Core Team}}{2015}]{R}
+\begin{bmanual}[author]
+\bauthor{\bsnm{{R Core Team}}}
+(\byear{2015}).
+\btitle{R: A Language and Environment for Statistical Computing}
+\bpublisher{R Foundation for Statistical Computing},
+\baddress{Vienna, Austria}.
+\end{bmanual}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Therneau, Atkinson and Ripley}{2015}]{rpart}
+\begin{bmanual}[author]
+\bauthor{\bsnm{Therneau},~\bfnm{Terry}\binits{T.}},
+  \bauthor{\bsnm{Atkinson},~\bfnm{Beth}\binits{B.}} \AND
+  \bauthor{\bsnm{Ripley},~\bfnm{Brian}\binits{B.}}
+(\byear{2015}).
+\btitle{rpart: Recursive Partitioning and Regression Trees}
+\bnote{{R} package version 4.1-10}.
+\end{bmanual}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Tukey}{1977}]{tukey:1977}
+\begin{bbook}[author]
+\bauthor{\bsnm{Tukey},~\bfnm{John~Wilder}\binits{J.~W.}}
+(\byear{1977}).
+\btitle{Exploratory Data Analysis.}
+\bpublisher{Addison-Wesley}.
+\end{bbook}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Wickham}{2009}]{ggplot2}
+\begin{bbook}[author]
+\bauthor{\bsnm{Wickham},~\bfnm{Hadley}\binits{H.}}
+(\byear{2009}).
+\btitle{ggplot2: Elegant Graphics for Data Analysis}.
+\bpublisher{Springer-Verlag New York}.
+\end{bbook}
+\endbibitem
+
+\bibitem[\protect\citeauthoryear{Xie}{2015}]{knitr}
+\begin{bbook}[author]
+\bauthor{\bsnm{Xie},~\bfnm{Yihui}\binits{Y.}}
+(\byear{2015}).
+\btitle{Dynamic Documents with {R} and knitr},
+\bedition{2nd} ed.
+\bpublisher{Chapman and Hall/CRC}, \baddress{Boca Raton, Florida}.
+\bnote{ISBN 978-1498716963}.
+\end{bbook}
+\endbibitem
+
+\end{thebibliography}
