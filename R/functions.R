@@ -526,7 +526,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
     dframe$bullet <- paste(gsub(".x3p", "", path), x)
     dframe
   }
-  bullet <- read.x3p(path, transpose = transpose)
+  bullet <- read.x3pplus(path, transpose = transpose)
   dbr111 <- fortify_x3p(bullet)
 
   done <- FALSE
