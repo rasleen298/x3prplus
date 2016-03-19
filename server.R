@@ -122,10 +122,13 @@ shinyServer(function(input, output, session) {
         
         aligned <- x3prplus:::bulletAlign_new(mydat)
         
+        sf <- input$smoothfactor
+        if (sf == 0) sf <- 1
+        
         lofX <- aligned$bullet
         b12 <- unique(lofX$bullet)
-        peaks1 <- get_peaks(subset(lofX, bullet == b12[1]), smoothfactor = input$smoothfactor)
-        peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = input$smoothfactor)
+        peaks1 <- get_peaks(subset(lofX, bullet == b12[1]), smoothfactor = sf)
+        peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = sf)
         
         dframe1 <- peaks1$dframe
         dframe2 <- peaks2$dframe
@@ -142,7 +145,10 @@ shinyServer(function(input, output, session) {
         br1 <- filter(smoothed(), bullet == values$path1)
         br2 <- filter(smoothed(), bullet == values$path2)
         
-        bulletGetMaxCMS(br1, br2, span = input$smoothfactor)
+        sf <- input$smoothfactor
+        if (sf == 0) sf <- 1
+        
+        bulletGetMaxCMS(br1, br2, span = sf)
     })
     
     features <- reactive({
@@ -191,26 +197,26 @@ shinyServer(function(input, output, session) {
                   D=distr.dist, 
                   sd.D = distr.sd,
                   b1=b12[1], b2=b12[2], x1 = subLOFx1$x[1], x2 = subLOFx2$x[1],
-                  num.matches = sum(res$lines$match), 
+                  #num.matches = sum(res$lines$match), 
                   signature.length = signature.length,
                   matches.per.y = sum(res$lines$match) / signature.length,
-                  num.mismatches = sum(!res$lines$match), 
+                  #num.mismatches = sum(!res$lines$match), 
                   mismatches.per.y = sum(!res$lines$match) / signature.length,
-                  cms = res$maxCMS,
+                  #cms = res$maxCMS,
                   cms.per.y = res$maxCMS / signature.length,
-                  cms2 = x3prplus::maxCMS(subset(res$lines, type==1 | is.na(type))$match),
+                  #cms2 = x3prplus::maxCMS(subset(res$lines, type==1 | is.na(type))$match),
                   cms2.per.y = x3prplus::maxCMS(subset(res$lines, type==1 | is.na(type))$match) / signature.length,
-                  non_cms = x3prplus::maxCMS(!res$lines$match),
+                  #non_cms = x3prplus::maxCMS(!res$lines$match),
                   non_cms.per.y = x3prplus::maxCMS(!res$lines$match) / signature.length,
-                  left_cms = max(knm[1] - km[1], 0),
+                  #left_cms = max(knm[1] - km[1], 0),
                   left_cms.per.y = max(knm[1] - km[1], 0) / signature.length,
-                  right_cms = max(km[length(km)] - knm[length(knm)],0),
+                  #right_cms = max(km[length(km)] - knm[length(knm)],0),
                   right_cms.per.y = max(km[length(km)] - knm[length(knm)],0) / signature.length,
-                  left_noncms = max(km[1] - knm[1], 0),
+                  #left_noncms = max(km[1] - knm[1], 0),
                   left_noncms.per.y = max(km[1] - knm[1], 0) / signature.length,
-                  right_noncms = max(knm[length(knm)]-km[length(km)],0),
+                  #right_noncms = max(knm[length(knm)]-km[length(km)],0),
                   right_noncms.per.y = max(knm[length(knm)]-km[length(km)],0) / signature.length,
-                  sumpeaks = sum(abs(res$lines$heights[res$lines$match])),
+                  #sumpeaks = sum(abs(res$lines$heights[res$lines$match])),
                   sumpeaks.per.y = sum(abs(res$lines$heights[res$lines$match])) / signature.length
         )
     })

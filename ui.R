@@ -21,7 +21,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             h4("Algorithm Options"),
             sliderInput("xcoord", "X Coordinate", min = 1, max = 1000, value = 136, step = 1),
             sliderInput("span", "Loess Span", min = 0.03, max = 0.2, value = 0.15, step = 0.01),
-            sliderInput("smoothfactor", "Smoothing Factor", min = 5, max = 50, step = 5, value = 35),
+            sliderInput("smoothfactor", "Smoothing Factor", min = 0, max = 50, step = 5, value = 35),
 
             actionButton("compute", "Compute Match Probability"),
             
