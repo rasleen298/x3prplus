@@ -616,7 +616,7 @@ bulletGetMaxCMS <- function(lof1, lof2, span=35) {
     bullet <- NULL
     
   lof <- rbind(lof1, lof2)
-  bAlign = bulletAlign_new(lof)
+  bAlign = bulletAlign(lof)
   lofX <- bAlign$bullet  
   
   b12 <- unique(lof$bullet)
