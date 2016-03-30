@@ -30,7 +30,8 @@ shinyServer(function(input, output, session) {
                              path2 = "images/Hamby252_3DX3P1of2/Br1 Bullet 1-3.x3p",
                              fort1_fixed = NULL, 
                              fort2_fixed = NULL,
-                             xcoord = NULL)
+                             xcoord1 = NULL,
+                             xcoord2 = NULL)
     
     bullet1 <- reactive({
         if (!is.null(input$file1)) values$path1 <- input$file1$datapath
@@ -57,14 +58,15 @@ shinyServer(function(input, output, session) {
         
         surf.mat <- cbind(surf.b1[1:minrows,], surf.b2[1:minrows,])
         
-        x_idx <- seq(1, nrow(surf.mat), by = input$subsample)
-        y_idx <- seq(1, ncol(surf.mat), by = input$subsample)
+        #x_idx <- seq(1, nrow(surf.mat), by = input$subsample)
+        #y_idx <- seq(1, ncol(surf.mat), by = input$subsample)
         
-        return(surf.mat[x_idx, y_idx])
+        return(surf.mat)
     })
     
     observe({
-         updateSliderInput(session, "xcoord", max = ncol(theSurface()) / 2 * input$subsample)
+         updateSliderInput(session, "xcoord1", max = ncol(theSurface()) / 2)
+        updateSliderInput(session, "xcoord2", max = ncol(theSurface()), min = 1 + ncol(theSurface()) / 2)
     })
     
     output$trendPlot <- renderPlotly({
@@ -79,31 +81,32 @@ shinyServer(function(input, output, session) {
     })
     
     observeEvent(input$compute, {
-        values$xcoord <- input$xcoord
+        values$xcoord1 <- input$xcoord1
+        values$xcoord2 <- input$xcoord2 - length(unique(fortify_x3p(bullet1())$x))
     })
     
     processed1 <- reactive({
-        if (is.null(bullet1()) || is.null(values$xcoord)) return(NULL)
+        if (is.null(bullet1()) || is.null(values$xcoord1)) return(NULL)
         
         bul <- bullet1()
         bul[[3]] <- values$path1
         names(bul)[3] <- "path"
         
         myx <- unique(fortify_x3p(bul)$x)
-        xval <- myx[which.min(abs(myx - values$xcoord))]
+        xval <- myx[which.min(abs(myx - values$xcoord1))]
         
         processBullets(bullet = bul, name = bul$path, x = xval)
     })
     
     processed2 <- reactive({
-        if (is.null(bullet2()) || is.null(values$xcoord)) return(NULL)
+        if (is.null(bullet2()) || is.null(values$xcoord2)) return(NULL)
         
         bul <- bullet2()
         bul[[3]] <- values$path2
         names(bul)[3] <- "path"
         
         myx <- unique(fortify_x3p(bul)$x)
-        xval <- myx[which.min(abs(myx - values$xcoord))]
+        xval <- myx[which.min(abs(myx - values$xcoord2))]
         
         processBullets(bullet = bul, name = bul$path, x = xval)
     })
@@ -120,7 +123,7 @@ shinyServer(function(input, output, session) {
         mydat <- smoothed()
         mydat$bullet <- c(rep("b1", nrow(processed1())), rep("b2", nrow(processed2())))
         
-        aligned <- x3prplus:::bulletAlign_new(mydat)
+        aligned <- x3prplus:::bulletAlign(mydat)
         
         sf <- input$smoothfactor
         if (sf == 0) sf <- 1
@@ -158,7 +161,7 @@ shinyServer(function(input, output, session) {
 
         lofX <- res$bullets
         
-        aligned <- x3prplus:::bulletAlign_new(lofX)
+        aligned <- x3prplus:::bulletAlign(lofX)
         b12 <- unique(lofX$bullet)
         
         subLOFx1 <- subset(aligned$bullets, bullet==b12[1])
