@@ -4,7 +4,8 @@
 \alias{get_grooves}
 \title{Find the grooves of a bullet land}
 \usage{
-get_grooves(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10)
+get_grooves(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10,
+  groove_cutoff = 500)
 }
 \arguments{
 \item{bullet}{data frame with topological data}
@@ -14,6 +15,8 @@ get_grooves(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10)
 \item{smoothplot}{Whether to show smoothed data on the resulting plot}
 
 \item{adjust}{positive number}
+
+\item{groove_cutoff}{The index at which a groove cannot exist past}
 }
 \description{
 Find the grooves of a bullet land

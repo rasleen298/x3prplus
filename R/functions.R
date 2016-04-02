@@ -70,11 +70,12 @@ get_bullet <- function(path, x = 243.75) {
 #' @param smoothfactor The smoothing window to use
 #' @param smoothplot Whether to show smoothed data on the resulting plot
 #' @param adjust positive number 
+#' @param groove_cutoff The index at which a groove cannot exist past
 #' @export
 #' @import ggplot2
 #' @importFrom zoo rollapply
 #' @importFrom zoo na.fill
-get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10) {
+get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10, groove_cutoff = 500) {
     value_filled <- na.fill(bullet$value, "extend")
     smoothed <- rollapply(value_filled, smoothfactor, function(x) mean(x))
     smoothed_truefalse <- rollapply(smoothed, smoothfactor, function(x) mean(x))
@@ -93,8 +94,8 @@ get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 
     groove_ind2 <- length(bullet$value) - groove_ind2_temp + 1
     
     ## Check that it actually FOUND a groove...
-    if (length(groove_ind) == 0 || groove_ind > 300) groove_ind <- 1
-    if (length(groove_ind2) == 0 || groove_ind2 < length(bullet$value) - 300) groove_ind2 <- length(bullet$value)
+    if (length(groove_ind) == 0 || groove_ind > groove_cutoff) groove_ind <- 1
+    if (length(groove_ind2) == 0 || groove_ind2 < length(bullet$value) - groove_cutoff) groove_ind2 <- length(bullet$value)
     
     xvals <- bullet$y
     yvals <- bullet$value
