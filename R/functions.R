@@ -40,10 +40,11 @@ unfortify_x3p <- function(df) {
 #' @param path path to an x3p file. The path will only be considered, if bullet is not specified.
 #' @param x level of the crosscut to be taken. If this level does not exist, the crosscut with the closest level is returned.
 #' @param bullet alternative access to the surface measurements. 
+#' @param transpose If TRUE, transpose the matrix
 #' @return data frame 
 #' @export
-get_crosscut <- function(path = NULL, x = 243.75, bullet = NULL) {
-  if (is.null(bullet)) bullet <- read.x3p(path)
+get_crosscut <- function(path = NULL, x = 243.75, bullet = NULL, transpose = FALSE) {
+  if (is.null(bullet)) bullet <- read.x3pplus(path, transpose = transpose)
   dbr111 <- fortify_x3p(bullet)
   
   pickx <- dbr111$x[which.min(abs(x - unique(dbr111$x)))]
@@ -114,7 +115,7 @@ get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 
         plot_groove_ind2 <- groove_ind2 - floor(lengthdiff / 2)
     }
     
-    p <- qplot(xvals, yvals) +
+    p <- qplot(xvals, yvals, geom = "line") +
         theme_bw() +
         geom_vline(xintercept = xvals[plot_peak_ind], colour = "red") +
         geom_vline(xintercept = xvals[plot_groove_ind], colour = "blue") +
@@ -758,16 +759,32 @@ bulletAlign_new <- function (data, value = "l30")  {
     shorter <- list(subLOFx1$value, subLOFx2$value)[[whichmin]]
     longer <- list(subLOFx1$value, subLOFx2$value)[[3 - whichmin]]
     
-    mycors <- NULL
-    for (i in 1:(length(longer) - length(shorter) + 1)) {
-        longersub <- longer[i:(i + length(shorter) - 1)]
-        mycors <- c(mycors, cor(shorter, longersub, use = "pairwise.complete.obs"))
-    }
+    regular_nona <- longer
+    regular_nona[is.na(regular_nona)] <- 0
+    degraded_nona <- shorter
+    degraded_nona[is.na(degraded_nona)] <- 0
     
-    #ccf <- ccf(subLOFx1$val, subLOFx2$val, plot = FALSE, lag.max = 150, 
-    #           na.action = na.omit)
-    #lag <- ccf$lag[which.max(ccf$acf)]
-    lag <- which.max(mycors)
+    #qplot(y, value, data = b1sub, colour = I("red"), geom = "line") + theme_bw() +
+    #    geom_line(data = b2sub, aes(x = y, y = value), colour = I("blue"))
+    
+    alignment <- dtw(regular_nona, degraded_nona)
+    
+    mapping <- data.frame(index1 = alignment$index1, index2 = alignment$index2)
+    mapping <- mapping %>%
+        group_by(index1) %>%
+        summarise(index2_new = max(index2))
+    result <- mapping %>% group_by(index2_new) %>% summarise(index1 = tail(index1, n = 1))
+    mydiffs <- apply(result, 1, diff)
+    
+    #qplot(b1sub$y, b1sub$value, colour = I("red"), geom = "line") + 
+    #   geom_line(aes(x = b2sub$y, y = b2sub$value), colour = I("blue"))
+    
+    #result <- which.max(table(alignment$index2)[!(names(table(alignment$index2)) %in% tail(sort(unique(alignment$index2))))])
+    #index.val <- min.ind <- as.numeric(names(result))
+    #min.ind <- tail(which(alignment$index2 == index.val), n = 1)
+    #min.ind <- 478
+    #min.ind <- min(result$index1)
+    lag <- as.numeric(names(table(mydiffs))[which.max(table(mydiffs))])
     incr <- min(diff(sort(unique(subLOFx1$y))))
     
     mydat <- if (whichmin == 1) subLOFx1 else subLOFx2
@@ -775,7 +792,7 @@ bulletAlign_new <- function (data, value = "l30")  {
         
     mydat$y <- mydat$y + lag * incr
     bullets <- rbind(data.frame(mydat), data.frame(mydat2))
-    list(ccf = max(mycors), lag = lag * incr, bullets = bullets)
+    list(ccf = NA, lag = lag * incr, bullets = bullets)
 }
 
 #' Align two surface cross cuts according to maximal correlation
