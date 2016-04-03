@@ -5,7 +5,7 @@
 \title{Find the grooves of a bullet land}
 \usage{
 get_grooves(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10,
-  groove_cutoff = 500)
+  groove_cutoff = 400)
 }
 \arguments{
 \item{bullet}{data frame with topological data}

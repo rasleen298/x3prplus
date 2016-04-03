@@ -4,7 +4,7 @@
 \alias{processBullets}
 \title{Process x3p file}
 \usage{
-processBullets(bullet, name = "", x = 100)
+processBullets(bullet, name = "", x = 100, ...)
 }
 \arguments{
 \item{bullet}{file as returned from read.x3p}
@@ -12,6 +12,8 @@ processBullets(bullet, name = "", x = 100)
 \item{name}{name of the bullet}
 
 \item{x}{(vector) of surface crosscuts to process.}
+
+\item{...}{Additional arguments, passed to the get_grooves function}
 }
 \value{
 data frame

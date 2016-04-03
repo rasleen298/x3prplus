@@ -386,10 +386,11 @@ predSmooth <- function(x, y) {
 #' @param bullet file as returned from read.x3p
 #' @param name name of the bullet
 #' @param x (vector) of surface crosscuts to process. 
+#' @param ... Additional arguments, passed to the get_grooves function
 #' @return data frame
 #' @importFrom dplyr bind_rows %>%
 #' @export
-processBullets <- function(bullet, name = "", x = 100) {
+processBullets <- function(bullet, name = "", x = 100, ...) {
   crosscuts <- unique(fortify_x3p(bullet)$x)
   crosscuts <- crosscuts[crosscuts >= min(x)]
   crosscuts <- crosscuts[crosscuts <= max(x)]
@@ -397,7 +398,7 @@ processBullets <- function(bullet, name = "", x = 100) {
   
   list_of_fits <- lapply(crosscuts, function(x) {
     br111 <- get_crosscut(path = NULL, x = x, bullet = bullet)
-    br111.groove <- get_grooves(br111)
+    br111.groove <- get_grooves(br111, ...)
     fit_loess(br111, br111.groove)$resid$data
   })
   lof <- list_of_fits %>% bind_rows
