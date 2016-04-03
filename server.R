@@ -7,6 +7,7 @@ library(gridExtra)
 library(zoo)
 library(reshape2)
 library(randomForest)
+library(dtw)
 
 options(shiny.maxRequestSize=30*1024^2) 
 
@@ -58,15 +59,15 @@ shinyServer(function(input, output, session) {
         
         surf.mat <- cbind(surf.b1[1:minrows,], surf.b2[1:minrows,])
         
-        #x_idx <- seq(1, nrow(surf.mat), by = input$subsample)
-        #y_idx <- seq(1, ncol(surf.mat), by = input$subsample)
+        x_idx <- seq(1, nrow(surf.mat), by = input$subsample)
+        y_idx <- seq(1, ncol(surf.mat), by = input$subsample)
         
-        return(surf.mat)
+        return(surf.mat[x_idx, y_idx])
     })
     
     observe({
-         updateSliderInput(session, "xcoord1", max = ncol(theSurface()) / 2)
-        updateSliderInput(session, "xcoord2", max = ncol(theSurface()), min = 1 + ncol(theSurface()) / 2)
+         updateSliderInput(session, "xcoord1", max = ncol(theSurface()) / 2 )
+        updateSliderInput(session, "xcoord2", max = ncol(theSurface()), min = 1 + ncol(theSurface()) / 2 )
     })
     
     output$trendPlot <- renderPlotly({
@@ -82,7 +83,7 @@ shinyServer(function(input, output, session) {
     
     observeEvent(input$compute, {
         values$xcoord1 <- input$xcoord1
-        values$xcoord2 <- input$xcoord2 - length(unique(fortify_x3p(bullet1())$x))
+        values$xcoord2 <- input$xcoord2 - ncol(theSurface()) / 2
     })
     
     processed1 <- reactive({
@@ -123,7 +124,9 @@ shinyServer(function(input, output, session) {
         mydat <- smoothed()
         mydat$bullet <- c(rep("b1", nrow(processed1())), rep("b2", nrow(processed2())))
         
-        aligned <- x3prplus:::bulletAlign(mydat)
+        myfunc <- x3prplus:::bulletAlign
+        if (abs(nrow(processed1()) - nrow(processed2())) > 200) myfunc <- x3prplus:::bulletAlign_new
+        aligned <- myfunc(mydat)
         
         sf <- input$smoothfactor
         if (sf == 0) sf <- 1
