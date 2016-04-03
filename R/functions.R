@@ -75,7 +75,7 @@ get_bullet <- function(path, x = 243.75) {
 #' @import ggplot2
 #' @importFrom zoo rollapply
 #' @importFrom zoo na.fill
-get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10, groove_cutoff = 500) {
+get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10, groove_cutoff = 400) {
     value_filled <- na.fill(bullet$value, "extend")
     smoothed <- rollapply(value_filled, smoothfactor, function(x) mean(x))
     smoothed_truefalse <- rollapply(smoothed, smoothfactor, function(x) mean(x))
