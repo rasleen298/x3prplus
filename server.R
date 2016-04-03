@@ -96,7 +96,9 @@ shinyServer(function(input, output, session) {
         myx <- unique(fortify_x3p(bul)$x)
         xval <- myx[which.min(abs(myx - values$xcoord1))]
         
-        processBullets(bullet = bul, name = bul$path, x = xval)
+        groove.cutoff <- min(input$groove_cutoff, nrow(bullet2()[[2]]) / 2)
+        
+        processBullets(bullet = bul, name = bul$path, x = xval, groove_cutoff = groove.cutoff)
     })
     
     processed2 <- reactive({
@@ -109,7 +111,9 @@ shinyServer(function(input, output, session) {
         myx <- unique(fortify_x3p(bul)$x)
         xval <- myx[which.min(abs(myx - values$xcoord2))]
         
-        processBullets(bullet = bul, name = bul$path, x = xval)
+        groove.cutoff <- min(input$groove_cutoff, nrow(bullet2()[[2]]) / 2)
+
+        processBullets(bullet = bul, name = bul$path, x = xval, groove_cutoff = groove.cutoff)
     })
     
     smoothed <- reactive({

@@ -24,6 +24,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             
             sliderInput("span", "Loess Span", min = 0.01, max = 0.2, value = 0.03, step = 0.01),
             sliderInput("smoothfactor", "Smoothing Factor", min = 0, max = 50, step = 5, value = 25),
+            sliderInput("groove_cutoff", "Groove Cutoff", min = 1, max = 1000, value = 500),
 
             actionButton("compute", "Compute Match Probability"),
             
