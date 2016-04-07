@@ -1,15 +1,23 @@
-#' Convert a list of x3d file into a data frame
+#' Estimate the twist of an x3p file
 #' 
-#' x3d format consists of a list with header info and a 2d matrix of scan depths. 
-#' fortify_x3p turn the matrix into a variable within a data frame, using the parameters of the header as necessary.
-#' @param x3d a file in x3d format as return by function read.x3d
+#' 
+#' @param x3p a file in x3p format as return by function read.x3p
 #' @return data frame with variables x, y, and value
 #' @export
-fortify_x3p <- function(x3d) {
-  info <- x3d[[1]]
+
+
+#' Convert a list of x3p file into a data frame
+#' 
+#' x3p format consists of a list with header info and a 2d matrix of scan depths. 
+#' fortify_x3p turn the matrix into a variable within a data frame, using the parameters of the header as necessary.
+#' @param x3p a file in x3p format as return by function read.x3p
+#' @return data frame with variables x, y, and value
+#' @export
+fortify_x3p <- function(x3p) {
+  info <- x3p[[1]]
   
   df <- data.frame(expand.grid(x=1:info$num.pts.line, y=1:info$num.lines), 
-                   value=as.vector(t(x3d[[2]])))
+                   value=as.vector(t(x3p[[2]])))
   df$x <- (df$x-1) * info$x.inc
   df$y <- (df$y-1) * info$y.inc
   
@@ -18,10 +26,10 @@ fortify_x3p <- function(x3d) {
   df
 }
 
-#' Convert a data frame into an x3d file
+#' Convert a data frame into an x3p file
 #' 
 #' @param df A data frame produced by fortify_x3p
-#' @return An x3d object
+#' @return An x3p object
 #' @export
 unfortify_x3p <- function(df) {
     my.info <- attr(df, "info")
@@ -282,7 +290,7 @@ plot_3d_land <- function(path, bullet, groove, x = 99.84) {
 #' @param byxy (vector) of numeric value indicating the sapling resolution. If a single number, the same resolution is used for x and y.
 #' @return subset of the input variable
 #' @export
-sample.x3d <- function(dframe, byxy=c(2,2)) {
+sample.x3p <- function(dframe, byxy=c(2,2)) {
   x <- NULL
   y <- NULL
   # use fortified data set
