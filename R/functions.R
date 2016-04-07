@@ -1,10 +1,49 @@
-#' Estimate the twist of an x3p file
+#' Estimate the twist in a bullet land
 #' 
-#' 
-#' @param x3p a file in x3p format as return by function read.x3p
-#' @return data frame with variables x, y, and value
+#' Estimation of the twist in a barrel follows roughly the process described by Chu et al (2010).
+#' At the moment, twist is estimated from a single land - but the twist should be the same for the whole barrel. Therefore all lands of the same barrel should
+#' have the same twist.
+#' @param path to a file in x3p format
+#' @param bullet data in x3p format as returned by function read.x3p
+#' @return numeric value estimating the twist
 #' @export
+getTwist <- function(path, bullet = NULL, transpose = FALSE) {
+  if (is.null(bullet)) bullet <- read.x3pplus(path, transpose = transpose)
 
+  gg115 <- processBullets(
+    bullet, 
+    x=bullet$header.info$x.inc*c(0,bullet$header.info$num.pts.line), 
+    name=path)
+  
+  xs <- unique(gg115$x)
+  twist <- NULL
+  ccf <- NULL
+  aligned <- list()
+  
+  for (i in seq_along(xs)[-1]) {
+    profiles <- subset(gg115, x %in% xs[c(i,i-1)])  
+    profiles$bullet <- sprintf("%s-%s", path, profiles$x)
+    aligned[[i]] <- bulletAlign(profiles, value="resid")
+    twist <- c(twist, aligned[[i]]$lag)
+    ccf <- c(ccf, aligned[[i]]$ccf)
+  }
+  
+  #qplot(xs, c(0, twist)) + ylim(c(-10,10))
+  #qplot(xs, c(1, ccf)) + geom_hline(yintercept=0.95, colour="red")
+  #qplot(xs, cumsum(c(0, twist))) +ylim(c(700,1100))
+  dframe <- data.frame(x = xs, twist=cumsum(c(0, twist)), ccf = c(0,ccf))
+  #qplot(x, twist, data=subset(dframe, between(x, 220, 600))) +geom_smooth(method="lm")
+  
+  Rs <- data.frame(zoo::rollapply(data=dframe$twist, width=200, FUN=function(twist) {
+    x <- 1:length(twist)
+    m <- lm(twist~x)
+    data.frame(r.squared=summary(m)$r.squared, twist=coef(m)[2])
+  }, by=1))
+  
+  twist <- median(subset(Rs, r.squared > .8)$twist)
+  
+  twist
+}
 
 #' Convert a list of x3p file into a data frame
 #' 

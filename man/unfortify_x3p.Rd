@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{unfortify_x3p}
 \alias{unfortify_x3p}
-\title{Convert a data frame into an x3d file}
+\title{Convert a data frame into an x3p file}
 \usage{
 unfortify_x3p(df)
 }
@@ -10,9 +10,9 @@ unfortify_x3p(df)
 \item{df}{A data frame produced by fortify_x3p}
 }
 \value{
-An x3d object
+An x3p object
 }
 \description{
-Convert a data frame into an x3d file
+Convert a data frame into an x3p file
 }
 
