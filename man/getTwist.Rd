@@ -20,5 +20,6 @@ numeric value estimating the twist
 Estimation of the twist in a barrel follows roughly the process described by Chu et al (2010).
 At the moment, twist is estimated from a single land - but the twist should be the same for the whole barrel. Therefore all lands of the same barrel should
 have the same twist.
+A note on timing: at the moment calculating the twist rate for a bullet land takes several minutes.
 }
 
