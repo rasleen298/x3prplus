@@ -169,7 +169,7 @@ get_grooves <- function(bullet, smoothfactor = 15, adjust = 10, groove_cutoff = 
     plot_peak_ind <- which(original_bullet$y == bullet$y[peak_ind])
     plot_groove_ind <- which(original_bullet$y == bullet$y[groove_ind])
     plot_peak_ind2 <- which(original_bullet$y == bullet$y[peak_ind2])
-    plot_groove_ind2 <- which(original_bullet$y == bullet$y[plot_groove_ind2])
+    plot_groove_ind2 <- which(original_bullet$y == bullet$y[groove_ind2])
 
     p <- qplot(xvals, yvals, geom = "line") +
         theme_bw() +
