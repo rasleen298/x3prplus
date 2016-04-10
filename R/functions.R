@@ -171,13 +171,18 @@ get_grooves <- function(bullet, smoothfactor = 15, adjust = 10, groove_cutoff = 
     plot_peak_ind2 <- which(original_bullet$y == bullet$y[peak_ind2])
     plot_groove_ind2 <- which(original_bullet$y == bullet$y[groove_ind2])
     
-    if (abs(plot_groove_ind2 - plot_groove_ind) <= mean_window) plot_groove_ind2 <- length(original_bullet$value)
+    center <- which.min(abs(xvals - mean(xvals)))
+    
+    if (plot_groove_ind > center) {
+        plot_groove_ind2 <- plot_groove_ind
+        plot_groove_ind <- 0
+    }
 
     p <- qplot(xvals, yvals, geom = "line") +
         theme_bw() +
-        geom_vline(xintercept = xvals[plot_peak_ind], colour = "red") +
+       # geom_vline(xintercept = xvals[plot_peak_ind], colour = "red") +
         geom_vline(xintercept = xvals[plot_groove_ind], colour = "blue") +
-        geom_vline(xintercept = xvals[plot_peak_ind2], colour = "red") +
+        #geom_vline(xintercept = xvals[plot_peak_ind2], colour = "red") +
         geom_vline(xintercept = xvals[plot_groove_ind2], colour = "blue")
     
     return(list(groove = c(bullet$y[plot_groove_ind + adjust], 
