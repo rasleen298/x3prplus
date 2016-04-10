@@ -131,11 +131,11 @@ get_grooves <- function(bullet, smoothfactor = 15, adjust = 10, groove_cutoff = 
         mean.left.ind <- which.min(abs(bullet$y - mean_left))
         mean.right.ind <- which.min(abs(bullet$y - mean_right))
         
-        window.left.left <- mean.left.ind - mean_window
+        window.left.left <- max(1, mean.left.ind - mean_window)
         window.left.right <- mean.left.ind + mean_window
         
         window.right.left <- mean.right.ind - mean_window
-        window.right.right <- mean.right.ind + mean_window
+        window.right.right <- min(length(bullet$y), mean.right.ind + mean_window)
         
         bullet <- bullet[c(window.left.left:window.left.right, window.right.left:window.right.right), ]
         
