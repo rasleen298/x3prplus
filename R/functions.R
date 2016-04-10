@@ -127,6 +127,7 @@ get_bullet <- function(path, x = 243.75) {
 #' @importFrom zoo rollapply
 #' @importFrom zoo na.fill
 get_grooves <- function(bullet, smoothfactor = 15, smoothplot = FALSE, adjust = 10, groove_cutoff = 400, mean_left = NULL, mean_right = NULL, mean_window = 100) {
+    original_bullet <- bullet
     if (!is.null(mean_left) && !is.null(mean_right)) {
         mean.left.ind <- which.min(abs(bullet$y - mean_left))
         mean.right.ind <- which.min(abs(bullet$y - mean_right))
@@ -163,8 +164,8 @@ get_grooves <- function(bullet, smoothfactor = 15, smoothplot = FALSE, adjust = 
     if (length(groove_ind) == 0 || groove_ind > groove_cutoff) groove_ind <- 1
     if (length(groove_ind2) == 0 || groove_ind2 < length(bullet$value) - groove_cutoff) groove_ind2 <- length(bullet$value)
     
-    xvals <- bullet$y
-    yvals <- bullet$value
+    xvals <- original_bullet$y
+    yvals <- original_bullet$value
     
     plot_peak_ind <- peak_ind
     plot_groove_ind <- groove_ind
