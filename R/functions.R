@@ -116,8 +116,7 @@ get_bullet <- function(path, x = 243.75) {
 #' 
 #' @param bullet data frame with topological data
 #' @param smoothfactor The smoothing window to use
-#' @param smoothplot Whether to show smoothed data on the resulting plot
-#' @param adjust positive number 
+#' @param adjust positive number to adjust the grooves
 #' @param groove_cutoff The index at which a groove cannot exist past
 #' @param mean_left If provided, the location of the average left groove
 #' @param mean_right If provided, the location of the average right groove
@@ -126,7 +125,7 @@ get_bullet <- function(path, x = 243.75) {
 #' @import ggplot2
 #' @importFrom zoo rollapply
 #' @importFrom zoo na.fill
-get_grooves <- function(bullet, smoothfactor = 15, smoothplot = FALSE, adjust = 10, groove_cutoff = 400, mean_left = NULL, mean_right = NULL, mean_window = 100) {
+get_grooves <- function(bullet, smoothfactor = 15, adjust = 10, groove_cutoff = 400, mean_left = NULL, mean_right = NULL, mean_window = 100) {
     original_bullet <- bullet
     if (!is.null(mean_left) && !is.null(mean_right)) {
         mean.left.ind <- which.min(abs(bullet$y - mean_left))
@@ -167,22 +166,11 @@ get_grooves <- function(bullet, smoothfactor = 15, smoothplot = FALSE, adjust = 
     xvals <- original_bullet$y
     yvals <- original_bullet$value
     
-    plot_peak_ind <- peak_ind
-    plot_groove_ind <- groove_ind
-    plot_peak_ind2 <- peak_ind2
-    plot_groove_ind2 <- groove_ind2
-    
-    if (smoothplot) {
-        xvals <- 1:length(smoothed_truefalse)
-        yvals <- smoothed_truefalse
-    }
-    if (smoothplot) {
-        plot_peak_ind <- peak_ind_smoothed
-        plot_groove_ind <- groove_ind - floor(lengthdiff / 2)
-        plot_peak_ind2 <- peak_ind2 - floor(lengthdiff / 2)
-        plot_groove_ind2 <- groove_ind2 - floor(lengthdiff / 2)
-    }
-    
+    plot_peak_ind <- which(original_bullet$y == bullet$y[peak_ind])
+    plot_groove_ind <- which(original_bullet$y == bullet$y[groove_ind])
+    plot_peak_ind2 <- which(original_bullet$y == bullet$y[peak_ind2])
+    plot_groove_ind2 <- which(original_bullet$y == bullet$y[plot_groove_ind2])
+
     p <- qplot(xvals, yvals, geom = "line") +
         theme_bw() +
         geom_vline(xintercept = xvals[plot_peak_ind], colour = "red") +
@@ -190,8 +178,8 @@ get_grooves <- function(bullet, smoothfactor = 15, smoothplot = FALSE, adjust = 
         geom_vline(xintercept = xvals[plot_peak_ind2], colour = "red") +
         geom_vline(xintercept = xvals[plot_groove_ind2], colour = "blue")
     
-    return(list(groove = c(bullet$y[groove_ind + adjust], 
-                           bullet$y[groove_ind2 - adjust]), plot = p))
+    return(list(groove = c(bullet$y[plot_groove_ind + adjust], 
+                           bullet$y[plot_groove_ind2 - adjust]), plot = p))
 }
 
 #' Identify the location and the depth of peaks and heights at a crosscut
