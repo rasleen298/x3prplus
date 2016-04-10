@@ -90,10 +90,11 @@ unfortify_x3p <- function(df) {
 #' @param bullet alternative access to the surface measurements. 
 #' @param transpose If TRUE, transpose the matrix
 #' @return data frame 
+#' @importFrom zoo na.trim
 #' @export
 get_crosscut <- function(path = NULL, x = 243.75, bullet = NULL, transpose = FALSE) {
   if (is.null(bullet)) bullet <- read.x3pplus(path, transpose = transpose)
-  dbr111 <- fortify_x3p(bullet)
+  dbr111 <- na.trim(fortify_x3p(bullet))
   
   pickx <- dbr111$x[which.min(abs(x - unique(dbr111$x)))]
   
