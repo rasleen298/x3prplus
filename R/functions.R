@@ -177,6 +177,11 @@ get_grooves <- function(bullet, smoothfactor = 15, adjust = 10, groove_cutoff = 
         plot_groove_ind2 <- plot_groove_ind
         plot_groove_ind <- 0
     }
+    
+    if (plot_groove_ind2 < center) {
+        plot_groove_ind <- plot_groove_ind2
+        plot_groove_ind2 <- length(xvals)
+    }
 
     p <- qplot(xvals, yvals, geom = "line") +
         theme_bw() +
