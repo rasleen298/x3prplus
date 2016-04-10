@@ -10,6 +10,8 @@ getTwist(path, bullet = NULL, transpose = FALSE)
 \item{path}{to a file in x3p format}
 
 \item{bullet}{data in x3p format as returned by function read.x3p}
+
+\item{transpose}{If TRUE, transpose the matrix}
 }
 \value{
 numeric value estimating the twist

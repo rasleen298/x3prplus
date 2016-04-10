@@ -5,6 +5,7 @@
 #' have the same twist.
 #' @param path to a file in x3p format
 #' @param bullet data in x3p format as returned by function read.x3p
+#' @param transpose If TRUE, transpose the matrix
 #' @return numeric value estimating the twist
 #' @export
 getTwist <- function(path, bullet = NULL, transpose = FALSE) {
@@ -118,11 +119,29 @@ get_bullet <- function(path, x = 243.75) {
 #' @param smoothplot Whether to show smoothed data on the resulting plot
 #' @param adjust positive number 
 #' @param groove_cutoff The index at which a groove cannot exist past
+#' @param mean_left If provided, the location of the average left groove
+#' @param mean_right If provided, the location of the average right groove
+#' @param mean_window The window around the means to use
 #' @export
 #' @import ggplot2
 #' @importFrom zoo rollapply
 #' @importFrom zoo na.fill
-get_grooves <- function(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10, groove_cutoff = 400) {
+get_grooves <- function(bullet, smoothfactor = 15, smoothplot = FALSE, adjust = 10, groove_cutoff = 400, mean_left = NULL, mean_right = NULL, mean_window = 100) {
+    if (!is.null(mean_left) && !is.null(mean_right)) {
+        mean.left.ind <- which.min(abs(bullet$y - mean_left))
+        mean.right.ind <- which.min(abs(bullet$y - mean_right))
+        
+        window.left.left <- mean.left.ind - mean_window
+        window.left.right <- mean.left.ind + mean_window
+        
+        window.right.left <- mean.right.ind - mean_window
+        window.right.right <- mean.right.ind + mean_window
+        
+        bullet <- bullet[c(window.left.left:window.left.right, window.right.left:window.right.right), ]
+        
+        groove_cutoff <- Inf
+    }
+    
     value_filled <- na.fill(bullet$value, "extend")
     smoothed <- rollapply(value_filled, smoothfactor, function(x) mean(x))
     smoothed_truefalse <- rollapply(smoothed, smoothfactor, function(x) mean(x))

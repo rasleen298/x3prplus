@@ -4,8 +4,9 @@
 \alias{get_grooves}
 \title{Find the grooves of a bullet land}
 \usage{
-get_grooves(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10,
-  groove_cutoff = 400)
+get_grooves(bullet, smoothfactor = 15, smoothplot = FALSE, adjust = 10,
+  groove_cutoff = 400, mean_left = NULL, mean_right = NULL,
+  mean_window = 100)
 }
 \arguments{
 \item{bullet}{data frame with topological data}
@@ -17,6 +18,12 @@ get_grooves(bullet, smoothfactor = 35, smoothplot = FALSE, adjust = 10,
 \item{adjust}{positive number}
 
 \item{groove_cutoff}{The index at which a groove cannot exist past}
+
+\item{mean_left}{If provided, the location of the average left groove}
+
+\item{mean_right}{If provided, the location of the average right groove}
+
+\item{mean_window}{The window around the means to use}
 }
 \description{
 Find the grooves of a bullet land
