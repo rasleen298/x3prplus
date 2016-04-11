@@ -50,9 +50,10 @@ getTwist <- function(path, bullet = NULL, transpose = FALSE, twistlimit=NULL, cu
   Rs <- data.frame(zoo::rollapply(data=dframe$twist, width=200, FUN=function(twist) {
     x <- 1:length(twist)
     m <- lm(twist~x)
-    m2 <- try(robustbase::lmrob(twist~x, na.action=na.omit))
+    m2 <- try(robustbase::lmrob(twist~x, na.action=na.omit), silent=TRUE)
     if (class(m2) == "try-error") {
-      browser()
+      cat(sprintf("NAs in robust estimation of twist in land %s\n", path))
+#      browser()
       r.squared.robust=NA
       twistRobust=NA
     } else {
