@@ -10,13 +10,14 @@
 #' @param transpose If TRUE, transpose the matrix
 #' @return numeric value estimating the twist
 #' @export
-getTwist <- function(path, bullet = NULL, transpose = FALSE) {
+getTwist <- function(path, bullet = NULL, transpose = FALSE, twistlimit=NULL, cutoff=.75) {
   if (is.null(bullet)) bullet <- read.x3pplus(path, transpose = transpose)
 
   gg115 <- processBullets(
     bullet, 
     x=bullet$header.info$x.inc*c(0,bullet$header.info$num.pts.line), 
     name=path)
+  # qplot(data=gg115, x=y, y=x, fill=resid, geom="tile")+scale_fill_gradient2()
   
   xs <- unique(gg115$x)
   twist <- NULL
@@ -30,22 +31,61 @@ getTwist <- function(path, bullet = NULL, transpose = FALSE) {
     twist <- c(twist, aligned[[i]]$lag)
     ccf <- c(ccf, aligned[[i]]$ccf)
   }
-  
   #qplot(xs, c(0, twist)) + ylim(c(-10,10))
   #qplot(xs, c(1, ccf)) + geom_hline(yintercept=0.95, colour="red")
   #qplot(xs, cumsum(c(0, twist))) +ylim(c(700,1100))
-  dframe <- data.frame(x = xs, twist=cumsum(c(0, twist)), ccf = c(0,ccf))
+
+#  if (!is.null(twistlimit)) {
+    # is twistlimit a vector with two numbers?
+    twistConstraint <- pmin(twist, max(twistlimit))
+    twistConstraint <- pmax(twistConstraint, min(twistlimit))
+#  } else twistConstraint = twist
+  dframe <- data.frame(x = xs, twist=cumsum(c(0, twist)), 
+                       twistConstraint = cumsum(c(0, twistConstraint)), 
+                       ccf = c(0,ccf))
   #qplot(x, twist, data=subset(dframe, between(x, 220, 600))) +geom_smooth(method="lm")
   
   Rs <- data.frame(zoo::rollapply(data=dframe$twist, width=200, FUN=function(twist) {
     x <- 1:length(twist)
     m <- lm(twist~x)
-    data.frame(r.squared=summary(m)$r.squared, twist=coef(m)[2])
+    m2 <- try(robustbase::lmrob(twist~x, na.action=na.omit))
+    if (class(m2) == "try-error") {
+      browser()
+      r.squared.robust=NA
+      twistRobust=NA
+    } else {
+      r.squared.robust=summary(m2)$r.squared
+      twistRobust=coef(m2)[2]
+    }
+    
+    data.frame(r.squared=summary(m)$r.squared, twist=coef(m)[2],
+               r.squared.robust=r.squared.robust, 
+               twistRobust=twistRobust)
+  }, by=1))
+  RConstraint <- data.frame(zoo::rollapply(data=dframe$twistConstraint, width=200, FUN=function(twist) {
+    x <- 1:length(twist)
+    m <- lm(twist~x)
+    m2 <- robustbase::lmrob(twist~x)
+    data.frame(r.squared=summary(m)$r.squared, twist=coef(m)[2],
+               r.squared.robust=summary(m2)$r.squared, 
+               twistRobust=coef(m2)[2])
   }, by=1))
   
-  twist <- median(subset(Rs, r.squared > .8)$twist)
+    
+  q75 <- quantile(Rs$r.squared, probs=cutoff)
+  twist <- median(subset(Rs, r.squared > q75)$twist)
+  q75r <- quantile(Rs$r.squared.robust, probs=cutoff, na.rm=TRUE)
+  twistRobust <- median(subset(Rs, r.squared.robust > q75r)$twistRobust)
   
-  twist
+  q75C <- quantile(RConstraint$r.squared, probs=cutoff)
+  twistC <- median(subset(RConstraint, r.squared > q75)$twist)
+  q75rC <- quantile(RConstraint$r.squared.robust, probs=cutoff, na.rm=TRUE)
+  twistRobustC <- median(subset(RConstraint, r.squared.robust > q75r)$twistRobust)
+  
+  
+    
+  data.frame(twist=twist, min.r.squared=q75, twistRobust=twistRobust, min.r.squared.robust=q75r,
+             twistC=twistC, min.r.squaredC=q75C, twistRobustC=twistRobustC, min.r.squared.robustC=q75rC)
 }
 
 #' Convert a list of x3p file into a data frame
