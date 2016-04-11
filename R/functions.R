@@ -12,7 +12,9 @@
 #' @export
 getTwist <- function(path, bullet = NULL, transpose = FALSE, twistlimit=NULL, cutoff=.75) {
   if (is.null(bullet)) bullet <- read.x3pplus(path, transpose = transpose)
-
+  cat(path)
+  cat("\n")
+  
   gg115 <- processBullets(
     bullet, 
     x=bullet$header.info$x.inc*c(0,bullet$header.info$num.pts.line), 
