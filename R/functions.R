@@ -191,8 +191,8 @@ get_grooves <- function(bullet, smoothfactor = 15, adjust = 10, groove_cutoff = 
         #geom_vline(xintercept = xvals[plot_peak_ind2], colour = "red") +
         geom_vline(xintercept = xvals[plot_groove_ind2], colour = "blue")
     
-    return(list(groove = c(bullet$y[plot_groove_ind + adjust], 
-                           bullet$y[plot_groove_ind2 - adjust]), plot = p))
+    return(list(groove = c(original_bullet$y[plot_groove_ind + adjust], 
+                           original_bullet$y[plot_groove_ind2 - adjust]), plot = p))
 }
 
 #' Identify the location and the depth of peaks and heights at a crosscut
