@@ -4,7 +4,8 @@
 \alias{getTwist}
 \title{Estimate the twist in a bullet land}
 \usage{
-getTwist(path, bullet = NULL, transpose = FALSE)
+getTwist(path, bullet = NULL, transpose = FALSE, twistlimit = NULL,
+  cutoff = 0.75)
 }
 \arguments{
 \item{path}{to a file in x3p format}

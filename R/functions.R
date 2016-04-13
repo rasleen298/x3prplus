@@ -53,7 +53,7 @@ getTwist <- function(path, bullet = NULL, transpose = FALSE, twistlimit=NULL, cu
     m2 <- try(robustbase::lmrob(twist~x, na.action=na.omit), silent=TRUE)
     if (class(m2) == "try-error") {
       cat(sprintf("NAs in robust estimation of twist in land %s\n", path))
-#      browser()
+      browser()
       r.squared.robust=NA
       twistRobust=NA
     } else {
@@ -65,13 +65,23 @@ getTwist <- function(path, bullet = NULL, transpose = FALSE, twistlimit=NULL, cu
                r.squared.robust=r.squared.robust, 
                twistRobust=twistRobust)
   }, by=1))
+#  browser()
   RConstraint <- data.frame(zoo::rollapply(data=dframe$twistConstraint, width=200, FUN=function(twist) {
     x <- 1:length(twist)
     m <- lm(twist~x)
-    m2 <- robustbase::lmrob(twist~x)
+    m2 <- try(robustbase::lmrob(twist~x, na.action=na.omit), silent=TRUE)
+    if (class(m2) == "try-error") {
+      cat(sprintf("NAs in robust estimation of twist in land %s\n", path))
+      browser()
+      r.squared.robust=NA
+      twistRobust=NA
+    } else {
+      r.squared.robust=summary(m2)$r.squared
+      twistRobust=coef(m2)[2]
+    }
     data.frame(r.squared=summary(m)$r.squared, twist=coef(m)[2],
-               r.squared.robust=summary(m2)$r.squared, 
-               twistRobust=coef(m2)[2])
+               r.squared.robust=r.squared.robust, 
+               twistRobust=twistRobust)
   }, by=1))
   
     
