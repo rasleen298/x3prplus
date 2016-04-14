@@ -53,7 +53,7 @@ getTwist <- function(path, bullet = NULL, transpose = FALSE, twistlimit=NULL, cu
     m2 <- try(robustbase::lmrob(twist~x, na.action=na.omit), silent=TRUE)
     if (class(m2) == "try-error") {
       cat(sprintf("NAs in robust estimation of twist in land %s\n", path))
-      browser()
+ #     browser()
       r.squared.robust=NA
       twistRobust=NA
     } else {
@@ -72,7 +72,7 @@ getTwist <- function(path, bullet = NULL, transpose = FALSE, twistlimit=NULL, cu
     m2 <- try(robustbase::lmrob(twist~x, na.action=na.omit), silent=TRUE)
     if (class(m2) == "try-error") {
       cat(sprintf("NAs in robust estimation of twist in land %s\n", path))
-      browser()
+ #     browser()
       r.squared.robust=NA
       twistRobust=NA
     } else {
@@ -88,12 +88,12 @@ getTwist <- function(path, bullet = NULL, transpose = FALSE, twistlimit=NULL, cu
   q75 <- quantile(Rs$r.squared, probs=cutoff)
   twist <- median(subset(Rs, r.squared > q75)$twist)
   q75r <- quantile(Rs$r.squared.robust, probs=cutoff, na.rm=TRUE)
-  twistRobust <- median(subset(Rs, r.squared.robust > q75r)$twistRobust)
+  twistRobust <- median(subset(Rs, r.squared.robust > q75r)$twistRobust, na.rm=TRUE)
   
   q75C <- quantile(RConstraint$r.squared, probs=cutoff)
   twistC <- median(subset(RConstraint, r.squared > q75)$twist)
   q75rC <- quantile(RConstraint$r.squared.robust, probs=cutoff, na.rm=TRUE)
-  twistRobustC <- median(subset(RConstraint, r.squared.robust > q75r)$twistRobust)
+  twistRobustC <- median(subset(RConstraint, r.squared.robust > q75r)$twistRobust, na.rm=TRUE)
   
   
     
