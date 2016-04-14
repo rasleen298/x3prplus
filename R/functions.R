@@ -5,11 +5,17 @@
 #' At the moment, twist is estimated from a single land - but the twist should be the same for the whole barrel. Therefore all lands of the same barrel should
 #' have the same twist.
 #' A note on timing: at the moment calculating the twist rate for a bullet land takes several minutes.
+#' XXX TODO XXX make the different methods a parameter. ALso, accept other input than the path - if we start with the flattened bulletland we get resuts much faster.
 #' @param path to a file in x3p format
 #' @param bullet data in x3p format as returned by function read.x3p
 #' @param transpose If TRUE, transpose the matrix
 #' @return numeric value estimating the twist
 #' @export
+#' @example 
+#' # put in an example, and then exclude it from execution
+#' load("data/b1.rda")
+#' img <- fortify_x3p(b1)
+#' twist <- getTwist(path="barrel 1 bullet 1", bullet = img, twistlimit=c(-2,0)*1.5625)
 getTwist <- function(path, bullet = NULL, transpose = FALSE, twistlimit=NULL, cutoff=.75) {
   if (is.null(bullet)) bullet <- read.x3pplus(path, transpose = transpose)
   cat(path)
