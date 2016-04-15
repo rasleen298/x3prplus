@@ -16,14 +16,11 @@ source(system.file("gui/view", "helpers.R", package = "x3pr"))
 Sys.setenv("plotly_username" = "erichare")
 Sys.setenv("plotly_api_key" = "xd0oxpeept")
 
-matches <- read.csv("data/matches.csv", header=FALSE, stringsAsFactors = FALSE)
-matches$V3 <- paste("Ukn Bullet",matches$V3)
-matches$V4 <- paste("Ukn Bullet",matches$V4)
-matches$V5 <- paste("Ukn Bullet",matches$V5)
-matches$id <- 1:nrow(matches)
+grooves1 <- read.csv("data/grooves.csv")
+grooves44 <- read.csv("data/grooves-set44.csv")
 
-mm <- melt(matches, id.var="id")
-mm <- subset(mm, value != "Ukn Bullet ")
+grooves <- rbind(grooves1, grooves44)
+grooves$bullet <- basename(as.character(grooves$bullet))
 
 shinyServer(function(input, output, session) {
     
@@ -96,6 +93,13 @@ shinyServer(function(input, output, session) {
         myx <- unique(fortify_x3p(bul)$x)
         xval <- myx[which.min(abs(myx - values$xcoord1))]
         
+        if (basename(bul[[3]]) %in% grooves$bullet) {
+            left <- grooves$groove_left[grooves$bullet == basename(bul$path) & grooves$x == xval]
+            right <- grooves$groove_right[grooves$bullet == basename(bul$path) & grooves$x == xval]
+            
+            return(processBullets(bullet = bul, name = bul$path, x = xval, grooves = c(left, right)))
+        }
+        
         groove.cutoff <- min(input$groove_cutoff, nrow(bullet2()[[2]]) / 2)
         
         processBullets(bullet = bul, name = bul$path, x = xval, groove_cutoff = groove.cutoff)
@@ -110,6 +114,13 @@ shinyServer(function(input, output, session) {
         
         myx <- unique(fortify_x3p(bul)$x)
         xval <- myx[which.min(abs(myx - values$xcoord2))]
+        
+        if (basename(bul[[3]]) %in% grooves$bullet) {
+            left <- grooves$groove_left[grooves$bullet == basename(bul$path) & grooves$x == xval]
+            right <- grooves$groove_right[grooves$bullet == basename(bul$path) & grooves$x == xval]
+            
+            return(processBullets(bullet = bul, name = bul$path, x = xval, grooves = c(left, right)))
+        }
         
         groove.cutoff <- min(input$groove_cutoff, nrow(bullet2()[[2]]) / 2)
 
@@ -251,7 +262,6 @@ shinyServer(function(input, output, session) {
         
         includes <- setdiff(names(features), c("b1", "b2", "data", "resID", "id.x", "id.y", "pred", "span", "forest"))
         
-       # CCFs <- read.csv("data/bullet-stats.csv")
         load("data/rf.RData")
         
         matchprob <- round(predict(rtrees, newdata = features[,includes], type = "prob")[,2], digits = 4)
