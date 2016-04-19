@@ -1,0 +1,110 @@
+---
+title: "Matching Striae in Bullets Follow-up"
+author: "Eric Hare, Heike Hofmann, Alicia Carriquiry"
+date: "April 19, 2016"
+output: 
+    revealjs::revealjs_presentation:
+        highlight: pygments
+        transition: fade
+---
+
+```{r,echo=FALSE, message=FALSE,warning=FALSE}
+library(x3pr)
+library(x3prplus)
+library(ggplot2)
+library(dplyr)
+```
+
+## Goal
+
+- We wish to determine whether two bullets were fired from the same gun barrel
+- Striation patterns are unique to barrels and fairly stable
+- Forensic Examiners shoot bullets from guns of suspects, compare it to bullet from crime scene
+
+![](images/striations.jpg)
+
+## James Hamby Study
+
+- Ten consecutively rifled Ruger P-85 pistol barrels used to fire 20 "known" test bullets and 15 "unknown" bullets for comparison
+- Sets of 35 bullets sent to 507 Forensic Examiners for examination
+- 0 false positive identifications, 8 inconclusive results (out of 7605)
+
+## Procedure
+
+The basic procedure can be described as follows:
+
+1. Extract a profile at a fixed bullet height
+2. **Identify and remove the grooves from that profile**
+3. Fit a loess regression to the remaining profile (called the signature)
+4. Get the residuals from this regression
+5. Identify peaks and valleys in residuals
+6. **Extract features from the residuals**
+7. Use these features in a random forest to predict matches
+8. **Package algorithm in web application**
+
+## Identifying Grooves (Easy)
+
+```{r, message=FALSE, warning=FALSE, fig.height=5}
+result <- get_grooves(get_crosscut("~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 1-2.x3p"))
+result$plot
+```
+
+## Identifying Grooves (Challenging)
+
+```{r, message=FALSE, warning=FALSE, fig.height=5}
+result2 <- get_grooves(get_crosscut("~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 1-6.x3p"))
+result2$plot
+```
+
+## Improvements Made - Crosscut location
+
+```{r, message=FALSE, warning=FALSE, fig.height=2, echo=FALSE}
+get_grooves(get_crosscut("~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 1-4.x3p", x = 155))$plot
+get_grooves(get_crosscut("~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 1-4.x3p", x = 55))$plot
+```
+
+## Improvements Made - Mean Profile
+
+```{r, fig.height=3, message=FALSE, warning=FALSE}
+mybullet <- fortify_x3p(read.x3p("~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 1-4.x3p"))
+mean.bullet <- mybullet %>%
+    group_by(y) %>%
+    summarise(value = mean(value, na.rm = TRUE))
+qplot(y, value, data = mean.bullet, geom = "line") + theme_bw()
+```
+
+## Reminder: List of Features
+
+- Maximal number of CMS (consecutive matching striae), and, similarly, the number of consecutively non-matching striae (CNMS), 
+- Number of matches and non-matches,
+- Average difference $D$ between signatures, defined as the Euclidean vertical distance between surface measurements of aligned signatures.
+\[
+D^2 = \frac{1}{\text{\#}t}\sum_t \left[f(t) - g(t)\right]^2,
+\]
+- The sum $S$ of average absolute heights of matched extrema
+- Cross Correlation Function (CCF)
+
+# Question: Which features depend on the length of the signature?
+
+## Improvement: Scaling Features
+
+Scale each feature dependent on the length by the length of the signature
+
+- CMS per micrometer
+- Matches per micrometer
+- ...
+- Also include the length of the signature as a feature
+
+## Improvements: Web Application
+
+https://erichare.shinyapps.io/x3prproto
+
+## Future Work from Before
+
+- *We are extremely limited by data here - Currently we've only assessed this algorithm on one particular set of 35 bullets* (We now have 70 bullets! Huzzah!)
+- *There is likely an effect from the equipment used to scan the bullets, or the person performing the scan* There is - The new set looks very different
+- *We need to assess the quality of the algorithm in case we don't have full bullet lands available, as is the case in many forensics applications* In progress!
+
+## Thank You
+
+Any Questions?
