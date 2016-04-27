@@ -7,7 +7,6 @@ library(gridExtra)
 library(zoo)
 library(reshape2)
 library(randomForest)
-library(dtw)
 
 options(shiny.maxRequestSize=30*1024^2) 
 
@@ -16,10 +15,7 @@ source(system.file("gui/view", "helpers.R", package = "x3pr"))
 Sys.setenv("plotly_username" = "erichare")
 Sys.setenv("plotly_api_key" = "xd0oxpeept")
 
-grooves1 <- read.csv("data/grooves.csv")
-grooves44 <- read.csv("data/grooves-set44.csv")
-
-grooves <- rbind(grooves1, grooves44)
+grooves <- read.csv("data/grooves.csv")
 grooves$bullet <- basename(as.character(grooves$bullet))
 
 shinyServer(function(input, output, session) {
@@ -139,9 +135,7 @@ shinyServer(function(input, output, session) {
         mydat <- smoothed()
         mydat$bullet <- c(rep("b1", nrow(processed1())), rep("b2", nrow(processed2())))
         
-        myfunc <- x3prplus:::bulletAlign
-        if (abs(nrow(processed1()) - nrow(processed2())) > 200) myfunc <- x3prplus:::bulletAlign_new
-        aligned <- myfunc(mydat)
+        aligned <- x3prplus:::bulletAlign_test(mydat)
         
         sf <- input$smoothfactor
         if (sf == 0) sf <- 1
@@ -179,14 +173,11 @@ shinyServer(function(input, output, session) {
 
         lofX <- res$bullets
         
-        aligned <- x3prplus:::bulletAlign(lofX)
+        aligned <- x3prplus:::bulletAlign_test(lofX)
         b12 <- unique(lofX$bullet)
         
         subLOFx1 <- subset(aligned$bullets, bullet==b12[1])
         subLOFx2 <- subset(aligned$bullets, bullet==b12[2]) 
-        
-        subLOFx1$y <- subLOFx1$y - min(subLOFx1$y)
-        subLOFx2$y <- subLOFx2$y - min(subLOFx2$y)
         
         ys <- intersect(subLOFx1$y, subLOFx2$y)
         idx1 <- which(subLOFx1$y %in% ys)
@@ -199,22 +190,10 @@ shinyServer(function(input, output, session) {
         if (length(knm) == 0) knm <- c(length(km)+1,0)
         # browser()    
         # feature extraction
-        data.frame(ccf=aligned$ccf, lag=aligned$lag, 
-                   D=distr.dist, 
-                   sd.D = distr.sd,
-                   b1=b12[1], b2=b12[2], x1 = subLOFx1$x[1], x2 = subLOFx2$x[1],
-                   num.matches = sum(res$lines$match), 
-                   num.mismatches = sum(!res$lines$match), 
-                   non_cms = x3prplus::maxCMS(!res$lines$match),
-                   left_cms = max(knm[1] - km[1], 0),
-                   right_cms = max(km[length(km)] - knm[length(knm)],0),
-                   left_noncms = max(km[1] - knm[1], 0),
-                   right_noncms = max(knm[length(knm)]-km[length(km)],0),
-                   sumpeaks = sum(abs(res$lines$heights[res$lines$match])))
                    
        signature.length <- min(nrow(subLOFx1), nrow(subLOFx2))
        
-       data.frame(ccf=aligned$ccf, lag=aligned$lag, 
+       data.frame(ccf=res$ccf, lag=res$lag, 
                   D=distr.dist, 
                   sd.D = distr.sd,
                   b1=b12[1], b2=b12[2], x1 = subLOFx1$x[1], x2 = subLOFx2$x[1],
