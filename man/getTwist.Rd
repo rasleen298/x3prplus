@@ -25,8 +25,10 @@ A note on timing: at the moment calculating the twist rate for a bullet land tak
 XXX TODO XXX make the different methods a parameter. Also, accept other input than the path - if we start with the flattened bulletland we get results much faster.
 }
 \examples{
-# put in an example, and then exclude it from execution
+\dontrun{
+# execution takes several minutes
 load("data/b1.rda")
 twist <- getTwist(path="barrel 1 bullet 1", bullet = b1, twistlimit=c(-2,0)*1.5625)
+}
 }
 

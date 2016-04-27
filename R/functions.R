@@ -164,6 +164,52 @@ get_crosscut <- function(path = NULL, x = 243.75, bullet = NULL, transpose = FAL
   
   return(dbr111.fixx)
 }
+
+
+bulletAlign_test <- function (data, value = "l30", mincor = .8)  {
+    bullet <- NULL
+    b12 <- unique(data$bullet)
+    if (length(b12) != 2) 
+        stop("Two surfaces should be compared\n\n")
+    data$val <- data.frame(data)[, value]
+    
+    subLOFx1 <- subset(data, bullet == b12[1])
+    subLOFx2 <- subset(data, bullet == b12[2])
+    subLOFx1$y <- subLOFx1$y - min(subLOFx1$y)
+    subLOFx2$y <- subLOFx2$y - min(subLOFx2$y)
+    
+    whichmin <- which.min(c(length(subLOFx1$y), length(subLOFx2$y)))
+    shorter <- list(subLOFx1$val, subLOFx2$val)[[whichmin]]
+    longer <- list(subLOFx1$val, subLOFx2$val)[[3 - whichmin]]
+    
+    longer_na <- c(rep(0, length(shorter)), longer, rep(0, (length(shorter))))
+    
+    mycors <- NULL
+    for (i in 1:(length(longer_na) - length(shorter))) {
+        longersub <- longer_na[i:(i + length(shorter) - 1)]
+        
+        corval <- cor(shorter, longersub, use = "pairwise.complete.obs")
+        
+        mycors <- c(mycors, corval)
+    }
+    
+    lag <- which.max(mycors) - length(shorter)
+    if (max(mycors, na.rm = TRUE) < mincor) lag <- 0
+    
+    incr <- min(diff(sort(unique(subLOFx1$y))))
+    
+    mydat <- if (whichmin == 1) subLOFx1 else subLOFx2
+    mydat2 <- if (whichmin == 1) subLOFx2 else subLOFx1
+    
+    if (lag < 0) {
+        mydat2$y <- mydat2$y + lag * incr
+    } else {
+        mydat$y <- mydat$y + lag * incr
+    }
+    
+    bullets <- rbind(data.frame(mydat), data.frame(mydat2))
+    list(ccf = max(mycors, na.rm = TRUE), lag = lag * incr, bullets = bullets)
+}
   
 #' Deprecated function use get_crosscut
 #' 
@@ -676,7 +722,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
     second_cc <- get_cc(x, mybullet = dbr111)
     b2 <- rbind(first_cc, second_cc)
     lofX <- bulletSmooth(b2, span = span)
-    ccf <- bulletAlign(lofX)$ccf
+    ccf <- bulletAlign_test(lofX)$ccf
     if (ccf > minccf) { 
       done <- TRUE
       return (x - distance)
@@ -754,7 +800,7 @@ bulletGetMaxCMS <- function(lof1, lof2, span=35) {
     bullet <- NULL
     
   lof <- rbind(lof1, lof2)
-  bAlign = bulletAlign(lof)
+  bAlign = bulletAlign_test(lof)
   lofX <- bAlign$bullet  
   
   b12 <- unique(lof$bullet)
