@@ -4,12 +4,14 @@
 \alias{fit_loess}
 \title{Fit a loess curve to a bullet data frame}
 \usage{
-fit_loess(bullet, groove)
+fit_loess(bullet, groove, span = 0.75)
 }
 \arguments{
 \item{bullet}{The bullet object as returned from fortify_x3p}
 
 \item{groove}{vector of two numeric values indicating the location of the left and right groove.}
+
+\item{span}{The span to use for the loess regression}
 }
 \value{
 a list of a data frame of the original bullet measurements extended by loess fit, residuals, and standard errors and two plots: a plot of the fit, and a plot of the bullet's land signature.

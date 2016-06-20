@@ -402,15 +402,16 @@ boot_fit_loess <- function(bullet, groove, B=1000, alpha=0.95) {
 #' The result is called the signature of the bullet land.
 #' @param bullet The bullet object as returned from fortify_x3p
 #' @param groove vector of two numeric values indicating the location of the left and right groove. 
+#' @param span The span to use for the loess regression
 #' @return a list of a data frame of the original bullet measurements extended by loess fit, residuals, and standard errors and two plots: a plot of the fit, and a plot of the bullet's land signature. 
 #' @export
-fit_loess <- function(bullet, groove) {
+fit_loess <- function(bullet, groove, span = 0.75) {
   value <- NULL
   y <- NULL
   chop <- NULL
   
     bullet_filter <- subset(bullet, !is.na(value) & y > groove$groove[1] & y < groove$groove[2])
-    my.loess <- loess(value ~ y, data = bullet_filter)
+    my.loess <- loess(value ~ y, data = bullet_filter, span = span)
     bullet_filter$fitted <- fitted(my.loess)
     bullet_filter$resid <- resid(my.loess)
     bullet_filter$se <- predict(my.loess, se=TRUE)$se.fit
