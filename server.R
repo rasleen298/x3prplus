@@ -31,27 +31,42 @@ Sys.setenv("plotly_api_key" = "xd0oxpeept")
 
 shinyServer(function(input, output, session) {
     
-    values <- reactiveValues(xcoord1 = NULL,
+    values <- reactiveValues(path1 = NULL,
+                             path2 = NULL,
+                             transpose1 = FALSE,
+                             transpose2 = FALSE,
+                             xcoord1 = NULL,
                              xcoord2 = NULL,
                              bounds1 = NULL,
                              bounds2 = NULL)
     
     bullet1 <- reactive({
-        if (is.null(input$file1)) return(NULL)
+        if (!is.null(input$file1) && input$choose1 == "Upload Image") values$path1 <- input$file1$datapath else values$path1 <- file.path("images", input$choose1)
+        
+        myfile <- x3prplus::read.x3pplus(values$path1)
+        if (nrow(myfile[[2]]) < ncol(myfile[[2]])) {
+            myfile <- x3prplus::read.x3pplus(values$path1, transpose = TRUE)    
+            values$transpose1 <- TRUE
+        }
 
-        return(x3prplus::read.x3pplus(input$file1$datapath, transpose = input$transpose1))
+        return(myfile)
     })
     
     bullet2 <- reactive({
-        if (is.null(input$file2)) return(NULL)
-
-        return(x3prplus::read.x3pplus(input$file2$datapath, transpose = input$transpose2))
+        if (!is.null(input$file2) && input$choose2 == "Upload Image") values$path2 <- input$file2$datapath else values$path2 <- file.path("images", input$choose2)
+        
+        myfile <- x3prplus::read.x3pplus(values$path2)
+        if (nrow(myfile[[2]]) < ncol(myfile[[2]])) {
+            myfile <- x3prplus::read.x3pplus(values$path2, transpose = TRUE)
+            values$transpose2 <- TRUE
+        }
+        
+        return(myfile)
     })
     
-    observe({
+    observeEvent(input$confirm0, {
         if (!is.null(bullet1()) && !is.null(bullet2())) updateCheckboxInput(session, "stage0", value = TRUE)
     })
-    
 
     theSurface <- reactive({
         if (!input$stage0) return(NULL)
@@ -73,8 +88,8 @@ shinyServer(function(input, output, session) {
     })
 
     observe({
-        updateSliderInput(session, "xcoord1", max = ncol(theSurface()) / 2 )
-        updateSliderInput(session, "xcoord2", max = ncol(theSurface()), min = 1 + ncol(theSurface()) / 2)
+        updateSliderInput(session, "xcoord1", max = ncol(theSurface()) / 2, value = ncol(theSurface()) / 4)
+        updateSliderInput(session, "xcoord2", max = ncol(theSurface()), min = 1 + ncol(theSurface()) / 2, value = ncol(theSurface()) * 3 / 4)
     })
 
     output$trendPlot <- renderPlotly({
@@ -90,13 +105,13 @@ shinyServer(function(input, output, session) {
     
     observeEvent(input$suggest, {
         withProgress(message = "Calculating CCF...", expr = {
-            crosscut1 <- bulletCheckCrossCut(input$file1$datapath, 
+            crosscut1 <- bulletCheckCrossCut(values$path1, 
                                              xlimits = seq(25, 500, by = 25), 
-                                             transpose = input$transpose1)
+                                             transpose = values$transpose1)
             
-            crosscut2 <- bulletCheckCrossCut(input$file2$datapath, 
+            crosscut2 <- bulletCheckCrossCut(values$path2, 
                                              xlimits = seq(25, 500, by = 25), 
-                                             transpose = input$transpose2)
+                                             transpose = values$transpose2)
             
             updateSliderInput(session, "xcoord1", value = crosscut1)
             updateSliderInput(session, "xcoord2", value = crosscut2 + ncol(theSurface()) / 2)

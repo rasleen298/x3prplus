@@ -11,20 +11,33 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             useShinyjs(),
             tags$head(tags$style("#info{font-size: 18px;}")),
             
+            hidden(checkboxInput("stage0", "Stage 0")),
+            hidden(checkboxInput("stage1", "Stage 1")),
+            hidden(checkboxInput("stage2", "Stage 2")),
+            hidden(checkboxInput("stage3", "Stage 3")),
+            hidden(checkboxInput("stage4", "Stage 4")),
+            hidden(checkboxInput("stage5", "Stage 5")),
+            
             conditionalPanel(condition = "!input.stage0",
                  h4("Stage 0 Options"),
-                 fileInput("file1", "First Bullet Land"),
-                 checkboxInput("transpose1", "Transpose Bullet 1"),
                  
-                 fileInput("file2", "Second Bullet Land"),
-                 checkboxInput("transpose2", "Transpose Bullet 2"),
+                 selectizeInput("choose1", "Choose First Land", choices = c("Upload Image", dir("images"))),
                  
-                 hidden(checkboxInput("stage0", "Stage 0")),
-                 hidden(checkboxInput("stage1", "Stage 1")),
-                 hidden(checkboxInput("stage2", "Stage 2")),
-                 hidden(checkboxInput("stage3", "Stage 3")),
-                 hidden(checkboxInput("stage4", "Stage 4")),
-                 hidden(checkboxInput("stage5", "Stage 5"))
+                 conditionalPanel(condition = "input.choose1 == 'Upload Image'",
+                    fileInput("file1", "First Bullet Land")                 
+                 ),
+                 
+                 hr(),
+                 
+                 selectizeInput("choose2", "Choose Second Land", choices = c("Upload Image", dir("images"))),
+                 
+                 conditionalPanel(condition = "input.choose2 == 'Upload Image'",
+                    fileInput("file2", "Second Bullet Land")              
+                 ),
+
+                 hr(),
+                 
+                 actionButton("confirm0", "Confirm Lands")
             ),
             
             conditionalPanel(condition = "input.stage0 && !input.stage1",
