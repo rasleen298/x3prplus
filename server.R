@@ -20,8 +20,11 @@ grooves$bullet <- basename(as.character(grooves$bullet))
 
 # bullet1 <- function() {x3prplus::read.x3pplus("~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 1-5.x3p")}
 # bullet2 <- function() {x3prplus::read.x3pplus("~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 2-1.x3p")}
-# values <- list(xcoord1 = 50, xcoord2 = 100)
-
+# values <- list(xcoord1 = 50, xcoord2 = 100, bounds1 = c(300, 2200), bounds2 = c(300, 2200))
+# crosscut1 <- function() {get_crosscut(bullet = bullet1(), x = values$xcoord1)}
+# crosscut2 <- function() {get_crosscut(bullet = bullet2(), x = values$xcoord2)}
+# loess1 <- function() {fit_loess(bullet = crosscut1(), groove = list(groove = values$bounds1), span = 0.75)}
+# loess2 <- function() {fit_loess(bullet = crosscut2(), groove = list(groove = values$bounds2), span = 0.75)}
 shinyServer(function(input, output, session) {
     
     values <- reactiveValues(xcoord1 = NULL,
@@ -211,10 +214,33 @@ shinyServer(function(input, output, session) {
     })
     
     observeEvent(input$confirm3, {
-        values$bounds1 <- input$bounds1
-        values$bounds2 <- input$bounds2
+        updateCheckboxInput(session, "stage3", value = TRUE)
+    })
+    
+    processed1 <- reactive({
+        if (!input$stage3) return(NULL)
         
-        updateCheckboxInput(session, "stage2", value = TRUE)
+        processBullets(bullet = bullet, name = bul$path, x = xval, grooves = c(left, right))
+    })
+    
+    smoothed <- reactive({
+        if (!input$stage3) return(NULL)
+        bullets_processed <- list(b1 = )
+        bullets_processed %>% bind_rows %>% bulletSmooth
+    })
+    
+    output$smoothing <- renderPlot({
+        
+    })
+    
+    myalign <- reactive({
+        if (!input$stage2) return(NULL)
+        
+        
+    })
+    
+    output$alignment <- renderPlot({
+        
     })
 
     # processed1 <- reactive({

@@ -61,12 +61,12 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 
                 actionButton("confirm3", "Confirm Span")
             ),
-
-            #sliderInput("span", "Loess Span", min = 0.01, max = 0.2, value = 0.03, step = 0.01),
-            #sliderInput("smoothfactor", "Smoothing Factor", min = 0, max = 50, step = 5, value = 25),
-            #sliderInput("groove_cutoff", "Groove Cutoff", min = 1, max = 1000, value = 500),
-
-            #hr(),
+            
+            conditionalPanel(condition = "input.stage3 && !input.stage4",
+                h4("Stage 4 Options"),
+                
+                sliderInput("smoothfactor", "Smoothing Factor", min = 0, max = 50, step = 5, value = 25)
+            ),
             
             hidden(
                 h4("Lighting Options"),
@@ -106,6 +106,13 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                  
                  plotOutput("loess1"),
                  plotOutput("loess2")
+            ),
+            conditionalPanel(condition = "input.stage3 && !input.stage4",
+                 h2("Stage 4: Smoothing Signatures"),
+                 hr(),
+                 div(id = "info", HTML("The residuals from the loess fit we have extracted in the previous stage are called the bullet <b>signatures</b>. They will form the basis for the rest of the analysis.<br><br>Because the signatures are defined by the residuals, they peaks and valleys visible in this plot represent the striation markings we are looking for. In order to make matching easier, our next step is to smooth the two signatures. Our algorithm suggests an optimal smoothing factor, but it can be adjusted if necessary.")),
+                 
+                 plotOutput("smoothing")
             ),
             conditionalPanel(condition = "input.stage0",
                 plotlyOutput("trendPlot", height = "700px")
