@@ -21,7 +21,10 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                  
                  hidden(checkboxInput("stage0", "Stage 0")),
                  hidden(checkboxInput("stage1", "Stage 1")),
-                 hidden(checkboxInput("stage2", "Stage 2"))
+                 hidden(checkboxInput("stage2", "Stage 2")),
+                 hidden(checkboxInput("stage3", "Stage 3")),
+                 hidden(checkboxInput("stage4", "Stage 4")),
+                 hidden(checkboxInput("stage5", "Stage 5"))
             ),
             
             conditionalPanel(condition = "input.stage0 && !input.stage1",
@@ -57,7 +60,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "input.stage2 && !input.stage3",
                 h4("Stage 3 Options"),
                 
-                sliderInput("span", "Loess Span", min = 0.01, max = 0.99, value = 0.75, step = 0.01),
+                sliderInput("span", "Loess Span", min = 0.01, max = 0.99, value = 0.03, step = 0.01),
                 
                 actionButton("confirm3", "Confirm Span")
             ),
@@ -65,7 +68,19 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "input.stage3 && !input.stage4",
                 h4("Stage 4 Options"),
                 
-                sliderInput("smoothfactor", "Smoothing Factor", min = 0, max = 50, step = 5, value = 25)
+                actionButton("suggestalign", "Automatically Suggest"),
+                
+                hr(),
+                
+                numericInput("alignment", "Alignment", min = -1000, max = 1000, step = 1, value = 0),
+                
+                actionButton("confirm4", "Confirm Alignment")
+            ),
+            
+            conditionalPanel(condition = "input.stage4 && !input.stage5",
+                 h4("Stage 5 Options"),
+                 
+                 actionButton("confirm5", "Confirm Features")
             ),
             
             hidden(
@@ -80,17 +95,26 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
         ),
         
         mainPanel(width = 9,
-            conditionalPanel(condition = "!input.stage0",
+              conditionalPanel(condition = "input.stage5",
+                   h2("Stage 6: Predicted Probability"),
+                   hr(),
+                   div(id = "info", HTML("We use these features to train a Random Forest to help differentiate between a match and a non-match. Using the forest, we predict on the features you just extracted. Your predicted probability of a match is given below.")),
+                   
+                   h3(textOutput("rfpred")),
+                   
+                   hr()
+              ),
+            conditionalPanel(condition = "!input.stage0 || input.stage5",
                  h2("Stage 0: Preliminary Information"),
                  hr(),
                  div(id = "info", HTML("This app will walk through the steps used to programmatically determine the probability that two bullets were fired from the same gun barrel. We compare at the bullet land level.<br><br>To begin, upload the two .x3p files representing the two bullet lands you wish to compare."))
             ),
-            conditionalPanel(condition = "input.stage0 && !input.stage1",
+            conditionalPanel(condition = "input.stage0 && !input.stage1 || input.stage5",
                  h2("Stage 1: Finding a Stable Region"),
                  hr(),
-                 div(id = "info", HTML("Below you will find surface topologies of the two bullet lands you have uploaded. You can rotate, pan, zoom, and perform a number of other functions to examine the surfaces.<br><br>Our goal is to find a <b>stable region</b>. We want an area of the bullet where there is minimal noise or tank rash, but plenty of prounounced striation markings.<br><br>Our algorithm steps through cross-sections of each land at a fixed step size, and uses the CCF (cross-correlation function) to determine stability (a high CCF means that subsequent cross-sections are similar to each other). We begin this procedure near the area where striation markings are typically most pronounced.<br><br>You may choose the location to take a cross-section, or allow our algorithm to do so for you."))           
+                 div(id = "info", HTML("Below you will find surface topologies of the two bullet lands you have uploaded. You can rotate, pan, zoom, and perform a number of other functions to examine the surfaces.<br><br>Our goal is to find a <b>stable region</b>. We want an area of the bullet where there is minimal noise or tank rash, but plenty of pronounced striation markings.<br><br>Our algorithm steps through cross-sections of each land at a fixed step size, and uses the CCF (cross-correlation function) to determine stability (a high CCF means that subsequent cross-sections are similar to each other). We begin this procedure near the area where striation markings are typically most pronounced.<br><br>You may choose the location to take a cross-section, or allow our algorithm to do so for you."))           
             ),
-            conditionalPanel(condition = "input.stage1 && !input.stage2",
+            conditionalPanel(condition = "input.stage1 && !input.stage2 || input.stage5",
                  h2("Stage 2: Removing Grooves"),
                  hr(),
                  div(id = "info", HTML("The cross-sections you have taken are shown below. Our next goal will be to remove the grooves, which contain no relevant information for matching, and greatly exceed the size of a typical striation mark.<br><br>Our algorithm uses a double-pass smoothing method to determine the location of the grooves. You may once again use our algorithm to suggest groove locations, or define them yourself. As you adjust the sliders, the plot will automatically update.")),
@@ -98,31 +122,32 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                  
                  plotOutput("crosssection")
             ),
-            conditionalPanel(condition = "input.stage2 && !input.stage3",
+            conditionalPanel(condition = "input.stage2 && !input.stage3 || input.stage5",
                  h2("Stage 3: Removing Global Structure"),
                  hr(),
-                 div(id = "info", HTML("We have removed the grooves, but the global structure of cross-section dominates the overall appearance, making striae more difficult to locate.<br><br>We are going to fit a loess regression to model this structure. The loess regression includes a span parameter which adjusts the amount of smoothing used. Different values will yield different output. We default to a span of 0.75, but this may be adjusted as desired.")),
+                 div(id = "info", HTML("We have removed the grooves, but the global structure of the cross-section dominates the overall appearance, making striae more difficult to locate.<br><br>We are going to fit a loess regression to model this structure. The loess regression includes a span parameter which adjusts the amount of smoothing used. Different values will yield different output. We default to a span of 0.03, but this may be adjusted as desired.")),
                  hr(),
                  
                  plotOutput("loess1"),
                  plotOutput("loess2")
             ),
-            conditionalPanel(condition = "input.stage3 && !input.stage4",
-                 h2("Stage 4: Smoothing Signatures"),
+            conditionalPanel(condition = "input.stage3 && !input.stage4 || input.stage5",
+                 h2("Stage 4: Aligning Signatures"),
                  hr(),
-                 div(id = "info", HTML("The residuals from the loess fit we have extracted in the previous stage are called the bullet <b>signatures</b>. They will form the basis for the rest of the analysis.<br><br>Because the signatures are defined by the residuals, they peaks and valleys visible in this plot represent the striation markings we are looking for. In order to make matching easier, our next step is to smooth the two signatures. Our algorithm suggests an optimal smoothing factor, but it can be adjusted if necessary.")),
+                 div(id = "info", HTML("The residuals from the loess fit we have extracted in the previous stage are called the bullet <b>signatures</b>. They will form the basis for the rest of the analysis.<br><br>Because the signatures are defined by the residuals, the peaks and valleys visible in this plot represent the striation markings we are looking for. In order to make matching easier, our next step is to align the two signatures. Our algorithm suggests an optimal alignment, but it can be adjusted if necessary.")),
                  
-                 plotOutput("smoothing")
+                 plotOutput("alignment")
+            ),
+            conditionalPanel(condition = "input.stage4",
+                 h2("Stage 5: Extract Features"),
+                 hr(),
+                 div(id = "info", HTML("We now have smoothed, aligned bullet signatures. This gives us a number of features we can extract.<br><br>At this point, there is really nothing left to configure about the algorithm. The features extracted are displayed below. Press Confirm Features when you are ready to get your predicted probability of a match.")),
+                 
+                 dataTableOutput("features")
             ),
             conditionalPanel(condition = "input.stage0",
                 plotlyOutput("trendPlot", height = "700px")
             )
-            #hr(),
-            #h3(textOutput("rfpred")),
-            #hr(),
-            #plotOutput("residuals"),
-            #hr(),
-            #dataTableOutput("features")
         )
     )
 ))
