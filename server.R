@@ -27,7 +27,7 @@ shinyServer(function(input, output, session) {
     values <- reactiveValues(xcoord1 = NULL,
                              xcoord2 = NULL,
                              bounds1 = NULL,
-                             bound2 = NULL)
+                             bounds2 = NULL)
     
     bullet1 <- reactive({
         if (is.null(input$file1)) return(NULL)
@@ -186,10 +186,35 @@ shinyServer(function(input, output, session) {
         updateCheckboxInput(session, "stage2", value = TRUE)
     })
     
-    output$loess1 <- renderPlot({
+    loess1 <- reactive({
         if (!input$stage2) return(NULL)
         
-        myloess <- fit_loess()
+        return(fit_loess(bullet = crosscut1(), groove = list(groove = values$bounds1), span = input$span))
+    })
+    
+    output$loess1 <- renderPlot({
+        if (is.null(loess1())) return(NULL)
+        
+        grid.arrange(loess1()$fitted, loess1()$resid, ncol = 2)
+    })
+    
+    loess2 <- reactive({
+        if (!input$stage2) return(NULL)
+        
+        return(fit_loess(bullet = crosscut2(), groove = list(groove = values$bounds2), span = input$span))
+    })
+    
+    output$loess2 <- renderPlot({
+        if (is.null(loess2())) return(NULL)
+        
+        grid.arrange(loess2()$fitted, loess2()$resid, ncol = 2)
+    })
+    
+    observeEvent(input$confirm3, {
+        values$bounds1 <- input$bounds1
+        values$bounds2 <- input$bounds2
+        
+        updateCheckboxInput(session, "stage2", value = TRUE)
     })
 
     # processed1 <- reactive({

@@ -55,7 +55,11 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             ),
             
             conditionalPanel(condition = "input.stage2 && !input.stage3",
-                h4("Stage 3 Options")
+                h4("Stage 3 Options"),
+                
+                sliderInput("span", "Loess Span", min = 0.01, max = 0.99, value = 0.75, step = 0.01),
+                
+                actionButton("confirm3", "Confirm Span")
             ),
 
             #sliderInput("span", "Loess Span", min = 0.01, max = 0.2, value = 0.03, step = 0.01),
