@@ -10,8 +10,6 @@ library(randomForest)
 
 options(shiny.maxRequestSize=30*1024^2) 
 
-source(system.file("gui/view", "helpers.R", package = "x3pr"))
-
 Sys.setenv("plotly_username" = "erichare")
 Sys.setenv("plotly_api_key" = "xd0oxpeept")
 
@@ -20,52 +18,53 @@ grooves$bullet <- basename(as.character(grooves$bullet))
 
 shinyServer(function(input, output, session) {
     
-    values <- reactiveValues(path1 = "images/Hamby252_3DX3P1of2/Br1 Bullet 2-5.x3p", 
-                             path2 = "images/Hamby252_3DX3P1of2/Br1 Bullet 1-3.x3p",
-                             fort1_fixed = NULL, 
-                             fort2_fixed = NULL,
-                             xcoord1 = NULL,
+    values <- reactiveValues(xcoord1 = NULL,
                              xcoord2 = NULL)
     
     bullet1 <- reactive({
-        if (!is.null(input$file1)) values$path1 <- input$file1$datapath
-        
-        return(x3prplus::read.x3pplus(values$path1, transpose = input$transpose1))
+        if (is.null(input$file1)) return(NULL)
+
+        return(x3prplus::read.x3pplus(input$file1$datapath, transpose = input$transpose1))
     })
     
     bullet2 <- reactive({
-        if (!is.null(input$file2)) values$path2 <- input$file2$datapath
-        
-        return(x3prplus::read.x3pplus(values$path2, transpose = input$transpose2))
-    })
-    
-    theSurface <- reactive({
-        if (is.null(bullet1()) || is.null(bullet2())) return(NULL)
-        
-        b1 <- bullet1()
-        b2 <- bullet2()
-        
-        surf.b1 <- b1[[2]]
-        surf.b2 <- b2[[2]]
-        
-        minrows <- min(nrow(surf.b1), nrow(surf.b2))
-        
-        surf.mat <- cbind(surf.b1[1:minrows,], surf.b2[1:minrows,])
-        
-        x_idx <- seq(1, nrow(surf.mat), by = input$subsample)
-        y_idx <- seq(1, ncol(surf.mat), by = input$subsample)
-        
-        return(surf.mat[x_idx, y_idx])
+        if (is.null(input$file2)) return(NULL)
+
+        return(x3prplus::read.x3pplus(input$file2$datapath, transpose = input$transpose2))
     })
     
     observe({
-         updateSliderInput(session, "xcoord1", max = ncol(theSurface()) / 2 )
-        updateSliderInput(session, "xcoord2", max = ncol(theSurface()), min = 1 + ncol(theSurface()) / 2 )
+        if (!is.null(bullet1()) && !is.null(bullet2())) updateCheckboxInput(session, "stage0", value = TRUE)
     })
     
+
+    theSurface <- reactive({
+        if (!input$stage0) return(NULL)
+
+        b1 <- bullet1()
+        b2 <- bullet2()
+
+        surf.b1 <- b1[[2]]
+        surf.b2 <- b2[[2]]
+
+        minrows <- min(nrow(surf.b1), nrow(surf.b2))
+
+        surf.mat <- cbind(surf.b1[1:minrows,], surf.b2[1:minrows,])
+
+        x_idx <- seq(1, nrow(surf.mat), by = 2)
+        y_idx <- seq(1, ncol(surf.mat), by = 2)
+
+        return(surf.mat[x_idx, y_idx])
+    })
+
+    observe({
+        updateSliderInput(session, "xcoord1", max = ncol(theSurface()) / 2 )
+        updateSliderInput(session, "xcoord2", max = ncol(theSurface()), min = 1 + ncol(theSurface()) / 2)
+    })
+
     output$trendPlot <- renderPlotly({
         if (is.null(theSurface())) return(NULL)
-        
+
         p <- plot_ly(z = theSurface(), type = "surface", showscale = FALSE, lighting = list(ambient = input$ambient_lighting,
                                                                                              diffuse = input$diffuse_lighting,
                                                                                              specular = input$specular_lighting,
@@ -74,180 +73,197 @@ shinyServer(function(input, output, session) {
         p
     })
     
-    observeEvent(input$compute, {
+    observeEvent(input$suggest, {
+        withProgress(message = "Calculating CCF...", expr = {
+            crosscut1 <- bulletCheckCrossCut(input$file1$datapath, 
+                                             xlimits = seq(25, 500, by = 25), 
+                                             transpose = input$transpose1)
+            
+            crosscut2 <- bulletCheckCrossCut(input$file2$datapath, 
+                                             xlimits = seq(25, 500, by = 25), 
+                                             transpose = input$transpose2)
+            
+            updateSliderInput(session, "xcoord1", value = crosscut1)
+            updateSliderInput(session, "xcoord2", value = crosscut2 + ncol(theSurface()) / 2)
+        })
+    })
+
+    observeEvent(input$confirm, {
         values$xcoord1 <- input$xcoord1
         values$xcoord2 <- input$xcoord2 - ncol(theSurface()) / 2
+        
+        updateCheckboxInput(session, "stage1", value = TRUE)
     })
-    
-    processed1 <- reactive({
-        if (is.null(bullet1()) || is.null(values$xcoord1)) return(NULL)
-        
-        bul <- bullet1()
-        bul[[3]] <- values$path1
-        names(bul)[3] <- "path"
-        
-        myx <- unique(fortify_x3p(bul)$x)
-        xval <- myx[which.min(abs(myx - values$xcoord1))]
-        
-        if (basename(bul[[3]]) %in% grooves$bullet) {
-            left <- grooves$groove_left[grooves$bullet == basename(bul$path) & grooves$x == xval]
-            right <- grooves$groove_right[grooves$bullet == basename(bul$path) & grooves$x == xval]
-            
-            return(processBullets(bullet = bul, name = bul$path, x = xval, grooves = c(left, right)))
-        }
-        
-        groove.cutoff <- min(input$groove_cutoff, nrow(bullet2()[[2]]) / 2)
-        
-        processBullets(bullet = bul, name = bul$path, x = xval, groove_cutoff = groove.cutoff)
-    })
-    
-    processed2 <- reactive({
-        if (is.null(bullet2()) || is.null(values$xcoord2)) return(NULL)
-        
-        bul <- bullet2()
-        bul[[3]] <- values$path2
-        names(bul)[3] <- "path"
-        
-        myx <- unique(fortify_x3p(bul)$x)
-        xval <- myx[which.min(abs(myx - values$xcoord2))]
-        
-        if (basename(bul[[3]]) %in% grooves$bullet) {
-            left <- grooves$groove_left[grooves$bullet == basename(bul$path) & grooves$x == xval]
-            right <- grooves$groove_right[grooves$bullet == basename(bul$path) & grooves$x == xval]
-            
-            return(processBullets(bullet = bul, name = bul$path, x = xval, grooves = c(left, right)))
-        }
-        
-        groove.cutoff <- min(input$groove_cutoff, nrow(bullet2()[[2]]) / 2)
 
-        processBullets(bullet = bul, name = bul$path, x = xval, groove_cutoff = groove.cutoff)
-    })
-    
-    smoothed <- reactive({
-        if (is.null(processed1()) || is.null(processed2())) return(NULL)
-
-        bulletSmooth(rbind(processed1(), processed2()), span = input$span)
-    })
-    
-    output$residuals <- renderPlot({
-        if (is.null(smoothed())) return(NULL)
-        
-        mydat <- smoothed()
-        mydat$bullet <- c(rep("b1", nrow(processed1())), rep("b2", nrow(processed2())))
-        
-        aligned <- x3prplus:::bulletAlign_test(mydat)
-        
-        sf <- input$smoothfactor
-        if (sf == 0) sf <- 1
-        
-        lofX <- aligned$bullet
-        b12 <- unique(lofX$bullet)
-        peaks1 <- get_peaks(subset(lofX, bullet == b12[1]), smoothfactor = sf)
-        peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = sf)
-        
-        dframe1 <- peaks1$dframe
-        dframe2 <- peaks2$dframe
-        dframe <- rbind(dframe1, dframe2)
-        dframe$bullet <- c(rep("b1", nrow(dframe1)), rep("b2", nrow(dframe2)))
-        
-        qplot(y, smoothed, data = dframe, colour = bullet, geom = "line", size = I(2)) +
-            theme_bw()
-    })
-    
-    CMS <- reactive({
-        if (is.null(smoothed())) return(NULL)
-        
-        br1 <- filter(smoothed(), bullet == values$path1)
-        br2 <- filter(smoothed(), bullet == values$path2)
-        
-        sf <- input$smoothfactor
-        if (sf == 0) sf <- 1
-        
-        bulletGetMaxCMS(br1, br2, span = sf)
-    })
-    
-    features <- reactive({
-        if (is.null(CMS())) return(NULL)
-        
-        res <- CMS()
-
-        lofX <- res$bullets
-        
-        aligned <- x3prplus:::bulletAlign_test(lofX)
-        b12 <- unique(lofX$bullet)
-        
-        subLOFx1 <- subset(aligned$bullets, bullet==b12[1])
-        subLOFx2 <- subset(aligned$bullets, bullet==b12[2]) 
-        
-        ys <- intersect(subLOFx1$y, subLOFx2$y)
-        idx1 <- which(subLOFx1$y %in% ys)
-        idx2 <- which(subLOFx2$y %in% ys)
-        distr.dist <- mean((subLOFx1$val[idx1] - subLOFx2$val[idx2])^2, na.rm=TRUE)
-        distr.sd <- sd(subLOFx1$val, na.rm=TRUE) + sd(subLOFx2$val, na.rm=TRUE)
-        km <- which(res$lines$match)
-        knm <- which(!res$lines$match)
-        if (length(km) == 0) km <- c(length(knm)+1,0)
-        if (length(knm) == 0) knm <- c(length(km)+1,0)
-        # browser()    
-        # feature extraction
-                   
-       signature.length <- min(nrow(subLOFx1), nrow(subLOFx2))
-       
-       data.frame(ccf=res$ccf, lag=res$lag, 
-                  D=distr.dist, 
-                  sd.D = distr.sd,
-                  b1=b12[1], b2=b12[2], x1 = subLOFx1$x[1], x2 = subLOFx2$x[1],
-                  #num.matches = sum(res$lines$match), 
-                  signature.length = signature.length,
-                  matches.per.y = sum(res$lines$match) / signature.length,
-                  #num.mismatches = sum(!res$lines$match), 
-                  mismatches.per.y = sum(!res$lines$match) / signature.length,
-                  #cms = res$maxCMS,
-                  cms.per.y = res$maxCMS / signature.length,
-                  #cms2 = x3prplus::maxCMS(subset(res$lines, type==1 | is.na(type))$match),
-                  cms2.per.y = x3prplus::maxCMS(subset(res$lines, type==1 | is.na(type))$match) / signature.length,
-                  #non_cms = x3prplus::maxCMS(!res$lines$match),
-                  non_cms.per.y = x3prplus::maxCMS(!res$lines$match) / signature.length,
-                  #left_cms = max(knm[1] - km[1], 0),
-                  left_cms.per.y = max(knm[1] - km[1], 0) / signature.length,
-                  #right_cms = max(km[length(km)] - knm[length(knm)],0),
-                  right_cms.per.y = max(km[length(km)] - knm[length(knm)],0) / signature.length,
-                  #left_noncms = max(km[1] - knm[1], 0),
-                  left_noncms.per.y = max(km[1] - knm[1], 0) / signature.length,
-                  #right_noncms = max(knm[length(knm)]-km[length(km)],0),
-                  right_noncms.per.y = max(knm[length(knm)]-km[length(km)],0) / signature.length,
-                  #sumpeaks = sum(abs(res$lines$heights[res$lines$match])),
-                  sumpeaks.per.y = sum(abs(res$lines$heights[res$lines$match])) / signature.length
-        )
-    })
-    
-    output$features <- renderDataTable({
-        if (is.null(features())) return(NULL)
-        
-        result <- as.data.frame(t(features()))
-        result <- cbind(feature = rownames(result), result)
-        names(result)[2] <- "value"
-        
-        return(result)
-    })
-    
-    output$rfpred <- renderText({
-        if (is.null(features())) return(NULL)
-        
-        features <- features()
-        features$b1 <- gsub(".x3p", "", basename(as.character(features$b1)))
-        features$b2 <- gsub(".x3p", "", basename(as.character(features$b2)))
-        features$span <- span
-        
-        includes <- setdiff(names(features), c("b1", "b2", "data", "resID", "id.x", "id.y", "pred", "span", "forest"))
-        
-        load("data/rf.RData")
-        
-        matchprob <- round(predict(rtrees, newdata = features[,includes], type = "prob")[,2], digits = 4)
-        if (matchprob == 0) matchprob <- "< .0001" else if (matchprob == 1) matchprob <- "> .9999"
-        
-        #rtrees <- randomForest(factor(match)~., data=CCFs[,includes], ntree=300)
-        return(paste0("The probability of a match is ", matchprob))
-    })
-    
+    # processed1 <- reactive({
+    #     if (is.null(bullet1()) || is.null(values$xcoord1)) return(NULL)
+    #     
+    #     bul <- bullet1()
+    #     bul[[3]] <- values$path1
+    #     names(bul)[3] <- "path"
+    #     
+    #     myx <- unique(fortify_x3p(bul)$x)
+    #     xval <- myx[which.min(abs(myx - values$xcoord1))]
+    #     
+    #     if (basename(bul[[3]]) %in% grooves$bullet) {
+    #         left <- grooves$groove_left[grooves$bullet == basename(bul$path) & grooves$x == xval]
+    #         right <- grooves$groove_right[grooves$bullet == basename(bul$path) & grooves$x == xval]
+    #         
+    #         return(processBullets(bullet = bul, name = bul$path, x = xval, grooves = c(left, right)))
+    #     }
+    #     
+    #     groove.cutoff <- min(input$groove_cutoff, nrow(bullet2()[[2]]) / 2)
+    #     
+    #     processBullets(bullet = bul, name = bul$path, x = xval, groove_cutoff = groove.cutoff)
+    # })
+    # 
+    # processed2 <- reactive({
+    #     if (is.null(bullet2()) || is.null(values$xcoord2)) return(NULL)
+    #     
+    #     bul <- bullet2()
+    #     bul[[3]] <- values$path2
+    #     names(bul)[3] <- "path"
+    #     
+    #     myx <- unique(fortify_x3p(bul)$x)
+    #     xval <- myx[which.min(abs(myx - values$xcoord2))]
+    #     
+    #     if (basename(bul[[3]]) %in% grooves$bullet) {
+    #         left <- grooves$groove_left[grooves$bullet == basename(bul$path) & grooves$x == xval]
+    #         right <- grooves$groove_right[grooves$bullet == basename(bul$path) & grooves$x == xval]
+    #         
+    #         return(processBullets(bullet = bul, name = bul$path, x = xval, grooves = c(left, right)))
+    #     }
+    #     
+    #     groove.cutoff <- min(input$groove_cutoff, nrow(bullet2()[[2]]) / 2)
+    # 
+    #     processBullets(bullet = bul, name = bul$path, x = xval, groove_cutoff = groove.cutoff)
+    # })
+    # 
+    # smoothed <- reactive({
+    #     if (is.null(processed1()) || is.null(processed2())) return(NULL)
+    # 
+    #     bulletSmooth(rbind(processed1(), processed2()), span = input$span)
+    # })
+    # 
+    # output$residuals <- renderPlot({
+    #     if (is.null(smoothed())) return(NULL)
+    #     
+    #     mydat <- smoothed()
+    #     mydat$bullet <- c(rep("b1", nrow(processed1())), rep("b2", nrow(processed2())))
+    #     
+    #     aligned <- x3prplus:::bulletAlign_test(mydat)
+    #     
+    #     sf <- input$smoothfactor
+    #     if (sf == 0) sf <- 1
+    #     
+    #     lofX <- aligned$bullet
+    #     b12 <- unique(lofX$bullet)
+    #     peaks1 <- get_peaks(subset(lofX, bullet == b12[1]), smoothfactor = sf)
+    #     peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = sf)
+    #     
+    #     dframe1 <- peaks1$dframe
+    #     dframe2 <- peaks2$dframe
+    #     dframe <- rbind(dframe1, dframe2)
+    #     dframe$bullet <- c(rep("b1", nrow(dframe1)), rep("b2", nrow(dframe2)))
+    #     
+    #     qplot(y, smoothed, data = dframe, colour = bullet, geom = "line", size = I(2)) +
+    #         theme_bw()
+    # })
+    # 
+    # CMS <- reactive({
+    #     if (is.null(smoothed())) return(NULL)
+    #     
+    #     br1 <- filter(smoothed(), bullet == values$path1)
+    #     br2 <- filter(smoothed(), bullet == values$path2)
+    #     
+    #     sf <- input$smoothfactor
+    #     if (sf == 0) sf <- 1
+    #     
+    #     bulletGetMaxCMS(br1, br2, span = sf)
+    # })
+    # 
+    # features <- reactive({
+    #     if (is.null(CMS())) return(NULL)
+    #     
+    #     res <- CMS()
+    # 
+    #     lofX <- res$bullets
+    #     
+    #     aligned <- x3prplus:::bulletAlign_test(lofX)
+    #     b12 <- unique(lofX$bullet)
+    #     
+    #     subLOFx1 <- subset(aligned$bullets, bullet==b12[1])
+    #     subLOFx2 <- subset(aligned$bullets, bullet==b12[2]) 
+    #     
+    #     ys <- intersect(subLOFx1$y, subLOFx2$y)
+    #     idx1 <- which(subLOFx1$y %in% ys)
+    #     idx2 <- which(subLOFx2$y %in% ys)
+    #     distr.dist <- mean((subLOFx1$val[idx1] - subLOFx2$val[idx2])^2, na.rm=TRUE)
+    #     distr.sd <- sd(subLOFx1$val, na.rm=TRUE) + sd(subLOFx2$val, na.rm=TRUE)
+    #     km <- which(res$lines$match)
+    #     knm <- which(!res$lines$match)
+    #     if (length(km) == 0) km <- c(length(knm)+1,0)
+    #     if (length(knm) == 0) knm <- c(length(km)+1,0)
+    #     # browser()    
+    #     # feature extraction
+    #                
+    #    signature.length <- min(nrow(subLOFx1), nrow(subLOFx2))
+    #    
+    #    data.frame(ccf=res$ccf, lag=res$lag, 
+    #               D=distr.dist, 
+    #               sd.D = distr.sd,
+    #               b1=b12[1], b2=b12[2], x1 = subLOFx1$x[1], x2 = subLOFx2$x[1],
+    #               #num.matches = sum(res$lines$match), 
+    #               signature.length = signature.length,
+    #               matches.per.y = sum(res$lines$match) / signature.length,
+    #               #num.mismatches = sum(!res$lines$match), 
+    #               mismatches.per.y = sum(!res$lines$match) / signature.length,
+    #               #cms = res$maxCMS,
+    #               cms.per.y = res$maxCMS / signature.length,
+    #               #cms2 = x3prplus::maxCMS(subset(res$lines, type==1 | is.na(type))$match),
+    #               cms2.per.y = x3prplus::maxCMS(subset(res$lines, type==1 | is.na(type))$match) / signature.length,
+    #               #non_cms = x3prplus::maxCMS(!res$lines$match),
+    #               non_cms.per.y = x3prplus::maxCMS(!res$lines$match) / signature.length,
+    #               #left_cms = max(knm[1] - km[1], 0),
+    #               left_cms.per.y = max(knm[1] - km[1], 0) / signature.length,
+    #               #right_cms = max(km[length(km)] - knm[length(knm)],0),
+    #               right_cms.per.y = max(km[length(km)] - knm[length(knm)],0) / signature.length,
+    #               #left_noncms = max(km[1] - knm[1], 0),
+    #               left_noncms.per.y = max(km[1] - knm[1], 0) / signature.length,
+    #               #right_noncms = max(knm[length(knm)]-km[length(km)],0),
+    #               right_noncms.per.y = max(knm[length(knm)]-km[length(km)],0) / signature.length,
+    #               #sumpeaks = sum(abs(res$lines$heights[res$lines$match])),
+    #               sumpeaks.per.y = sum(abs(res$lines$heights[res$lines$match])) / signature.length
+    #     )
+    # })
+    # 
+    # output$features <- renderDataTable({
+    #     if (is.null(features())) return(NULL)
+    #     
+    #     result <- as.data.frame(t(features()))
+    #     result <- cbind(feature = rownames(result), result)
+    #     names(result)[2] <- "value"
+    #     
+    #     return(result)
+    # })
+    # 
+    # output$rfpred <- renderText({
+    #     if (is.null(features())) return(NULL)
+    #     
+    #     features <- features()
+    #     features$b1 <- gsub(".x3p", "", basename(as.character(features$b1)))
+    #     features$b2 <- gsub(".x3p", "", basename(as.character(features$b2)))
+    #     features$span <- span
+    #     
+    #     includes <- setdiff(names(features), c("b1", "b2", "data", "resID", "id.x", "id.y", "pred", "span", "forest"))
+    #     
+    #     load("data/rf.RData")
+    #     
+    #     matchprob <- round(predict(rtrees, newdata = features[,includes], type = "prob")[,2], digits = 4)
+    #     if (matchprob == 0) matchprob <- "< .0001" else if (matchprob == 1) matchprob <- "> .9999"
+    #     
+    #     #rtrees <- randomForest(factor(match)~., data=CCFs[,includes], ntree=300)
+    #     return(paste0("The probability of a match is ", matchprob))
+    # })
+    # 
 })
