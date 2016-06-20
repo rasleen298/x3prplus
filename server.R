@@ -1,7 +1,9 @@
 library(shiny)
 library(dplyr)
+library(tidyr)
 library(XML)
 library(x3prplus)
+library(ggplot2)
 library(plotly)
 library(gridExtra)
 library(zoo)
@@ -16,10 +18,16 @@ Sys.setenv("plotly_api_key" = "xd0oxpeept")
 grooves <- read.csv("data/grooves.csv")
 grooves$bullet <- basename(as.character(grooves$bullet))
 
+# bullet1 <- function() {x3prplus::read.x3pplus("~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 1-5.x3p")}
+# bullet2 <- function() {x3prplus::read.x3pplus("~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 2-1.x3p")}
+# values <- list(xcoord1 = 50, xcoord2 = 100)
+
 shinyServer(function(input, output, session) {
     
     values <- reactiveValues(xcoord1 = NULL,
-                             xcoord2 = NULL)
+                             xcoord2 = NULL,
+                             bounds1 = NULL,
+                             bound2 = NULL)
     
     bullet1 <- reactive({
         if (is.null(input$file1)) return(NULL)
@@ -93,6 +101,95 @@ shinyServer(function(input, output, session) {
         values$xcoord2 <- input$xcoord2 - ncol(theSurface()) / 2
         
         updateCheckboxInput(session, "stage1", value = TRUE)
+    })
+    
+    fortified1 <- reactive({
+        if (is.null(values$xcoord1)) return(NULL)
+        
+        bul <- bullet1()
+        bul[[3]] <- input$file1$datapath
+        names(bul)[3] <- "path"
+        
+        return(fortify_x3p(bul))
+    })
+    
+    fortified2 <- reactive({
+        if (is.null(values$xcoord2)) return(NULL)
+        
+        bul <- bullet2()
+        bul[[3]] <- input$file2$datapath
+        names(bul)[3] <- "path"
+        
+        return(fortify_x3p(bul))
+    })
+    
+    crosscut1 <- reactive({
+        if (is.null(values$xcoord1)) return(NULL)
+        
+        return(get_crosscut(bullet = bullet1(), x = values$xcoord1))
+    })
+    
+    crosscut2 <- reactive({
+        if (is.null(values$xcoord2)) return(NULL)
+        
+        return(get_crosscut(bullet = bullet2(), x = values$xcoord2))
+    })
+    
+    observe({
+        updateSliderInput(session, "bounds1", max = floor(max(fortified1()$y)), value = c(0, floor(max(fortified1()$y))))
+        updateSliderInput(session, "bounds2", max = floor(max(fortified2()$y)), value = c(0, floor(max(fortified2()$y))))
+    })
+    
+    observeEvent(input$suggestgrooves, {
+        withProgress(message = "Locating grooves...", expr = {
+            groove1 <- get_grooves(crosscut1())
+            groove2 <- get_grooves(crosscut2())
+            
+            updateSliderInput(session, "bounds1", value = groove1$groove)
+            updateSliderInput(session, "bounds2", value = groove2$groove)
+        })
+    })
+    
+    output$crosssection <- renderPlot({
+        if (is.null(fortified1()) || is.null(fortified2())) return(NULL)
+        
+        fortified <- fortified1()
+        fortified2 <- fortified2()
+        
+        myx <- unique(fortified$x)
+        xval <- myx[which.min(abs(myx - values$xcoord1))]
+        myx2 <- unique(fortified2$x)
+        xval2 <- myx2[which.min(abs(myx2 - values$xcoord2))]
+        
+        plotdat <- fortified %>%
+            filter(x == xval, y >= input$bounds1[1], y <= input$bounds1[2]) %>%
+            select(-x) %>%
+            full_join(
+                fortified2 %>%
+                    filter(x == xval2, y >= input$bounds2[1], y <= input$bounds2[2]) %>%
+                    select(-x)
+            , by = c("y" = "y")) %>%
+            rename(bullet1 = value.x, bullet2 = value.y) %>%
+            gather(key = bullet, value = value, bullet1:bullet2)
+        
+        ggplot(data = plotdat, aes(x = y, y = value)) +
+            facet_wrap(~bullet, nrow = 2) +
+            geom_line(size = 1) +
+            xlim(c(0, max(plotdat$y))) +
+            theme_bw()
+    })
+    
+    observeEvent(input$confirm2, {
+        values$bounds1 <- input$bounds1
+        values$bounds2 <- input$bounds2
+        
+        updateCheckboxInput(session, "stage2", value = TRUE)
+    })
+    
+    output$loess1 <- renderPlot({
+        if (!input$stage2) return(NULL)
+        
+        myloess <- fit_loess()
     })
 
     # processed1 <- reactive({
