@@ -1,11 +1,18 @@
 # x3prplus - Analying Bullet Striations From .x3p Files
 
+## Update 06/21/2016
+
+This documentation will be updated significantly in the next week. For now, the steps of the algorithm and a front-end to the x3prplus R package have been created as a Shiny Web Application. The application can be accessed at http://erichare.shinyapps.io/x3prplus
+
+One can still follow the instructions at the bottom to reproduce the study, but for a comparison of two bullet lands, the web application is a simpler approach.
+
 ## Introduction
 
 This repository contains the R package `x3prplus`, along with supporting resources for manipulating bullet images to determine whether two bullets are a match (fired from the same gun barrel) The **repository branches** are organized as follows:
 
 - **master** Contains the R package `x3prplus`
 - **application** Contains a companion Shiny application to assess the probability that two bullets are a match
+- **application++** Contains a companion Shiny application which walks through each algorithm stage
 - **papers** Contains academic papers involving this package
 - **presentations** Contains presentations involving this package
 
