@@ -103,19 +103,21 @@ shinyServer(function(input, output, session) {
         p
     })
     
-    observeEvent(input$suggest, {
-        withProgress(message = "Calculating CCF...", expr = {
-            crosscut1 <- bulletCheckCrossCut(values$path1, 
-                                             xlimits = seq(25, 500, by = 25), 
-                                             transpose = values$transpose1)
-            
-            crosscut2 <- bulletCheckCrossCut(values$path2, 
-                                             xlimits = seq(25, 500, by = 25), 
-                                             transpose = values$transpose2)
-            
-            updateSliderInput(session, "xcoord1", value = crosscut1)
-            updateSliderInput(session, "xcoord2", value = crosscut2 + ncol(theSurface()) / 2)
-        })
+    observeEvent(input$stage0, {
+        if (!is.null(values$path1) && !is.null(values$path2)) {
+            withProgress(message = "Calculating CCF...", expr = {
+                crosscut1 <- bulletCheckCrossCut(values$path1, 
+                                                 xlimits = seq(25, 500, by = 25), 
+                                                 transpose = values$transpose1)
+                
+                crosscut2 <- bulletCheckCrossCut(values$path2, 
+                                                 xlimits = seq(25, 500, by = 25), 
+                                                 transpose = values$transpose2)
+                
+                updateSliderInput(session, "xcoord1", value = crosscut1)
+                updateSliderInput(session, "xcoord2", value = crosscut2 + ncol(theSurface()) / 2)
+            })
+        }
     })
 
     observeEvent(input$confirm, {
@@ -162,14 +164,17 @@ shinyServer(function(input, output, session) {
         updateSliderInput(session, "bounds2", max = floor(max(fortified2()$y)), value = c(0, floor(max(fortified2()$y))))
     })
     
-    observeEvent(input$suggestgrooves, {
-        withProgress(message = "Locating grooves...", expr = {
-            groove1 <- get_grooves(crosscut1())
-            groove2 <- get_grooves(crosscut2())
-            
-            updateSliderInput(session, "bounds1", value = groove1$groove)
-            updateSliderInput(session, "bounds2", value = groove2$groove)
-        })
+    observeEvent(input$stage1, {
+        if (!is.null(crosscut1()) && !is.null(crosscut2())) {
+                
+            withProgress(message = "Locating grooves...", expr = {
+                groove1 <- get_grooves(crosscut1())
+                groove2 <- get_grooves(crosscut2())
+                
+                updateSliderInput(session, "bounds1", value = groove1$groove)
+                updateSliderInput(session, "bounds2", value = groove2$groove)
+            })
+        }
     })
     
     output$crosssection <- renderPlot({
@@ -184,18 +189,28 @@ shinyServer(function(input, output, session) {
         xval2 <- myx2[which.min(abs(myx2 - values$xcoord2))]
         
         plotdat <- fortified %>%
-            filter(x == xval, y >= input$bounds1[1], y <= input$bounds1[2]) %>%
+            filter(x == xval) %>%
             select(-x) %>%
             full_join(
                 fortified2 %>%
-                    filter(x == xval2, y >= input$bounds2[1], y <= input$bounds2[2]) %>%
+                    filter(x == xval2) %>%
                     select(-x)
             , by = c("y" = "y")) %>%
             rename(bullet1 = value.x, bullet2 = value.y) %>%
             gather(key = bullet, value = value, bullet1:bullet2)
         
-        ggplot(data = plotdat, aes(x = y, y = value)) +
+        plotdat$include <- FALSE
+        plotdat$include[plotdat$bullet == "bullet1"] <- (plotdat$y >= input$bounds1[1] & plotdat$y <= input$bounds1[2])
+        plotdat$include[plotdat$bullet == "bullet2"] <- (plotdat$y >= input$bounds2[1] & plotdat$y <= input$bounds2[2])
+
+        vline.data <- data.frame(zleft = c(input$bounds1[1], input$bounds2[1]),
+                                 zright = c(input$bounds1[2], input$bounds2[2]),
+                                 bullet = c("bullet1", "bullet2"))
+        
+        ggplot(data = plotdat, aes(x = y, y = value, alpha = include)) +
             facet_wrap(~bullet, nrow = 2) +
+            geom_vline(aes(xintercept = zleft), colour = "blue", data = vline.data) +
+            geom_vline(aes(xintercept = zright), colour = "blue", data = vline.data) +
             geom_line(size = 1) +
             xlim(c(0, max(plotdat$y))) +
             theme_bw()
@@ -250,17 +265,21 @@ shinyServer(function(input, output, session) {
     })
     
     output$loess1 <- renderPlot({
-        if (is.null(loess1()) || is.null(smoothed())) return(NULL)
-        p1 <- qplot(y, l30, data = filter(smoothed(), bullet == "b1"), geom = "line") +
-            theme_bw()
-        grid.arrange(loess1()$fitted, p1, ncol = 2)
+        withProgress(message = "Loading plots...", {
+            if (is.null(loess1()) || is.null(smoothed())) return(NULL)
+            p1 <- qplot(y, l30, data = filter(smoothed(), bullet == "b1"), geom = "line") +
+                theme_bw()
+            grid.arrange(loess1()$fitted, p1, ncol = 2)
+        })
     })
     
     output$loess2 <- renderPlot({
-        if (is.null(loess2()) || is.null(smoothed())) return(NULL)
-        p2 <- qplot(y, l30, data = filter(smoothed(), bullet == "b2"), geom = "line") +
-            theme_bw()
-        grid.arrange(loess2()$fitted, p2, ncol = 2)
+        withProgress(message = "Loading plots...", {
+            if (is.null(loess2()) || is.null(smoothed())) return(NULL)
+            p2 <- qplot(y, l30, data = filter(smoothed(), bullet == "b2"), geom = "line") +
+                theme_bw()
+            grid.arrange(loess2()$fitted, p2, ncol = 2)
+        })
     })
     
     observeEvent(input$confirm3, {
@@ -273,10 +292,12 @@ shinyServer(function(input, output, session) {
         x3prplus:::bulletAlign_test(data = smoothed())
     })
     
-    observeEvent(input$suggestalign, {
-        withProgress(message = "Determining alignment...", expr = {
-            updateSliderInput(session, "alignment", value = myalign()$lag)
-        })
+    observeEvent(input$stage3, {
+        if (!is.null(myalign())) {
+            withProgress(message = "Determining alignment...", expr = {
+                updateSliderInput(session, "alignment", value = myalign()$lag)
+            })
+        }
     })
     
     chosenalign <- reactive({

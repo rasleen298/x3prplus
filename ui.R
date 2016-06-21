@@ -43,10 +43,6 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "input.stage0 && !input.stage1",
                 h4("Stage 1 Options"),
                 
-                actionButton("suggest", "Automatically Suggest"),
-                
-                hr(),
-                
                 sliderInput("xcoord1", "X Coordinate (First Land)", min = 1, max = 251, value = 136, step = 1),
                 sliderInput("xcoord2", "X Coordinate (Second Land)", min = 252, max = 502, value = 386, step = 1),
                 
@@ -57,10 +53,6 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             
             conditionalPanel(condition = "input.stage1 && !input.stage2",
                 h4("Stage 2 Options"),
-                
-                actionButton("suggestgrooves", "Automatically Suggest"),
-                
-                hr(),
                 
                 sliderInput("bounds1", "Coordinate Bounds 1", min = 0, max = 2400, value = c(0, 2400)),
                 sliderInput("bounds2", "Coordinate Bounds 2", min = 0, max = 2400, value = c(0, 2400)),
@@ -75,17 +67,17 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 
                 sliderInput("span", "Loess Span", min = 0.01, max = 0.99, value = 0.03, step = 0.01),
                 
+                hr(),
+                
                 actionButton("confirm3", "Confirm Span")
             ),
             
             conditionalPanel(condition = "input.stage3 && !input.stage4",
                 h4("Stage 4 Options"),
                 
-                actionButton("suggestalign", "Automatically Suggest"),
+                numericInput("alignment", "Alignment", min = -1000, max = 1000, step = 1.5625, value = 0),
                 
                 hr(),
-                
-                numericInput("alignment", "Alignment", min = -1000, max = 1000, step = 1.5625, value = 0),
                 
                 actionButton("confirm4", "Confirm Alignment")
             ),
@@ -125,12 +117,12 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "input.stage0 && !input.stage1 || input.stage5",
                  h2("Stage 1: Finding a Stable Region"),
                  hr(),
-                 div(id = "info", HTML("Below you will find surface topologies of the two bullet lands you have uploaded. You can rotate, pan, zoom, and perform a number of other functions to examine the surfaces.<br><br>Our goal is to find a <b>stable region</b>. We want an area of the bullet where there is minimal noise or tank rash, but plenty of pronounced striation markings.<br><br>Our algorithm steps through cross-sections of each land at a fixed step size, and uses the CCF (cross-correlation function) to determine stability (a high CCF means that subsequent cross-sections are similar to each other). We begin this procedure near the area where striation markings are typically most pronounced.<br><br>You may choose the location to take a cross-section, or allow our algorithm to do so for you."))           
+                 div(id = "info", HTML("Below you will find surface topologies of the two bullet lands you have uploaded. You can rotate, pan, zoom, and perform a number of other functions to examine the surfaces.<br><br>Our goal is to find a <b>stable region</b>. We want an area of the bullet where there is minimal noise or tank rash, but plenty of pronounced striation markings.<br><br>Our algorithm steps through cross-sections of each land at a fixed step size, and uses the CCF (cross-correlation function) to determine stability (a high CCF means that subsequent cross-sections are similar to each other). We begin this procedure near the area where striation markings are typically most pronounced.<br><br><b>Our algorithm has automatically identified what it believes is a stable region.</b> You may choose the location to take a cross-section if the algorithm's choice is not satisfactory."))           
             ),
             conditionalPanel(condition = "input.stage1 && !input.stage2 || input.stage5",
                  h2("Stage 2: Removing Grooves"),
                  hr(),
-                 div(id = "info", HTML("The cross-sections you have taken are shown below. Our next goal will be to remove the grooves, which contain no relevant information for matching, and greatly exceed the size of a typical striation mark.<br><br>Our algorithm uses a double-pass smoothing method to determine the location of the grooves. You may once again use our algorithm to suggest groove locations, or define them yourself. As you adjust the sliders, the plot will automatically update.")),
+                 div(id = "info", HTML("The cross-sections you have taken are shown below. Our next goal will be to remove the grooves, which contain no relevant information for matching, and greatly exceed the size of a typical striation mark.<br><br>Our algorithm uses a double-pass smoothing method to determine the location of the grooves. <b>Our algorithm has again attempted to locate the grooves for you</b>, but you may define them yourself. As you adjust the sliders, the plot will automatically update.")),
                  hr(),
                  
                  plotOutput("crosssection")
