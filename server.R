@@ -282,9 +282,11 @@ shinyServer(function(input, output, session) {
     chosenalign <- reactive({
         if (is.null(myalign())) return(NULL)
         
+        alignval <- round(input$alignment / 1.5625, digits = 0) * 1.5625
+        
         chosen <- myalign()
-        chosen$lag <- input$alignment
-        chosen$bullets$y[chosen$bullets$bullet == unique(chosen$bullets$bullet[2])] <- chosen$bullets$y[chosen$bullets$bullet == unique(chosen$bullets$bullet[2])] - min(chosen$bullets$y[chosen$bullets$bullet == unique(chosen$bullets$bullet[2])]) + chosen$lag
+        chosen$lag <- alignval
+        chosen$bullets$y[chosen$bullets$bullet == "b2"] <- chosen$bullets$y[chosen$bullets$bullet == "b2"] - min(chosen$bullets$y[chosen$bullets$bullet == "b2"]) + chosen$lag
         
         return(chosen)
     })

@@ -85,7 +85,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 
                 hr(),
                 
-                numericInput("alignment", "Alignment", min = -1000, max = 1000, step = 1, value = 0),
+                numericInput("alignment", "Alignment", min = -1000, max = 1000, step = 1.5625, value = 0),
                 
                 actionButton("confirm4", "Confirm Alignment")
             ),
