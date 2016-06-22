@@ -12,23 +12,6 @@ library(randomForest)
 
 options(shiny.maxRequestSize=30*1024^2) 
 
-Sys.setenv("plotly_username" = "erichare")
-Sys.setenv("plotly_api_key" = "xd0oxpeept")
-
-# input <- list(file1 = list(datapath = "~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 1-5.x3p"), file2 = list(datapath = "~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 2-1.x3p"), span = 0.03)
-# bullet1 <- function() {x3prplus::read.x3pplus(input$file1$datapath)}
-# bullet2 <- function() {x3prplus::read.x3pplus(input$file2$datapath)}
-# values <- list(xcoord1 = 50, xcoord2 = 100, bounds1 = c(300, 2200), bounds2 = c(300, 2200))
-# crosscut1 <- function() {get_crosscut(bullet = bullet1(), x = values$xcoord1)}
-# crosscut2 <- function() {get_crosscut(bullet = bullet2(), x = values$xcoord2)}
-# loess1 <- function() {fit_loess(bullet = crosscut1(), groove = list(groove = values$bounds1), span = 0.03)}
-# loess2 <- function() {fit_loess(bullet = crosscut2(), groove = list(groove = values$bounds2), span = 0.03)}
-# processed1 <- function() {processBullets(bullet = bullet1(), name = input$file1$datapath, x = values$xcoord1, grooves = values$bounds1)}
-# processed2 <- function() {processBullets(bullet = bullet2(), name = input$file2$datapath, x = values$xcoord2, grooves = values$bounds2)}
-# bullets_processed <- list(b1 = processed1(), b2 = processed2())
-# smoothed <- function(){bullets_processed %>% bind_rows %>% bulletSmooth(span = input$span)}
-# myalign <- function(){x3prplus:::bulletAlign_test(data = smoothed())}
-
 shinyServer(function(input, output, session) {
     
     values <- reactiveValues(path1 = NULL,
@@ -405,8 +388,19 @@ shinyServer(function(input, output, session) {
         result <- as.data.frame(t(features()))
         result <- cbind(feature = rownames(result), result)
         names(result)[2] <- "value"
-
-        return(result)
+        
+        clean_result <- result %>%
+            filter(feature %in% c("ccf", "D", "signature.length", "matches.per.y",
+                                  "mismatches.per.y", "cms.per.y", "non_cms.per.y",
+                                  "sumpeaks.per.y")) %>%
+            mutate(feature = c("CCF", "D", "Signature Length in Millimeters", "Matches Per Millimeter",
+                               "Mismatches Per Millimeter", "CMS Per Millimeter",
+                               "Non-CMS Per Millimeter", "Peak Sum Per Millimeter"),
+                   value = c(as.numeric(as.character(value[1:2])), as.numeric(as.character(value[3])) / 1000, as.numeric(as.character(value[4:8])) / 1.5625 * 1000))
+        
+        clean_result$value <- sprintf("%.4f", clean_result$value)
+        
+        return(clean_result)
     })
     
     observeEvent(input$confirm5, {
@@ -425,10 +419,9 @@ shinyServer(function(input, output, session) {
 
         load("data/rf.RData")
 
-        matchprob <- round(predict(rtrees, newdata = features[,includes], type = "prob")[,2], digits = 4)
-        if (matchprob == 0) matchprob <- "< .0001" else if (matchprob == 1) matchprob <- "> .9999"
+        matchprob <- sprintf("%.4f", predict(rtrees, newdata = features[,includes], type = "prob")[,2])
+        if (matchprob == "0.0000") matchprob <- "< .0001" else if (matchprob == "1.0000") matchprob <- "> .9999"
 
-        #rtrees <- randomForest(factor(match)~., data=CCFs[,includes], ntree=300)
         return(paste0("The probability of a match is ", matchprob))
     })
 

@@ -4,7 +4,7 @@ library(plotly)
 library(shinyjs)
 
 shinyUI(fluidPage(theme = shinytheme("cerulean"),
-    headerPanel("Bullet Rotation Prototype"),
+    headerPanel("Bullet Matching Algorithm"),
     
     sidebarLayout(
         sidebarPanel(width = 3,
@@ -21,13 +21,13 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "!input.stage0",
                  h4("Stage 0 Options"),
                  
+                 hr(),
+                 
                  selectizeInput("choose1", "Choose First Land", choices = c("Upload Image", dir("images"))),
                  
                  conditionalPanel(condition = "input.choose1 == 'Upload Image'",
                     fileInput("file1", "First Bullet Land")                 
                  ),
-                 
-                 hr(),
                  
                  selectizeInput("choose2", "Choose Second Land", choices = c("Upload Image", dir("images"))),
                  
@@ -43,6 +43,8 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "input.stage0 && !input.stage1",
                 h4("Stage 1 Options"),
                 
+                hr(),
+                
                 sliderInput("xcoord1", "X Coordinate (First Land)", min = 1, max = 251, value = 136, step = 1),
                 sliderInput("xcoord2", "X Coordinate (Second Land)", min = 252, max = 502, value = 386, step = 1),
                 
@@ -53,6 +55,8 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             
             conditionalPanel(condition = "input.stage1 && !input.stage2",
                 h4("Stage 2 Options"),
+                
+                hr(),
                 
                 sliderInput("bounds1", "Coordinate Bounds 1", min = 0, max = 2400, value = c(0, 2400)),
                 sliderInput("bounds2", "Coordinate Bounds 2", min = 0, max = 2400, value = c(0, 2400)),
@@ -65,6 +69,8 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "input.stage2 && !input.stage3",
                 h4("Stage 3 Options"),
                 
+                hr(),
+                
                 sliderInput("span", "Loess Span", min = 0.01, max = 0.99, value = 0.03, step = 0.01),
                 
                 hr(),
@@ -75,6 +81,8 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "input.stage3 && !input.stage4",
                 h4("Stage 4 Options"),
                 
+                hr(),
+                
                 numericInput("alignment", "Alignment", min = -1000, max = 1000, step = 1.5625, value = 0),
                 
                 hr(),
@@ -84,6 +92,8 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             
             conditionalPanel(condition = "input.stage4 && !input.stage5",
                  h4("Stage 5 Options"),
+                 
+                 hr(),
                  
                  actionButton("confirm5", "Confirm Features")
             ),
@@ -112,7 +122,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "!input.stage0 || input.stage5",
                  h2("Stage 0: Preliminary Information"),
                  hr(),
-                 div(id = "info", HTML("This app will walk through the steps used to programmatically determine the probability that two bullets were fired from the same gun barrel. We compare at the bullet land level.<br><br>To begin, upload the two .x3p files representing the two bullet lands you wish to compare."))
+                 div(id = "info", HTML("This app will walk through the steps used to programmatically determine the probability that two bullets were fired from the same gun barrel. We compare at the bullet land level.<br><br><b>To begin, upload the two .x3p files representing the two bullet lands you wish to compare.</b><br><br>We have provided three example files from the Hamby study which you may use - The two lands from Barrel 1 are a match, but Barrel 2 does not match either.<br><br>Our algorithm is fully open-source and transparent. The code producing the results is given on each page. For more details on the underlying code, please see the <a href='https://github.com/heike/x3prplus'>GitHub repository</a> for the companion R package <b>x3prplus</b>."))
             ),
             conditionalPanel(condition = "input.stage0 && !input.stage1 || input.stage5",
                  h2("Stage 1: Finding a Stable Region"),
@@ -146,7 +156,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "input.stage4",
                  h2("Stage 5: Extract Features"),
                  hr(),
-                 div(id = "info", HTML("We now have smoothed, aligned bullet signatures. This gives us a number of features we can extract.<br><br>At this point, there is really nothing left to configure about the algorithm. The features extracted are displayed below. Press Confirm Features when you are ready to get your predicted probability of a match.")),
+                 div(id = "info", HTML("We now have smoothed, aligned bullet signatures. This gives us a number of features we can extract.<br><br>At this point, there is really nothing left to configure about the algorithm. The features extracted are displayed below. The definitions of each can be found in Hare 2016. Press Confirm Features when you are ready to get your predicted probability of a match.")),
                  
                  dataTableOutput("features")
             ),
