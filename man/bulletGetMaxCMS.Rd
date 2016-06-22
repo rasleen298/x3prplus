@@ -4,12 +4,14 @@
 \alias{bulletGetMaxCMS}
 \title{Identify the number of maximum CMS between two bullet lands}
 \usage{
-bulletGetMaxCMS(lof1, lof2, span = 35)
+bulletGetMaxCMS(lof1, lof2, column = "resid", span = 35)
 }
 \arguments{
 \item{lof1}{dataframe of smoothed first signature}
 
 \item{lof2}{dataframe of smoothed second signature}
+
+\item{column}{The column which to smooth}
 
 \item{span}{positive number  for the smoothfactor to use for assessing peaks.}
 }

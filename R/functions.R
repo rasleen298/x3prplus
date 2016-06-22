@@ -796,10 +796,11 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
 #' 
 #' @param lof1 dataframe of smoothed first signature
 #' @param lof2 dataframe of smoothed second signature
+#' @param column The column which to smooth
 #' @param span positive number  for the smoothfactor to use for assessing peaks. 
 #' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
 #' @export
-bulletGetMaxCMS <- function(lof1, lof2, span=35) {
+bulletGetMaxCMS <- function(lof1, lof2, column = "resid", span = 35) {
     bullet <- NULL
     
   lof <- rbind(lof1, lof2)
@@ -807,8 +808,8 @@ bulletGetMaxCMS <- function(lof1, lof2, span=35) {
   lofX <- bAlign$bullet  
   
   b12 <- unique(lof$bullet)
-  peaks1 <- get_peaks(subset(lofX, bullet==b12[1]), smoothfactor = span)
-  peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), smoothfactor = span)
+  peaks1 <- get_peaks(subset(lofX, bullet==b12[1]), column = column, smoothfactor = span)
+  peaks2 <- get_peaks(subset(lofX, bullet == b12[2]), column = column, smoothfactor = span)
   
   #qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
   #    theme_bw() +
