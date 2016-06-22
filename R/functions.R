@@ -306,17 +306,18 @@ get_grooves <- function(bullet, smoothfactor = 15, adjust = 10, groove_cutoff = 
 #' Identify the location and the depth of peaks and heights at a crosscut
 #' 
 #' @param loessdata export from rollapply 
+#' @param column The column which should be smoothed
 #' @param smoothfactor set to default of 35. Smaller values will pick up on smaller changes in the crosscut.
 #' @return list of several objects: 
 #' @importFrom zoo rollapply
 #' @import ggplot2
 #' @export
-get_peaks <- function(loessdata, smoothfactor = 35) {
+get_peaks <- function(loessdata, column = "resid", smoothfactor = 35) {
   y <- NULL
   xmin <- NULL
   xmax <- NULL
   
-    smoothed <- rollapply(loessdata$resid, smoothfactor, function(x) mean(x))
+    smoothed <- rollapply(loessdata[,column], smoothfactor, function(x) mean(x))
     smoothed_truefalse <- rollapply(smoothed, smoothfactor, function(x) mean(x))
     
     test <- rollapply(smoothed_truefalse, 3, function(x) which.max(x)==2)
@@ -326,7 +327,7 @@ get_peaks <- function(loessdata, smoothfactor = 35) {
     peaks <- loessdata$y[which(test) + smoothfactor]
     valleys <- loessdata$y[which(test2) + smoothfactor]
     peaks.heights <- smoothed_truefalse[which(test) + 1]
-    valleys.heights <- loessdata$resid[which(test2) + smoothfactor]
+    valleys.heights <- loessdata[,column][which(test2) + smoothfactor]
     
     # adding on some extra stats
     extrema <- c(peaks, valleys)

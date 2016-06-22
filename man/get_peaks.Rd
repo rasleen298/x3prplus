@@ -4,10 +4,12 @@
 \alias{get_peaks}
 \title{Identify the location and the depth of peaks and heights at a crosscut}
 \usage{
-get_peaks(loessdata, smoothfactor = 35)
+get_peaks(loessdata, column = "resid", smoothfactor = 35)
 }
 \arguments{
 \item{loessdata}{export from rollapply}
+
+\item{column}{The column which should be smoothed}
 
 \item{smoothfactor}{set to default of 35. Smaller values will pick up on smaller changes in the crosscut.}
 }
