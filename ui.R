@@ -7,7 +7,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
     headerPanel("Bullet Matching Algorithm"),
     
     sidebarLayout(
-        sidebarPanel(width = 3,
+        div(id = "mysidebar", sidebarPanel(width = 3,
             useShinyjs(),
             tags$head(tags$style("#info{font-size: 18px;}")),
             
@@ -107,11 +107,11 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 sliderInput("roughness_lighting", "Roughness Lighting", min = 0, max = 1, step = 0.1, value = 0.5),
                 sliderInput("fresnel_lighting", "Fresnel Lighting", min = 0, max = 5, step = 0.1, value = 0.2)
             )
-        ),
+        )),
         
         mainPanel(width = 9,
               conditionalPanel(condition = "input.stage5",
-                   h2("Stage 6: Predicted Probability"),
+                   h2("Predicted Probability"),
                    hr(),
                    div(id = "info", HTML("We use these features to train a Random Forest to help differentiate between a match and a non-match. Using the forest, we predict on the features you just extracted. Your predicted probability of a match is given below.")),
                    

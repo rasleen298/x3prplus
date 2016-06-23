@@ -404,6 +404,7 @@ shinyServer(function(input, output, session) {
     })
     
     observeEvent(input$confirm5, {
+        shinyjs::hide(id = "mysidebar")
         updateCheckboxInput(session, "stage5", value = TRUE)
     })
 
