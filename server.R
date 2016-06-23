@@ -396,7 +396,7 @@ shinyServer(function(input, output, session) {
             mutate(feature = c("CCF", "D", "Signature Length in Millimeters", "Matches Per Millimeter",
                                "Mismatches Per Millimeter", "CMS Per Millimeter",
                                "Non-CMS Per Millimeter", "Peak Sum Per Millimeter"),
-                   value = c(as.numeric(as.character(value[1:2])), as.numeric(as.character(value[3])) / 1000, as.numeric(as.character(value[4:8])) / 1.5625 * 1000))
+                   value = c(as.numeric(as.character(value[1:2])), as.numeric(as.character(value[3])) / 1000 * 1.5625, as.numeric(as.character(value[4:8])) / 1.5625 * 1000))
         
         clean_result$value <- sprintf("%.4f", clean_result$value)
         
