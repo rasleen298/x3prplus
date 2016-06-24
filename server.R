@@ -110,6 +110,10 @@ shinyServer(function(input, output, session) {
         updateCheckboxInput(session, "stage1", value = TRUE)
     })
     
+    observeEvent(input$back, {
+        updateCheckboxInput(session, "stage0", value = FALSE)
+    })
+    
     fortified1 <- reactive({
         if (is.null(values$xcoord1)) return(NULL)
         
@@ -206,6 +210,10 @@ shinyServer(function(input, output, session) {
         updateCheckboxInput(session, "stage2", value = TRUE)
     })
     
+    observeEvent(input$back2, {
+        updateCheckboxInput(session, "stage1", value = FALSE)
+    })
+    
     loess1 <- reactive({
         if (!input$stage2) return(NULL)
         
@@ -269,6 +277,10 @@ shinyServer(function(input, output, session) {
         updateCheckboxInput(session, "stage3", value = TRUE)
     })
     
+    observeEvent(input$back3, {
+        updateCheckboxInput(session, "stage2", value = FALSE)
+    })
+    
     myalign <- reactive({
         if (is.null(smoothed())) return(NULL)
 
@@ -307,6 +319,10 @@ shinyServer(function(input, output, session) {
     
     observeEvent(input$confirm4, {
         updateCheckboxInput(session, "stage4", value = TRUE)
+    })
+    
+    observeEvent(input$back4, {
+        updateCheckboxInput(session, "stage3", value = FALSE)
     })
 
     CMS <- reactive({
@@ -406,6 +422,10 @@ shinyServer(function(input, output, session) {
     observeEvent(input$confirm5, {
         shinyjs::hide(id = "mysidebar")
         updateCheckboxInput(session, "stage5", value = TRUE)
+    })
+    
+    observeEvent(input$back5, {
+        updateCheckboxInput(session, "stage4", value = FALSE)
     })
 
     output$rfpred <- renderText({

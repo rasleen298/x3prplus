@@ -37,7 +37,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
 
                  hr(),
                  
-                 actionButton("confirm0", "Confirm Lands")
+                 actionButton("confirm0", "Confirm Lands", icon = icon("check"))
             ),
             
             conditionalPanel(condition = "input.stage0 && !input.stage1",
@@ -50,7 +50,11 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 
                 hr(),
                 
-                actionButton("confirm", "Confirm Coordinates")
+                actionButton("confirm", "Confirm Coordinates", icon = icon("check")),
+                
+                hr(),
+                
+                actionButton("back", "Back to Stage 0", icon = icon("backward"))
             ),
             
             conditionalPanel(condition = "input.stage1 && !input.stage2",
@@ -63,7 +67,11 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 
                 hr(),
                 
-                actionButton("confirm2", "Confirm Bounds")
+                actionButton("confirm2", "Confirm Bounds", icon = icon("check")),
+                
+                hr(),
+                
+                actionButton("back2", "Back to Stage 1", icon = icon("backward"))
             ),
             
             conditionalPanel(condition = "input.stage2 && !input.stage3",
@@ -75,7 +83,11 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 
                 hr(),
                 
-                actionButton("confirm3", "Confirm Span")
+                actionButton("confirm3", "Confirm Span", icon = icon("check")),
+                
+                hr(),
+                
+                actionButton("back3", "Back to Stage 2", icon = icon("backward"))
             ),
             
             conditionalPanel(condition = "input.stage3 && !input.stage4",
@@ -87,7 +99,11 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 
                 hr(),
                 
-                actionButton("confirm4", "Confirm Alignment")
+                actionButton("confirm4", "Confirm Alignment", icon = icon("check")),
+                
+                hr(),
+                
+                actionButton("back4", "Back to Stage 3", icon = icon("backward"))
             ),
             
             conditionalPanel(condition = "input.stage4 && !input.stage5",
@@ -95,7 +111,11 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                  
                  hr(),
                  
-                 actionButton("confirm5", "Confirm Features")
+                 actionButton("confirm5", "Confirm Features", icon = icon("check")),
+                 
+                 hr(),
+                 
+                 actionButton("back5", "Back to Stage 4", icon = icon("backward"))
             ),
             
             hidden(
