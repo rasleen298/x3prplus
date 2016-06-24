@@ -7,7 +7,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
     headerPanel("Bullet Matching Algorithm"),
     
     sidebarLayout(
-        div(id = "mysidebar", sidebarPanel(width = 3,
+        sidebarPanel(width = 3,
             useShinyjs(),
             tags$head(tags$style("#info{font-size: 18px;}")),
             
@@ -18,7 +18,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             hidden(checkboxInput("stage4", "Stage 4")),
             hidden(checkboxInput("stage5", "Stage 5")),
             
-            conditionalPanel(condition = "!input.stage0",
+            conditionalPanel(condition = "!input.stage0 || input.stage5",
                  h4("Stage 0 Options"),
                  
                  hr(),
@@ -40,7 +40,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                  actionButton("confirm0", "Confirm Lands", icon = icon("check"))
             ),
             
-            conditionalPanel(condition = "input.stage0 && !input.stage1",
+            conditionalPanel(condition = "input.stage0 && !input.stage1 || input.stage5",
                 h4("Stage 1 Options"),
                 
                 hr(),
@@ -57,7 +57,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 actionButton("back", "Back to Stage 0", icon = icon("backward"))
             ),
             
-            conditionalPanel(condition = "input.stage1 && !input.stage2",
+            conditionalPanel(condition = "input.stage1 && !input.stage2 || input.stage5",
                 h4("Stage 2 Options"),
                 
                 hr(),
@@ -74,7 +74,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 actionButton("back2", "Back to Stage 1", icon = icon("backward"))
             ),
             
-            conditionalPanel(condition = "input.stage2 && !input.stage3",
+            conditionalPanel(condition = "input.stage2 && !input.stage3 || input.stage5",
                 h4("Stage 3 Options"),
                 
                 hr(),
@@ -90,7 +90,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 actionButton("back3", "Back to Stage 2", icon = icon("backward"))
             ),
             
-            conditionalPanel(condition = "input.stage3 && !input.stage4",
+            conditionalPanel(condition = "input.stage3 && !input.stage4 || input.stage5",
                 h4("Stage 4 Options"),
                 
                 hr(),
@@ -106,7 +106,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 actionButton("back4", "Back to Stage 3", icon = icon("backward"))
             ),
             
-            conditionalPanel(condition = "input.stage4 && !input.stage5",
+            conditionalPanel(condition = "input.stage4",
                  h4("Stage 5 Options"),
                  
                  hr(),
@@ -127,7 +127,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 sliderInput("roughness_lighting", "Roughness Lighting", min = 0, max = 1, step = 0.1, value = 0.5),
                 sliderInput("fresnel_lighting", "Fresnel Lighting", min = 0, max = 5, step = 0.1, value = 0.2)
             )
-        )),
+        ),
         
         mainPanel(width = 9,
               conditionalPanel(condition = "input.stage5",
