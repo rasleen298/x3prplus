@@ -196,7 +196,9 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             ),
             conditionalPanel(condition = "input.stage0",
                 plotlyOutput("trendPlot", height = "700px")
-            )
+            ),
+            
+            hr()
         )
     )
 ))
