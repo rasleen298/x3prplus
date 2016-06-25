@@ -89,11 +89,13 @@ shinyServer(function(input, output, session) {
     observeEvent(input$stage0, {
         if (!is.null(values$path1) && !is.null(values$path2)) {
             withProgress(message = "Calculating CCF...", expr = {
-                crosscut1 <- bulletCheckCrossCut(values$path1, 
+                crosscut1 <- bulletCheckCrossCut(values$path1,
+                                                 bullet = bullet1(),
                                                  xlimits = seq(25, 500, by = 25), 
                                                  transpose = values$transpose1)
                 
                 crosscut2 <- bulletCheckCrossCut(values$path2, 
+                                                 bullet = bullet2(),
                                                  xlimits = seq(25, 500, by = 25), 
                                                  transpose = values$transpose2)
                 
@@ -443,6 +445,15 @@ shinyServer(function(input, output, session) {
         if (matchprob == "0.0000") matchprob <- "< .0001" else if (matchprob == "1.0000") matchprob <- "> .9999"
 
         return(paste0("The probability of a match is ", matchprob))
+    })
+    
+    observeEvent(input$restart, {
+        updateCheckboxInput(session, "stage0", value = FALSE)
+        updateCheckboxInput(session, "stage1", value = FALSE)
+        updateCheckboxInput(session, "stage2", value = FALSE)
+        updateCheckboxInput(session, "stage3", value = FALSE)
+        updateCheckboxInput(session, "stage4", value = FALSE)
+        updateCheckboxInput(session, "stage5", value = FALSE)
     })
 
 })
