@@ -693,13 +693,14 @@ read.x3pplus <- function(fpath, transpose = FALSE) {
 #' 
 #' Should be changed: x should just indicate lower and upper limit. That is cleaner and should speed things up as well.
 #' @param path path to an x3p file
+#' @param bullet If passed in, the actual bullet already loaded
 #' @param distance positive numeric value indicating the distance between cross sections to use for a comparison
 #' @param xlimits vector of values between which to check for cross sections in a stable region
 #' @param minccf minimal value of cross correlation to indicate a stable region
 #' @param span The span for the loess smooth function
 #' @param transpose if TRUE, transpose the x3p matrix
 #' @export
-bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf = 0.9, span = 0.03, transpose = FALSE) {
+bulletCheckCrossCut <- function(path, bullet = NULL, distance = 25, xlimits = c(50, 500), minccf = 0.9, span = 0.03, transpose = FALSE) {
   get_cc <- function(x, mybullet) {
     pickx <- mybullet$x[which.min(abs(x - unique(mybullet$x)))]
     
@@ -713,7 +714,7 @@ bulletCheckCrossCut <- function(path, distance=25, xlimits = c(50, 500), minccf 
     dframe$bullet <- paste(gsub(".x3p", "", path), x)
     dframe
   }
-  bullet <- read.x3pplus(path, transpose = transpose)
+  if (is.null(bullet)) bullet <- read.x3pplus(path, transpose = transpose)
   dbr111 <- fortify_x3p(bullet)
 
   done <- FALSE

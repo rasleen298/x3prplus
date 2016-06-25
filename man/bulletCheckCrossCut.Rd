@@ -4,11 +4,13 @@
 \alias{bulletCheckCrossCut}
 \title{Identifying a reliable cross section}
 \usage{
-bulletCheckCrossCut(path, distance = 25, xlimits = c(50, 500),
-  minccf = 0.9, span = 0.03, transpose = FALSE)
+bulletCheckCrossCut(path, bullet = NULL, distance = 25, xlimits = c(50,
+  500), minccf = 0.9, span = 0.03, transpose = FALSE)
 }
 \arguments{
 \item{path}{path to an x3p file}
+
+\item{bullet}{If passed in, the actual bullet already loaded}
 
 \item{distance}{positive numeric value indicating the distance between cross sections to use for a comparison}
 
