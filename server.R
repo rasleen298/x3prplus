@@ -52,7 +52,7 @@ shinyServer(function(input, output, session) {
     })
 
     theSurface <- reactive({
-        if (!input$stage0) return(NULL)
+        if (is.null(bullet1()) || is.null(bullet2())) return(NULL)
 
         b1 <- bullet1()
         b2 <- bullet2()
@@ -87,7 +87,7 @@ shinyServer(function(input, output, session) {
     })
     
     observeEvent(input$stage0, {
-        if (!is.null(values$path1) && !is.null(values$path2)) {
+        if (!is.null(theSurface())) {
             withProgress(message = "Calculating CCF...", expr = {
                 crosscut1 <- bulletCheckCrossCut(values$path1,
                                                  bullet = bullet1(),
@@ -258,8 +258,9 @@ shinyServer(function(input, output, session) {
     })
     
     output$loess1 <- renderPlot({
+        if (is.null(loess1()) || is.null(smoothed())) return(NULL)
+        
         withProgress(message = "Loading plots...", {
-            if (is.null(loess1()) || is.null(smoothed())) return(NULL)
             p1 <- qplot(y, l30, data = filter(smoothed(), bullet == "b1"), geom = "line") +
                 theme_bw()
             grid.arrange(loess1()$fitted, p1, ncol = 2)
@@ -267,8 +268,9 @@ shinyServer(function(input, output, session) {
     })
     
     output$loess2 <- renderPlot({
+        if (is.null(loess2()) || is.null(smoothed())) return(NULL)
+        
         withProgress(message = "Loading plots...", {
-            if (is.null(loess2()) || is.null(smoothed())) return(NULL)
             p2 <- qplot(y, l30, data = filter(smoothed(), bullet == "b2"), geom = "line") +
                 theme_bw()
             grid.arrange(loess2()$fitted, p2, ncol = 2)

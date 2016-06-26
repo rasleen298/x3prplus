@@ -161,7 +161,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             conditionalPanel(condition = "input.stage0 && !input.stage1 || input.stage5",
                  h2("Stage 1: Finding a Stable Region"),
                  hr(),
-                 div(id = "info", HTML("Below you will find surface topologies of the two bullet lands you have uploaded. <i>This may take 10-20 seconds to appear</i>. Once loaded, you can rotate, pan, zoom, and perform a number of other functions to examine the surfaces.<br><br>Our goal is to find a <b>stable region</b>. We want an area of the bullet where there is minimal noise or tank rash, but plenty of pronounced striation markings.<br><br>We step through cross-sections of each land at a fixed step size, and uses the CCF (cross-correlation function) to determine stability (a high CCF means that subsequent cross-sections are similar to each other). We begin this procedure near the area where striation markings are typically most pronounced.<br><br><b>We have automatically identified what is believed to be a stable region.</b> You may choose the location to take a cross-section if the algorithm's choice is not satisfactory."))           
+                 div(id = "info", HTML("Below you will find surface topologies of the two bullet lands you have uploaded. You can rotate, pan, zoom, and perform a number of other functions to examine the surfaces.<br><br>Our goal is to find a <b>stable region</b>. We want an area of the bullet where there is minimal noise or tank rash, but plenty of pronounced striation markings.<br><br>We step through cross-sections of each land at a fixed step size, and uses the CCF (cross-correlation function) to determine stability (a high CCF means that subsequent cross-sections are similar to each other). We begin this procedure near the area where striation markings are typically most pronounced.<br><br><b>We have automatically identified what is believed to be a stable region.</b> You may choose the location to take a cross-section if the algorithm's choice is not satisfactory."))           
             ),
             conditionalPanel(condition = "input.stage1 && !input.stage2 || input.stage5",
                  h2("Stage 2: Removing Grooves"),
@@ -194,10 +194,12 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                  
                  dataTableOutput("features")
             ),
-            conditionalPanel(condition = "input.stage0",
-                plotlyOutput("trendPlot", height = "700px")
-            ),
             
+            hr(),
+            
+            h2("Bullet Land Surfaces"),
+            plotlyOutput("trendPlot", height = "700px"),
+
             hr()
         )
     )
