@@ -87,7 +87,7 @@ shinyServer(function(input, output, session) {
     })
     
     observeEvent(input$stage0, {
-        if (!is.null(theSurface())) {
+        if (!is.null(theSurface()) && input$stage0) {
             withProgress(message = "Calculating CCF...", expr = {
                 crosscut1 <- bulletCheckCrossCut(values$path1,
                                                  bullet = bullet1(),
