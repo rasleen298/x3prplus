@@ -1,8 +1,6 @@
 # x3prplus - Analying Bullet Striations From .x3p Files
 
-## Update 06/21/2016
-
-This documentation will be updated significantly in the next week. For now, the steps of the algorithm and a front-end to the x3prplus R package have been created as a Shiny Web Application. The application can be accessed at http://erichare.shinyapps.io/x3prplus
+The steps of the algorithm and a front-end to the x3prplus R package have been created as a Shiny Web Application. The application can be accessed at https://erichare.shinyapps.io/x3prplus
 
 One can still follow the instructions at the bottom to reproduce the study, but for a comparison of two bullet lands, the web application is a simpler approach.
 
