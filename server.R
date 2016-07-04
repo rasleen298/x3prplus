@@ -17,11 +17,7 @@ shinyServer(function(input, output, session) {
     values <- reactiveValues(path1 = NULL,
                              path2 = NULL,
                              transpose1 = FALSE,
-                             transpose2 = FALSE,
-                             xcoord1 = NULL,
-                             xcoord2 = NULL,
-                             bounds1 = NULL,
-                             bounds2 = NULL)
+                             transpose2 = FALSE)
     
     bullet1 <- reactive({
         if (!is.null(input$file1) && input$choose1 == "Upload Image") values$path1 <- input$file1$datapath else values$path1 <- file.path("images", input$choose1)
@@ -31,7 +27,7 @@ shinyServer(function(input, output, session) {
             myfile <- x3prplus::read.x3pplus(values$path1, transpose = TRUE)    
             values$transpose1 <- TRUE
         }
-
+        
         return(myfile)
     })
     
@@ -50,6 +46,48 @@ shinyServer(function(input, output, session) {
     observeEvent(input$confirm0, {
         if (!is.null(bullet1()) && !is.null(bullet2())) updateCheckboxInput(session, "stage0", value = TRUE)
     })
+    
+    observeEvent(input$confirm00, {
+        if (!is.null(bullet1()) && !is.null(bullet2())) {
+            updateCheckboxInput(session, "stage0", value = TRUE)
+            updateCheckboxInput(session, "stage00", value = TRUE)
+        }
+    })
+    
+    observeEvent(input$stage00, {
+        if (input$confirm00 && input$stage00) {
+            updateCheckboxInput(session, "stage1", value = TRUE)
+            updateCheckboxInput(session, "stage11", value = TRUE)
+        }
+    }, priority = -1)
+    
+    observeEvent(input$stage11, {
+        if (input$confirm00 && input$stage11) {
+            updateCheckboxInput(session, "stage2", value = TRUE)
+            updateCheckboxInput(session, "stage22", value = TRUE)
+        }
+    }, priority = -1)
+    
+    observeEvent(input$stage22, {
+        if (input$confirm00 && input$stage22) {
+            updateCheckboxInput(session, "stage3", value = TRUE)
+            updateCheckboxInput(session, "stage33", value = TRUE)            
+        }
+    }, priority = -1)
+    
+    observeEvent(input$stage33, {
+        if (input$confirm00 && input$stage33) {
+            updateCheckboxInput(session, "stage4", value = TRUE)
+            updateCheckboxInput(session, "stage44", value = TRUE)            
+        }
+    }, priority = -1)
+    
+    observeEvent(input$stage44, {
+        if (input$confirm00 && input$stage44) {
+            updateCheckboxInput(session, "stage5", value = TRUE)
+            updateCheckboxInput(session, "stage55", value = TRUE)            
+        }
+    }, priority = -1)
 
     theSurface <- reactive({
         if (is.null(bullet1()) || is.null(bullet2())) return(NULL)
@@ -106,9 +144,6 @@ shinyServer(function(input, output, session) {
     })
 
     observeEvent(input$confirm, {
-        values$xcoord1 <- input$xcoord1
-        values$xcoord2 <- input$xcoord2 - ncol(theSurface()) / 2
-        
         updateCheckboxInput(session, "stage1", value = TRUE)
     })
     
@@ -117,7 +152,7 @@ shinyServer(function(input, output, session) {
     })
     
     fortified1 <- reactive({
-        if (is.null(values$xcoord1)) return(NULL)
+        if (is.null(bullet1()) || !input$stage1) return(NULL)
         
         bul <- bullet1()
         bul[[3]] <- "b1"
@@ -127,7 +162,7 @@ shinyServer(function(input, output, session) {
     })
     
     fortified2 <- reactive({
-        if (is.null(values$xcoord2)) return(NULL)
+        if (is.null(bullet2()) || !input$stage1) return(NULL)
         
         bul <- bullet2()
         bul[[3]] <- "b2"
@@ -137,25 +172,27 @@ shinyServer(function(input, output, session) {
     })
     
     crosscut1 <- reactive({
-        if (is.null(values$xcoord1)) return(NULL)
+        if (is.null(bullet1()) || !input$stage1) return(NULL)
         
-        return(get_crosscut(bullet = bullet1(), x = values$xcoord1))
+        return(get_crosscut(bullet = bullet1(), x = input$xcoord1))
     })
     
     crosscut2 <- reactive({
-        if (is.null(values$xcoord2)) return(NULL)
+        if (is.null(bullet2()) || !input$stage1) return(NULL)
         
-        return(get_crosscut(bullet = bullet2(), x = values$xcoord2))
+        return(get_crosscut(bullet = bullet2(), x = input$xcoord2 - ncol(theSurface()) / 2))
     })
     
     observe({
-        updateSliderInput(session, "bounds1", max = floor(max(fortified1()$y)), value = c(0, floor(max(fortified1()$y))))
-        updateSliderInput(session, "bounds2", max = floor(max(fortified2()$y)), value = c(0, floor(max(fortified2()$y))))
+        if (!is.null(fortified1()) && !is.null(fortified2())) {
+            updateSliderInput(session, "bounds1", max = floor(max(fortified1()$y)), value = c(0, floor(max(fortified1()$y))))
+            updateSliderInput(session, "bounds2", max = floor(max(fortified2()$y)), value = c(0, floor(max(fortified2()$y))))
+        }
     })
     
     observeEvent(input$stage1, {
         if (!is.null(crosscut1()) && !is.null(crosscut2())) {
-                
+            
             withProgress(message = "Locating grooves...", expr = {
                 groove1 <- get_grooves(crosscut1())
                 groove2 <- get_grooves(crosscut2())
@@ -173,10 +210,10 @@ shinyServer(function(input, output, session) {
         fortified2 <- fortified2()
         
         myx <- unique(fortified$x)
-        xval <- myx[which.min(abs(myx - values$xcoord1))]
+        xval <- myx[which.min(abs(myx - input$xcoord1))]
         myx2 <- unique(fortified2$x)
-        xval2 <- myx2[which.min(abs(myx2 - values$xcoord2))]
-        
+        xval2 <- myx2[which.min(abs(myx2 - (input$xcoord2 - ncol(theSurface()) / 2)))]
+
         plotdat <- fortified %>%
             filter(x == xval) %>%
             select(-x) %>%
@@ -189,8 +226,8 @@ shinyServer(function(input, output, session) {
             gather(key = bullet, value = value, bullet1:bullet2)
         
         plotdat$include <- FALSE
-        plotdat$include[plotdat$bullet == "bullet1"] <- (plotdat$y >= input$bounds1[1] & plotdat$y <= input$bounds1[2])
-        plotdat$include[plotdat$bullet == "bullet2"] <- (plotdat$y >= input$bounds2[1] & plotdat$y <= input$bounds2[2])
+        plotdat$include[plotdat$bullet == "bullet1"] <- (plotdat$y[plotdat$bullet == "bullet1"] >= input$bounds1[1] & plotdat$y[plotdat$bullet == "bullet1"] <= input$bounds1[2])
+        plotdat$include[plotdat$bullet == "bullet2"] <- (plotdat$y[plotdat$bullet == "bullet2"] >= input$bounds2[1] & plotdat$y[plotdat$bullet == "bullet2"] <= input$bounds2[2])
 
         vline.data <- data.frame(zleft = c(input$bounds1[1], input$bounds2[1]),
                                  zright = c(input$bounds1[2], input$bounds2[2]),
@@ -206,9 +243,6 @@ shinyServer(function(input, output, session) {
     })
     
     observeEvent(input$confirm2, {
-        values$bounds1 <- input$bounds1
-        values$bounds2 <- input$bounds2
-        
         updateCheckboxInput(session, "stage2", value = TRUE)
     })
     
@@ -217,33 +251,33 @@ shinyServer(function(input, output, session) {
     })
     
     loess1 <- reactive({
-        if (!input$stage2) return(NULL)
+        if (is.null(crosscut1()) || !input$stage2) return(NULL)
         
-        return(fit_loess(bullet = crosscut1(), groove = list(groove = values$bounds1), span = input$span))
+        return(fit_loess(bullet = crosscut1(), groove = list(groove = input$bounds1), span = input$span))
     })
     
     loess2 <- reactive({
-        if (!input$stage2) return(NULL)
+        if (is.null(crosscut2()) || !input$stage2) return(NULL)
         
-        return(fit_loess(bullet = crosscut2(), groove = list(groove = values$bounds2), span = input$span))
+        return(fit_loess(bullet = crosscut2(), groove = list(groove = input$bounds2), span = input$span))
     })
     
     processed1 <- reactive({
-        if (!input$stage2) return(NULL)
+        if (is.null(fortified1()) || !input$stage2) return(NULL)
         
         myx <- unique(fortified1()$x)
-        xval <- myx[which.min(abs(myx - values$xcoord1))]
+        xval <- myx[which.min(abs(myx - input$xcoord1))]
         
-        processBullets(bullet = bullet1(), name = "b1", x = xval, grooves = values$bounds1)
+        processBullets(bullet = bullet1(), name = "b1", x = xval, grooves = input$bounds1)
     })
     
     processed2 <- reactive({
-        if (!input$stage2) return(NULL)
+        if (is.null(fortified2()) || !input$stage2) return(NULL)
         
         myx <- unique(fortified2()$x)
-        xval <- myx[which.min(abs(myx - values$xcoord2))]
+        xval <- myx[which.min(abs(myx - (input$xcoord2  - ncol(theSurface()) / 2)))]
         
-        processBullets(bullet = bullet2(), name = "b2", x = xval, grooves = values$bounds2)
+        processBullets(bullet = bullet2(), name = "b2", x = xval, grooves = input$bounds2)
     })
     
     smoothed <- reactive({
@@ -288,7 +322,7 @@ shinyServer(function(input, output, session) {
     myalign <- reactive({
         if (is.null(smoothed())) return(NULL)
 
-        x3prplus:::bulletAlign_test(data = smoothed())
+        x3prplus:::bulletAlign(data = smoothed())
     })
     
     observeEvent(input$stage3, {
@@ -330,7 +364,7 @@ shinyServer(function(input, output, session) {
     })
 
     CMS <- reactive({
-        if (!input$stage4) return(NULL)
+        if (is.null(chosenalign()) || !input$stage4) return(NULL)
         
         bAlign <- chosenalign()
 
@@ -456,6 +490,12 @@ shinyServer(function(input, output, session) {
         updateCheckboxInput(session, "stage3", value = FALSE)
         updateCheckboxInput(session, "stage4", value = FALSE)
         updateCheckboxInput(session, "stage5", value = FALSE)
+        
+        updateCheckboxInput(session, "stage00", value = FALSE)
+        updateCheckboxInput(session, "stage11", value = FALSE)
+        updateCheckboxInput(session, "stage22", value = FALSE)
+        updateCheckboxInput(session, "stage33", value = FALSE)
+        updateCheckboxInput(session, "stage44", value = FALSE)
     })
 
 })

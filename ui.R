@@ -18,6 +18,12 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             hidden(checkboxInput("stage4", "Stage 4")),
             hidden(checkboxInput("stage5", "Stage 5")),
             
+            hidden(checkboxInput("stage00", "Stage 0")),
+            hidden(checkboxInput("stage11", "Stage 1")),
+            hidden(checkboxInput("stage22", "Stage 2")),
+            hidden(checkboxInput("stage33", "Stage 3")),
+            hidden(checkboxInput("stage44", "Stage 4")),
+
             conditionalPanel(condition = "!input.stage0 || input.stage5",
                  h4("Stage 0 Options"),
                  
@@ -37,7 +43,15 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
 
                  hr(),
                  
-                 actionButton("confirm0", "Confirm Lands", icon = icon("check"))
+                 h4("Step-By-Step Mode"),
+                 helpText("Press the following button to begin the step-by-step version of the algorithm, where each parameter can be tweaked according to your liking."),
+                 actionButton("confirm0", "Confirm Lands", icon = icon("check")),
+                 
+                 hr(),
+                 
+                 h4("Easy Mode"),
+                 helpText("Press the following button to automatically use all the default parameters, and get a predicted probability of a match quickly."),
+                 actionButton("confirm00", "Confirm Lands", icon = icon("check"))
             ),
             
             conditionalPanel(condition = "input.stage5", hr()),
