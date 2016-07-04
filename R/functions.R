@@ -726,7 +726,7 @@ bulletCheckCrossCut <- function(path, bullet = NULL, distance = 25, xlimits = c(
     second_cc <- get_cc(x, mybullet = dbr111)
     b2 <- rbind(first_cc, second_cc)
     lofX <- bulletSmooth(b2, span = span)
-    ccf <- bulletAlign_test(lofX)$ccf
+    ccf <- bulletAlign(lofX)$ccf
     if (ccf > minccf) { 
       done <- TRUE
       return (x - distance)
@@ -805,7 +805,7 @@ bulletGetMaxCMS <- function(lof1, lof2, column = "resid", span = 35) {
     bullet <- NULL
     
   lof <- rbind(lof1, lof2)
-  bAlign = bulletAlign_test(lof)
+  bAlign = bulletAlign(lof)
   lofX <- bAlign$bullet  
   
   b12 <- unique(lof$bullet)
