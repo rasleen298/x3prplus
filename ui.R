@@ -17,12 +17,14 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             hidden(checkboxInput("stage3", "Stage 3")),
             hidden(checkboxInput("stage4", "Stage 4")),
             hidden(checkboxInput("stage5", "Stage 5")),
+            hidden(checkboxInput("stage6", "Stage 6")),
             
             hidden(checkboxInput("stage00", "Stage 0")),
             hidden(checkboxInput("stage11", "Stage 1")),
             hidden(checkboxInput("stage22", "Stage 2")),
             hidden(checkboxInput("stage33", "Stage 3")),
             hidden(checkboxInput("stage44", "Stage 4")),
+            hidden(checkboxInput("stage55", "Stage 5")),
 
             conditionalPanel(condition = "!input.stage0 || input.stage5",
                  h4("Stage 0 Options"),
@@ -128,18 +130,32 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                 actionButton("back4", "Back to Stage 3", icon = icon("backward"))
             ),
             
-            conditionalPanel(condition = "input.stage5", hr()),
-            
             conditionalPanel(condition = "input.stage4",
                  h4("Stage 5 Options"),
                  
                  hr(),
                  
-                 actionButton("confirm5", "Confirm Features", icon = icon("check")),
+                 sliderInput("smoothfactor", "Smoothing Factor", min = 1, max = 100, value = 35, step = 1),
+                 
+                 hr(),
+                 
+                 actionButton("confirm5", "Confirm Smoothing", icon = icon("check")),
                  
                  hr(),
                  
                  actionButton("back5", "Back to Stage 4", icon = icon("backward"))
+            ),
+            
+            conditionalPanel(condition = "input.stage5",
+                             h4("Stage 6 Options"),
+                             
+                             hr(),
+                             
+                             actionButton("confirm6", "Confirm Features", icon = icon("check")),
+                             
+                             hr(),
+                             
+                             actionButton("back6", "Back to Stage 5", icon = icon("backward"))
             ),
             
             hidden(
@@ -202,9 +218,17 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                  plotOutput("alignment")
             ),
             conditionalPanel(condition = "input.stage4",
-                 h2("Stage 5: Extract Features"),
+                             h2("Stage 5: Peaks and Valleys"),
+                             hr(),
+                             div(id = "info", HTML("With aligned signatures, we now turn our attention to determining what constitutes a peak or a valley. Since there is a lot of noise, this step involves one more smoothing pass.<br><br>We can specify a smoothing window, called the <b>smoothing factor</b>, as the number of neighbors to include in the window. For instance, a value of 16 would mean that the nearest 16 points, spanning 16 * 1.5625 = 25 micrometers, would be included.")),
+                             
+                             plotOutput("peaks1"),
+                             plotOutput("peaks2")
+            ),
+            conditionalPanel(condition = "input.stage5",
+                 h2("Stage 6: Extract Features"),
                  hr(),
-                 div(id = "info", HTML("We now have smoothed, aligned bullet signatures. This gives us a number of features we can extract.<br><br>At this point, there is really nothing left to configure about the algorithm. The features extracted are displayed below. The definitions of each can be found in Hare 2016. Press Confirm Features when you are ready to get your predicted probability of a match.")),
+                 div(id = "info", HTML("We now have smoothed, aligned bullet signatures with associated peaks and valleys. This gives us a number of features we can extract.<br><br>At this point, there is really nothing left to configure about the algorithm. The features extracted are displayed below. The definitions of each can be found in Hare 2016. Press Confirm Features when you are ready to get your predicted probability of a match.")),
                  
                  dataTableOutput("features")
             ),

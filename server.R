@@ -362,16 +362,45 @@ shinyServer(function(input, output, session) {
     observeEvent(input$back4, {
         updateCheckboxInput(session, "stage3", value = FALSE)
     })
-
-    CMS <- reactive({
+    
+    peaks1 <- reactive({
         if (is.null(chosenalign()) || !input$stage4) return(NULL)
         
         bAlign <- chosenalign()
-
         lofX <- bAlign$bullet
         
-        peaks1 <- get_peaks(subset(lofX, bullet == "b1"), smoothfactor = 25)
-        peaks2 <- get_peaks(subset(lofX, bullet == "b2"), smoothfactor = 25)
+        return(get_peaks(subset(lofX, bullet == "b1"), smoothfactor = input$smoothfactor))
+    })
+    
+    peaks2 <- reactive({
+        if (is.null(chosenalign()) || !input$stage4) return(NULL)
+        
+        bAlign <- chosenalign()
+        lofX <- bAlign$bullet
+        
+        return(get_peaks(subset(lofX, bullet == "b2"), smoothfactor = input$smoothfactor))
+    })
+    
+    output$peaks1 <- renderPlot({
+        if (is.null(peaks1())) return(NULL)
+        
+        return(peaks1()$plot)
+    })
+    
+    output$peaks2 <- renderPlot({
+        if (is.null(peaks2())) return(NULL)
+        
+        return(peaks2()$plot)
+    })
+
+    CMS <- reactive({
+        if (is.null(peaks1()) || is.null(peaks2())) return(NULL)
+        
+        bAlign <- chosenalign()
+        lofX <- bAlign$bullet
+        
+        peaks1 <- peaks1()
+        peaks2 <- peaks2()
         
         peaks1$lines$bullet <- "b1"
         peaks2$lines$bullet <- "b2"
