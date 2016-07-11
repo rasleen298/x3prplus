@@ -25,6 +25,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
             hidden(checkboxInput("stage33", "Stage 3")),
             hidden(checkboxInput("stage44", "Stage 4")),
             hidden(checkboxInput("stage55", "Stage 5")),
+            hidden(checkboxInput("stage66", "Stage 6")),
 
             conditionalPanel(condition = "!input.stage0 || input.stage5",
                  h4("Stage 0 Options"),

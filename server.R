@@ -88,6 +88,13 @@ shinyServer(function(input, output, session) {
             updateCheckboxInput(session, "stage55", value = TRUE)            
         }
     }, priority = -1)
+    
+    observeEvent(input$stage55, {
+        if (input$confirm00 && input$stage55) {
+            updateCheckboxInput(session, "stage6", value = TRUE)
+            updateCheckboxInput(session, "stage66", value = TRUE)            
+        }
+    }, priority = -1)
 
     theSurface <- reactive({
         if (is.null(bullet1()) || is.null(bullet2())) return(NULL)
@@ -493,6 +500,14 @@ shinyServer(function(input, output, session) {
     observeEvent(input$back5, {
         updateCheckboxInput(session, "stage4", value = FALSE)
     })
+    
+    observeEvent(input$confirm6, {
+        updateCheckboxInput(session, "stage6", value = TRUE)
+    })
+    
+    observeEvent(input$back6, {
+        updateCheckboxInput(session, "stage5", value = FALSE)
+    })
 
     output$rfpred <- renderText({
         if (is.null(features())) return(NULL)
@@ -519,12 +534,14 @@ shinyServer(function(input, output, session) {
         updateCheckboxInput(session, "stage3", value = FALSE)
         updateCheckboxInput(session, "stage4", value = FALSE)
         updateCheckboxInput(session, "stage5", value = FALSE)
+        updateCheckboxInput(session, "stage6", value = FALSE)
         
         updateCheckboxInput(session, "stage00", value = FALSE)
         updateCheckboxInput(session, "stage11", value = FALSE)
         updateCheckboxInput(session, "stage22", value = FALSE)
         updateCheckboxInput(session, "stage33", value = FALSE)
         updateCheckboxInput(session, "stage44", value = FALSE)
+        updateCheckboxInput(session, "stage55", value = FALSE)
     })
 
 })
