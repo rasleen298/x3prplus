@@ -312,7 +312,7 @@ get_grooves <- function(bullet, smoothfactor = 15, adjust = 10, groove_cutoff = 
 #' @importFrom zoo rollapply
 #' @import ggplot2
 #' @export
-get_peaks_old <- function(loessdata, column = "resid", smoothfactor = 35) {
+get_peaks <- function(loessdata, column = "resid", smoothfactor = 35) {
   y <- NULL
   xmin <- NULL
   xmax <- NULL
@@ -368,7 +368,7 @@ get_peaks_old <- function(loessdata, column = "resid", smoothfactor = 35) {
 #' @importFrom zoo rollapply
 #' @import ggplot2
 #' @export
-get_peaks <- function(loessdata, column = "resid", smoothfactor = 35) {
+get_peaks_nist <- function(loessdata, column = "resid", smoothfactor = 35) {
     y <- NULL
     xmin <- NULL
     xmax <- NULL
@@ -887,6 +887,46 @@ bulletGetMaxCMS <- function(lof1, lof2, column = "resid", span = 35) {
   maxCMS <- maxCMS(lines$match==TRUE)
   list(maxCMS = maxCMS, ccf = bAlign$ccf, lag=bAlign$lag, lines=lines, bullets=lofX)
 }  
+
+#' Identify the number of maximum CMS between two bullet lands
+#' 
+#' @param lof1 dataframe of smoothed first signature
+#' @param lof2 dataframe of smoothed second signature
+#' @param column The column which to smooth
+#' @param span positive number  for the smoothfactor to use for assessing peaks. 
+#' @return list of matching parameters, data set of the identified striae, and the aligned data sets.
+#' @export
+bulletGetMaxCMS_nist <- function(lof1, lof2, column = "resid", span = 35) {
+    bullet <- NULL
+    
+    lof <- rbind(lof1, lof2)
+    bAlign = bulletAlign(lof, value = column)
+    lofX <- bAlign$bullet  
+    
+    b12 <- unique(lof$bullet)
+    peaks1 <- get_peaks_nist(subset(lofX, bullet==b12[1]), column = column, smoothfactor = span)
+    peaks2 <- get_peaks_nist(subset(lofX, bullet == b12[2]), column = column, smoothfactor = span)
+    
+    #qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
+    #    theme_bw() +
+    #    geom_rect(data=peaks1$lines, aes(xmin=xmin, xmax=xmax, fill=factor(type)), ymin=-5, ymax=5, inherit.aes = FALSE, alpha=I(0.25)) +
+    #    geom_rect(data=peaks2$lines, aes(xmin=xmin, xmax=xmax, fill=factor(type)), ymin=-5, ymax=5, inherit.aes = FALSE, alpha=I(0.25))
+    
+    peaks1$lines$bullet <- b12[1]
+    peaks2$lines$bullet <- b12[2]
+    
+    lines <- striation_identify(peaks1$lines, peaks2$lines)
+    
+    #   p <- qplot(x=y, y=resid, geom="line", colour=bullet, data=lofX, group=bullet) +
+    #     theme_bw() +
+    #     geom_rect(data=lines, aes(xmin=xmin, xmax=xmax, fill = factor(type)),  ymin=-6, ymax=6, inherit.aes = FALSE, alpha=I(0.25)) +
+    #     ylim(c(-6,6)) +
+    #     geom_text(aes(x = meany), y= -5.5, label= "x", data = subset(lines, !match), inherit.aes = FALSE) +
+    #     geom_text(aes(x = meany), y= -5.5, label= "o", data = subset(lines, match), inherit.aes = FALSE) 
+    
+    maxCMS <- maxCMS(lines$match==TRUE)
+    list(maxCMS = maxCMS, ccf = bAlign$ccf, lag=bAlign$lag, lines=lines, bullets=lofX)
+}
 
 # bulletGetMaxCMSXXX <- function(bullet1, bullet2, crosscut1, crosscut2, span=35) {
 #   bullet <- NULL
