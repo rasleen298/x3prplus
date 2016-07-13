@@ -312,7 +312,7 @@ get_grooves <- function(bullet, smoothfactor = 15, adjust = 10, groove_cutoff = 
 #' @importFrom zoo rollapply
 #' @import ggplot2
 #' @export
-get_peaks <- function(loessdata, column = "resid", smoothfactor = 35) {
+get_peaks_old <- function(loessdata, column = "resid", smoothfactor = 35) {
   y <- NULL
   xmin <- NULL
   xmax <- NULL
@@ -353,6 +353,61 @@ get_peaks <- function(loessdata, column = "resid", smoothfactor = 35) {
       geom_rect(aes(xmin=xmin, xmax=xmax), ymin=-6, ymax=6, data=lines, colour="grey60", alpha=0.2, inherit.aes = FALSE) +
       geom_vline(xintercept = loessdata$y[which(test) + smoothfactor], colour = "red") +
       geom_vline(xintercept = loessdata$y[which(test2) + smoothfactor], colour = "blue") 
+    
+    return(list(peaks = peaks, valleys = valleys, extrema = extrema, 
+                peaks.heights = peaks.heights, valleys.heights = valleys.heights, 
+                lines=lines, plot = p, dframe = dframe))
+}
+
+#' Identify the location and the depth of peaks and heights at a crosscut
+#' 
+#' @param loessdata export from rollapply 
+#' @param column The column which should be smoothed
+#' @param smoothfactor set to default of 35. Smaller values will pick up on smaller changes in the crosscut.
+#' @return list of several objects: 
+#' @importFrom zoo rollapply
+#' @import ggplot2
+#' @export
+get_peaks <- function(loessdata, column = "resid", smoothfactor = 35) {
+    y <- NULL
+    xmin <- NULL
+    xmax <- NULL
+    
+    smoothed_first <- smth.gaussian(loessdata[,column], window = 16)
+    smoothed <- smoothed_first - smth.gaussian(loessdata[,column], window = 160)
+    
+    test <- which(diff(sign(diff(smoothed))) == -2) + 1
+    test2 <- which(diff(sign(diff(smoothed))) == 2) + 1
+    
+    peaks <- loessdata$y[test]
+    valleys <- loessdata$y[test2]
+    peaks.heights <- loessdata[,column][test]
+    valleys.heights <- loessdata[,column][test2]
+    
+    # adding on some extra stats
+    extrema <- c(peaks, valleys)
+    heights <- c(peaks.heights, valleys.heights)
+    type <- c(rep(1, length(peaks)), rep(-1, length(valleys)))
+    idx <- order(extrema)
+    extrema <- extrema[idx]
+    heights <- heights[idx]
+    type <- type[idx]
+    diffs <- diff(extrema)
+    
+    firstval <- diffs[1]
+    if (is.na(firstval)) firstval <- 0
+    lastval <- diffs[length(diffs)]
+    if (length(lastval) == 0) lastval <- 0
+    
+    lines <- data.frame(xmin = extrema-c(firstval,diffs)/3,
+                        xmax = extrema+c(diffs,lastval)/3, 
+                        type = type, extrema = extrema, heights = heights)    
+    dframe <- data.frame(y=loessdata$y, smoothed=smoothed)
+    p <- qplot(data=dframe, x=y, y=smoothed, geom = "line") +
+        theme_bw() +
+        geom_rect(aes(xmin=xmin, xmax=xmax), ymin=-6, ymax=6, data=lines, colour="grey60", alpha=0.2, inherit.aes = FALSE) +
+        geom_vline(xintercept = loessdata$y[test], colour = "red") +
+        geom_vline(xintercept = loessdata$y[test2], colour = "blue") 
     
     return(list(peaks = peaks, valleys = valleys, extrema = extrema, 
                 peaks.heights = peaks.heights, valleys.heights = valleys.heights, 
@@ -805,7 +860,7 @@ bulletGetMaxCMS <- function(lof1, lof2, column = "resid", span = 35) {
     bullet <- NULL
     
   lof <- rbind(lof1, lof2)
-  bAlign = bulletAlign(lof)
+  bAlign = bulletAlign(lof, value = column)
   lofX <- bAlign$bullet  
   
   b12 <- unique(lof$bullet)
