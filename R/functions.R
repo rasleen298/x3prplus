@@ -900,7 +900,7 @@ bulletGetMaxCMS_nist <- function(lof1, lof2, column = "resid", span = 35) {
     bullet <- NULL
     
     lof <- rbind(lof1, lof2)
-    bAlign = bulletAlign(lof, value = column)
+    bAlign = bulletAlign_nist(lof, value = column)
     lofX <- bAlign$bullet  
     
     b12 <- unique(lof$bullet)
@@ -1025,7 +1025,7 @@ bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
   lof
 }
 
-bulletAlign_new <- function (data, value = "l30")  {
+bulletAlign_nist <- function (data, value = "l30")  {
     bullet <- NULL
     b12 <- unique(data$bullet)
     if (length(b12) != 2) 
