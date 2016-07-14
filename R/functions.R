@@ -166,7 +166,7 @@ get_crosscut <- function(path = NULL, x = 243.75, bullet = NULL, transpose = FAL
 }
 
 
-bulletAlign_test <- function (data, value = "l30", mincor = .8)  {
+bulletAlign_nist <- function (data, value = "l30", mincor = .8)  {
     bullet <- NULL
     b12 <- unique(data$bullet)
     if (length(b12) != 2) 
@@ -1025,7 +1025,7 @@ bulletSmooth <- function(data, span = 0.03, limits = c(-5,5)) {
   lof
 }
 
-bulletAlign_nist <- function (data, value = "l30")  {
+bulletAlign_dtw <- function (data, value = "l30")  {
     bullet <- NULL
     b12 <- unique(data$bullet)
     if (length(b12) != 2) 
