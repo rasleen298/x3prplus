@@ -351,10 +351,10 @@ get_peaks <- function(loessdata, column = "resid", smoothfactor = 35, striae = T
                         type = type, extrema = extrema, heights = heights)    
     dframe <- data.frame(y=loessdata$y[smoothfactor:(length(loessdata$y) - smoothfactor + 1)], smoothed=smoothed_truefalse)
     p <- qplot(data=dframe, x=y, y=smoothed, geom = "line") +
-      theme_bw() +
-      if (window) geom_rect(aes(xmin=xmin, xmax=xmax), ymin=-6, ymax=6, data=lines, colour="grey60", alpha=0.2, inherit.aes = FALSE) +
-      if (striae) geom_vline(xintercept = loessdata$y[which(test) + smoothfactor], colour = "red") +
-      if (striae) geom_vline(xintercept = loessdata$y[which(test2) + smoothfactor], colour = "blue") 
+      theme_bw()
+      if (window) p <- p + geom_rect(aes(xmin=xmin, xmax=xmax), ymin=-6, ymax=6, data=lines, colour="grey60", alpha=0.2, inherit.aes = FALSE)
+      if (striae) p <- p + geom_vline(xintercept = loessdata$y[which(test) + smoothfactor], colour = "red")
+      if (striae) p <- p + geom_vline(xintercept = loessdata$y[which(test2) + smoothfactor], colour = "blue") 
     
     return(list(peaks = peaks, valleys = valleys, extrema = extrema, 
                 peaks.heights = peaks.heights, valleys.heights = valleys.heights, 
