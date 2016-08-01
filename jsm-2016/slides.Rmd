@@ -11,6 +11,7 @@ output: rmdshower::shower_presentation
 
 <p class="black">
 Eric Hare, Heike Hofmann, Alicia Carriquiry<br/>
+Center for Statistics and Applications in Forensic Evidence (CSAFE)<br/>
 Iowa State University<br/>
 August 2nd, 2016<br/>
 JSM - Chicago, IL
@@ -59,6 +60,16 @@ The basic procedure can be described as follows:
 7. Use these features in a random forest to predict matches
 
 ## Step One: Extract a Profile
+
+We need to choose a location (height) of the bullet at which to extract a profile. To do so:
+
+1. Extract a profile near the base of the bullet, call this value $d_0$.
+2. Take a fixed step $d$ and extract at $d + d_0$.
+3. Check the cross correleation (CCF) between the signature at $d_0$ and at $d + d_0$.
+4. If this CCF exceeds a threshold (0.9 in our case), choose $d_0$ as the signature
+5. Otherwise, repeat steps 2 to 4 for $d$, $2d$, $3d$, ... until the threshold is achieved.
+
+## Step One (Continued)
 
 ```{r, warning=FALSE}
 br111 <- get_crosscut("images/Br1 Bullet 1-1.x3p", x = 243.75)
@@ -172,9 +183,15 @@ https://erichare.shinyapps.io/x3prplus
 ## Future Work
 
 - We are extremely limited by data here - Currently we've only assessed this algorithm on one particular set of 70 bullets
-- There is likely an effect fromf the equipment used to scan the bullets, or the person performing the scan
+- There is likely an effect from the equipment used to scan the bullets, or the person performing the scan
 - We need to assess the quality of the algorithm in case we don't have full bullet lands available, as is the case in many forensics applications
 
 ## Thank You
+
+Special thanks to Alan Zheng at the National Institute of Standards and Technology for maintaining the NIST Ballistics Toolmark Research Database and providing many useful suggestions for our algorithm.
+
+- My GitHub: https://github.com/erichare
+- Project GitHub: https://github.com/heike/x3prplus
+- Web Application: https://erichare.shinyapps.io/x3prplus
 
 Any Questions?
