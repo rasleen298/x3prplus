@@ -2,12 +2,19 @@
 title: "Automatic Matching of Bullet Lands"
 author: "Eric Hare, Heike Hofmann, Alicia Carriquiry"
 date: "August 2nd, 2016"
-output: 
-    revealjs::revealjs_presentation:
-        theme: blood
-        highlight: pygments
-        transition: fade
+output: rmdshower::shower_presentation
 ---
+
+## Automatic Matching of Bullet Lands
+
+![](images/bullet.jpg)
+
+<p class="black">
+Eric Hare, Heike Hofmann, Alicia Carriquiry<br/>
+Iowa State University<br/>
+August 2nd, 2016<br/>
+JSM - Chicago, IL
+</p>
 
 ```{r,echo=FALSE, message=FALSE,warning=FALSE}
 library(x3pr)
@@ -53,7 +60,7 @@ The basic procedure can be described as follows:
 
 ## Step One: Extract a Profile
 
-```{r, fig.width=6, fig.height=3, warning=FALSE}
+```{r, warning=FALSE}
 br111 <- get_crosscut("images/Br1 Bullet 1-1.x3p", x = 243.75)
 
 qplot(y, value, data = br111) + theme_bw()
@@ -68,28 +75,28 @@ qplot(y, value, data = br111) + theme_bw()
 
 ## Identifying Grooves (Easy)
 
-```{r, message=FALSE, warning=FALSE, fig.height=5}
+```{r, message=FALSE, warning=FALSE}
 br111.groove <- get_grooves(br111)
 br111.groove$plot
 ```
 
 ## Identifying Grooves (Challenging)
 
-```{r, message=FALSE, warning=FALSE, fig.height=5}
+```{r, message=FALSE, warning=FALSE}
 result2 <- get_grooves(get_crosscut("~/GitHub/imaging-paper/app/images/Hamby252_3DX3P1of2/Br1 Bullet 1-6.x3p"))
 result2$plot
 ```
 
 ## Step Three: Fit Loess Regression
 
-```{r, fig.width=6, fig.height=3, warning=FALSE}
+```{r, warning=FALSE}
 br111.loess <- fit_loess(br111, br111.groove)
 br111.loess$fitted
 ```
 
 ## Step Four: Get the Residuals
 
-```{r, fig.width=6, fig.height=3, warning=FALSE}
+```{r, warning=FALSE}
 br111.loess$resid
 ```
 
@@ -101,7 +108,7 @@ There's a lot of noise in the residual plots. We can do some smoothing in a simi
 
 ## Step Five: Peaks and Valleys (Continued)
 
-```{r, fig.width=6, fig.height=3, warning=FALSE}
+```{r, warning=FALSE}
 br111.peaks <- get_peaks(br111.loess$data)
 br111.peaks$plot
 ```
@@ -132,33 +139,31 @@ br123 <- filter(bullets_smoothed, bullet == mypaths[2])
 
 - Maximal number of CMS (consecutive matching striae), and, similarly, the number of consecutively non-matching striae (CNMS), 
 - Number of matches and non-matches,
+- CCF (Cross-Correlation Function)
 - Average difference $D$ between signatures, defined as the Euclidean vertical distance between surface measurements of aligned signatures.
-\[
-D^2 = \frac{1}{\text{\#}t}\sum_t \left[f(t) - g(t)\right]^2,
-\]
 - The sum $S$ of average absolute heights of matched extrema
 
 ## Consecutively Matching Striae (CMS)
 
 11 CMS
 
-![](images/smoothmatch-1.png)
+<img src="images/smoothmatch-1.png" width="750">
 
 ## Cross Correlation Function (CCF)
 
-![](images/ccf-1.png)
+<img src="images/ccf-1.png" width="750">
 
 ## Distribution of Features
 
-![](images/density-overview-1.png)
+<img src="images/density-overview-1.png" width="750">
 
 ## Step Seven: Random Forest
 
-![](images/forest-1.png)
+<img src="images/forest-1.png" width="750">
 
 ## Feature Importance
 
-![](images/importance-1.png)
+<img src="images/importance-1.png" width="750">
 
 ## Web Application
 
@@ -167,7 +172,7 @@ https://erichare.shinyapps.io/x3prplus
 ## Future Work
 
 - We are extremely limited by data here - Currently we've only assessed this algorithm on one particular set of 70 bullets
-- There is likely an effect from the equipment used to scan the bullets, or the person performing the scan
+- There is likely an effect fromf the equipment used to scan the bullets, or the person performing the scan
 - We need to assess the quality of the algorithm in case we don't have full bullet lands available, as is the case in many forensics applications
 
 ## Thank You
