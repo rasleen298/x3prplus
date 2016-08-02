@@ -21,6 +21,7 @@ JSM - Chicago, IL
 library(x3pr)
 library(x3prplus)
 library(ggplot2)
+library(knitr)
 ```
 
 ## Goal
@@ -37,11 +38,17 @@ library(ggplot2)
 - Sets of 35 bullets sent to 507 Forensic Examiners for examination
 - 0 false positive identifications, 8 inconclusive results (out of 7605)
 
+```{r, eval=FALSE}
+plot3D.x3p.file(read.x3p("~/GitHub/imaging-paper/
+app/images/Hamby252_3DX3P1of2/Br1 Bullet 1-1.x3p"),
+plot.type = "surface")
+```
+    
 ## Data Format
 
 - 3D topographical images of each bullet
 - x3p format, array of surface measurements at the micrometer level
-- R package x3pr available for working with these images
+- R package x3pr available for working with these images (Nicholas Petraco, John Jay College)
 - R package x3prplus is our additional functions to perform this analysis
 - Each bullet is a set of 6 land-to-land scans
 
@@ -79,7 +86,7 @@ qplot(y, value, data = br111) + theme_bw()
 
 ## Step Two: Remove Grooves
 
-1. At a fixed height $x$ extract a bullet's profile (Figure~\ref{fig:loess_step1}, with $x = 243.75\mu m$).
+1. At a fixed height $x$ extract a bullet's profile (previous figure, with $x = 243.75\mu m$).
 2. For each $y$ value, smooth out any deviations occurring near the minima by twice applying a rolling average with a pre-set \emph{smoothing factor} $s$.
 3. For each smoothed $y$ value, compute another rolling average using the same smoothing factor as above.
 4. Determine the location of the peak of the left groove by finding the first doubly-smoothed value $y_i$ that is the maximum within its smoothing window. (Similar for valley of left groove).
@@ -112,12 +119,6 @@ br111.loess$resid
 ```
 
 ## Step Five: Peaks and Valleys
-
-What defines a peak and a valley? That's a tough question.
-
-There's a lot of noise in the residual plots. We can do some smoothing in a similar manner to how we did for detecting grooves.
-
-## Step Five: Peaks and Valleys (Continued)
 
 ```{r, warning=FALSE}
 br111.peaks <- get_peaks(br111.loess$data)
