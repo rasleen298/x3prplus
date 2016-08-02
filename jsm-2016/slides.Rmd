@@ -32,6 +32,15 @@ library(knitr)
 
 ![](images/striations.jpg)
 
+## Current Practice
+
+- Traditionally, the bullets are placed under comparison microscopes
+- They are manually aligned by forensic scientists and compared
+- Thresholds have been established as "standard practice"
+- However, this has traditionally been less than statistical
+
+The problems culminated in a 2009 NAS report which found, among other things, *"much forensic evidence -- including, for example, bite marks and firearm and toolmark identification is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline."*
+
 ## James Hamby Study
 
 - Ten consecutively rifled Ruger P-85 pistol barrels used to fire 20 "known" test bullets and 15 "unknown" bullets for comparison
@@ -183,7 +192,7 @@ https://erichare.shinyapps.io/x3prplus
 
 ## Future Work
 
-- We are extremely limited by data here - Currently we've only assessed this algorithm on one particular set of 70 bullets
+- We are extremely limited by data here - Currently we've only assessed this algorithm on one particular set of 35 bullets
 - There is likely an effect from the equipment used to scan the bullets, or the person performing the scan
 - We need to assess the quality of the algorithm in case we don't have full bullet lands available, as is the case in many forensics applications
 
