@@ -13,6 +13,10 @@ getTwist(path, bullet = NULL, transpose = FALSE, twistlimit = NULL,
 \item{bullet}{data in x3p format as returned by function read.x3p}
 
 \item{transpose}{If TRUE, transpose the matrix}
+
+\item{twistlimit}{Constraint the possible twist value}
+
+\item{cutoff}{Use this for the quantile cutoff}
 }
 \value{
 numeric value estimating the twist

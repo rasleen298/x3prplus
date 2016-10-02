@@ -63,6 +63,7 @@ get_peaks <- function(loessdata, column = "resid", smoothfactor = 35, striae = T
 #' @param smoothfactor set to default of 35. Smaller values will pick up on smaller changes in the crosscut.
 #' @return list of several objects: 
 #' @importFrom zoo rollapply
+#' @importFrom smoother smth.gaussian
 #' @import ggplot2
 #' @export
 get_peaks_nist <- function(loessdata, column = "resid", smoothfactor = 35) {
@@ -119,6 +120,7 @@ get_peaks_nist <- function(loessdata, column = "resid", smoothfactor = 35) {
 #' @return data frame of the same form as lines1 and lines2, but consisting of an additional variable of whether the striation marks are matches
 #' @importFrom dplyr group_by %>% summarise
 #' @importFrom reshape2 melt
+#' @importFrom stats sd
 #' @export
 striation_identify <- function(lines1, lines2) {
     group <- NULL

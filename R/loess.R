@@ -7,6 +7,7 @@
 #' @export
 #' @importFrom plyr rdply
 #' @importFrom dplyr summarize
+#' @importFrom stats loess fitted resid quantile predict
 boot_fit_loess <- function(bullet, groove, B=1000, alpha=0.95) {
     value <- NULL
     y <- NULL

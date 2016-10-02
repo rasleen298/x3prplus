@@ -8,8 +8,13 @@
 #' @param path to a file in x3p format
 #' @param bullet data in x3p format as returned by function read.x3p
 #' @param transpose If TRUE, transpose the matrix
+#' @param twistlimit Constraint the possible twist value
+#' @param cutoff Use this for the quantile cutoff
 #' @return numeric value estimating the twist
 #' @export
+#' @importFrom robustbase lmrob
+#' @importFrom stats lm coef median 
+#' @importFrom utils head tail
 #' @examples
 #' \dontrun{
 #' # execution takes several minutes
@@ -17,6 +22,10 @@
 #' twist <- getTwist(path="barrel 1 bullet 1", bullet = b1, twistlimit=c(-2,0)*1.5625)
 #' }
 getTwist <- function(path, bullet = NULL, transpose = FALSE, twistlimit = NULL, cutoff = .75) {
+    x <- NULL
+    r.squared <- NULL
+    r.squared.robust <- NULL
+    
   if (is.null(bullet)) bullet <- read.x3pplus(path, transpose = transpose)
   cat(path)
   cat("\n")
