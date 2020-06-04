@@ -1,3 +1,5 @@
+Used this Repository for my Research Project for the Govt. of India for comparing the bullet images if they are fired from the same firearm or not. This in turn, would be able to link the FIRs filed at different police stations to let them figure out the matching criminal cases. 
+
 # x3prplus - Analying Bullet Striations From .x3p Files
 
 The steps of the algorithm and a front-end to the x3prplus R package have been created as a Shiny Web Application. The application can be accessed at https://erichare.shinyapps.io/x3prplus
